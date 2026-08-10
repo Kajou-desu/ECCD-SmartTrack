@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useAuth } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -86,7 +86,7 @@ export default function App() {
           <Suspense fallback={<RouteSpinner />}>
             <Routes>
               {/* Root redirect */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={<RootRedirect />} />
 
               {/* Public Routes */}
               <Route element={<PublicRoute />}>
@@ -96,9 +96,7 @@ export default function App() {
               {/* Protected Routes */}
               {/* Staff routes */}
               <Route
-                element={
-                  <ProtectedRoute allowedRoles={["Admin", "Teacher"]} />
-                }
+                element={<ProtectedRoute allowedRoles={["Admin", "Teacher"]} />}
               >
                 <Route element={<Layout />}>
                   <Route path="/dashboard" element={<Dashboard />} />
@@ -173,4 +171,22 @@ export default function App() {
       </BrowserRouter>
     </ErrorBoundary>
   );
+}
+
+function RootRedirect() {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return <RouteSpinner />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role === "Parent" || user?.role === "Guardian") {
+    return <Navigate to="/parent/dashboard" replace />;
+  }
+
+  return <Navigate to="/dashboard" replace />;
 }
