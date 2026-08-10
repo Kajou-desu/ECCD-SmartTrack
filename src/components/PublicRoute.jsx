@@ -3,7 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import { isParent } from "../auth/permissions";
 
 export default function PublicRoute() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   if (isLoading) {
     return null;
@@ -14,6 +14,9 @@ export default function PublicRoute() {
   }
 
   return (
-    <Navigate to={isParent ? "/parent/dashboard" : "/dashboard"} replace />
+    <Navigate
+      to={isParent(user?.role) ? "/parent/dashboard" : "/dashboard"}
+      replace
+    />
   );
 }

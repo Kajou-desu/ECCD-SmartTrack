@@ -6,6 +6,8 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+import { ROLES } from "./auth/roles";
+import { isParent } from "./auth/permissions";
 import { useAuth } from "./hooks/useAuth";
 import { AuthProvider } from "./context/Authcontext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -65,23 +67,10 @@ function ScrollToTop() {
   return null;
 }
 
-// API Configuration Warning
-function ApiConfigWarning() {
-  if (!import.meta.env.VITE_API_URL && import.meta.env.MODE === "production") {
-    return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-red-500 text-white p-3 text-center text-sm font-semibold">
-        ⚠️ API Configuration Error - Contact Support
-      </div>
-    );
-  }
-  return null;
-}
-
 export default function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
-        <ApiConfigWarning />
         <ScrollToTop />
         <AuthProvider>
           <Suspense fallback={<RouteSpinner />}>
@@ -98,9 +87,7 @@ export default function App() {
               {/* Staff routes */}
               <Route
                 element={
-                  <ProtectedRoute
-                    allowedRoles={["Admin", "Teacher"]}
-                  />
+                  <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.TEACHER]} />
                 }
               >
                 <Route element={<Layout />}>
@@ -127,20 +114,19 @@ export default function App() {
                   />
                   <Route path="/settings" element={<Settings />} />
 
-                  {/* Admin only */}
-                  <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
-                    <Route
-                      path="/accounts-management"
-                      element={<AccountsManagement />}
-                    />
-                  </Route>
+                  <Route
+                    path="/accounts-management"
+                    element={<AccountsManagement />}
+                  />
                 </Route>
               </Route>
 
               {/* Parent routes */}
               <Route
                 element={
-                  <ProtectedRoute allowedRoles={["Parent", "Guardian"]} />
+                  <ProtectedRoute
+                    allowedRoles={[ROLES.PARENT, ROLES.GUARDIAN]}
+                  />
                 }
               >
                 <Route element={<ParentLayout />}>
@@ -180,6 +166,7 @@ export default function App() {
 
 function RootRedirect() {
   const { isAuthenticated, isLoading, user } = useAuth();
+  const userIsParent = isParent(user.role);
 
   if (isLoading) {
     return <RouteSpinner />;
@@ -189,7 +176,7 @@ function RootRedirect() {
     return <Navigate to="/login" replace />;
   }
 
-  if (user?.role === "Parent" || user?.role === "Guardian") {
+  if (userIsParent) {
     return <Navigate to="/parent/dashboard" replace />;
   }
 

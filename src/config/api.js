@@ -1,9 +1,8 @@
-// config/api.js
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 if (!API_BASE_URL) {
-    console.error(
-        "❌ API_BASE_URL is not configured. Set VITE_API_URL in your .env file."
+    throw new Error(
+        "VITE_API_URL is not configured. Please define it in your environment."
     );
 }
 

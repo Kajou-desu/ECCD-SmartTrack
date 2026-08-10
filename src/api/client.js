@@ -8,6 +8,10 @@ let onUnauthorized = null;
 export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler;
 }
+
+function getAuthToken() {
+  return localStorage.getItem("authToken");
+}
 export class ApiError extends Error {
   constructor(message, status, details = {}) {
     super(message);
@@ -62,8 +66,17 @@ async function fetchWithTimeout(url, options = {}) {
   );
 
   try {
+    const token = getAuthToken();
+
+    const headers = new Headers(options.headers || {});
+
+    if (token && !url.endsWith("/api/login")) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+
     return await fetch(url, {
       ...options,
+      headers,
       signal: controller.signal,
       credentials: options.credentials ?? "include",
     });
