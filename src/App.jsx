@@ -6,12 +6,12 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { AuthProvider } from "./context/Authcontext.jsx";
-import ProtectedRoute from "./Components/ProtectedRoute.jsx";
-import PublicRoute from "./Components/PublicRoute.jsx";
-import ErrorBoundary from "./Components/ErrorBoundary.jsx";
-import Layout from "./Components/Layout.jsx";
-import ParentLayout from "./Components/ParentLayout.jsx";
+import { AuthProvider } from "./context/Authcontext";
+import ProtectedRoute from "./Components/ProtectedRoute";
+import PublicRoute from "./Components/PublicRoute";
+import ErrorBoundary from "./Components/ErrorBoundary";
+import Layout from "./Components/Layout";
+import ParentLayout from "./Components/ParentLayout";
 
 // Lazy loaded pages
 const Login = lazy(() => import("./Pages/Loginpage"));
