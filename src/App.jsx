@@ -7,11 +7,11 @@ import {
   useLocation,
 } from "react-router-dom";
 import { AuthProvider } from "./context/Authcontext";
-import ProtectedRoute from "./Components/ProtectedRoute";
-import PublicRoute from "./Components/PublicRoute";
-import ErrorBoundary from "./Components/ErrorBoundary";
-import Layout from "./Components/Layout";
-import ParentLayout from "./Components/ParentLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
+import Layout from "./components/Layout";
+import ParentLayout from "./components/parentLayout";
 
 // Lazy loaded pages
 const Login = lazy(() => import("./Pages/Loginpage"));
