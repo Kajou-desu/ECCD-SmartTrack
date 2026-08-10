@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Button from "../Components/Button";
+import Button from "../components/Button";
 
 async function uploadPhotos(files, onProgress) {
   return new Promise((resolve, reject) => {

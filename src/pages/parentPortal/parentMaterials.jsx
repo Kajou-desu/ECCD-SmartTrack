@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ParentMediaGallery from "./ParentMediaGallery";
+import ParentMediaGallery from "./parentMediaGallery";
 import { MATERIALS_DATA } from "../../data/mockParentData";
 
 const FILTER_OPTIONS = [

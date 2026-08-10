@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import StatCard from "../Components/StatCard";
+import StatCard from "../components/StatCard";
 import { apiClient } from "../api/client.js";
 import { initialRecords } from "../data/mockData.js";
 import {

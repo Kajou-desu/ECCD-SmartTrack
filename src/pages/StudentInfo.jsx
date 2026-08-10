@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDebounce } from "../hooks/useDebounce";
 import { usePagination } from "../hooks/usePagination";
 import { apiClient } from "../api/client.js";
-import { StudentTableSkeleton } from "../Components/LoadingSkeleton";
+import { StudentTableSkeleton } from "../components/LoadingSkeleton";
 import { initialStudents } from "../data/mockData.js";
 import {
   UserRoundPlus,

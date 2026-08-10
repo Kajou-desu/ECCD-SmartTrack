@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import StatCard from "../../Components/StatCard";
+import StatCard from "../../components/StatCard";
 import { ATTENDANCE_DATA } from "../../data/mockParentData";
 import {
   ChevronLeft,

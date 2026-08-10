@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import StatCard from "../Components/StatCard";
+import StatCard from "../components/StatCard";
 import { useAuth } from "../hooks/useAuth";
-import { WeatherCard } from "../Components/Dashboard/WeatherCard";
-import { DailyThemeCard } from "../Components/Dashboard/DailyThemeCard";
-import { AttendanceList } from "../Components/Dashboard/AttendanceList";
-import { EventCard } from "../Components/Dashboard/EventCard";
+import { WeatherCard } from "../components/Dashboard/WeatherCard";
+import { DailyThemeCard } from "../components/Dashboard/DailyThemeCard";
+import { AttendanceList } from "../components/Dashboard/AttendanceList";
+import { EventCard } from "../components/Dashboard/EventCard";
 import { UsersRound, UserCheck, UserX, CalendarDays } from "lucide-react";
 
 const LOCATION_CONFIG = {
