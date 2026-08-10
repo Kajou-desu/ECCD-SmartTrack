@@ -96,7 +96,7 @@ export default function App() {
               {/* Protected Routes */}
               {/* Staff routes */}
               <Route
-                element={<ProtectedRoute allowedRoles={["Admin", "Teacher"]} />}
+                element={<ProtectedRoute allowedRoles={["Developer", "Admin", "Teacher"]} />}
               >
                 <Route element={<Layout />}>
                   <Route path="/dashboard" element={<Dashboard />} />
