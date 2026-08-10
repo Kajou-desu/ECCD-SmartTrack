@@ -3,7 +3,11 @@ import { API_BASE_URL } from "../config/api.js";
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
+let onUnauthorized = null;
 
+export function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler;
+}
 export class ApiError extends Error {
   constructor(message, status, details = {}) {
     super(message);
@@ -17,7 +21,10 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function handleApiResponse(response) {
+async function handleApiResponse(
+  response,
+  handleUnauthorized = true
+) {
   const contentType = response.headers.get("content-type");
   let data = {};
 
@@ -26,8 +33,21 @@ async function handleApiResponse(response) {
   }
 
   if (!response.ok) {
-    const message = data.message || `HTTP ${response.status}`;
-    throw new ApiError(message, response.status, data);
+    const message =
+      data.message || `HTTP ${response.status}`;
+
+    if (
+      response.status === 401 &&
+      handleUnauthorized
+    ) {
+      onUnauthorized?.();
+    }
+
+    throw new ApiError(
+      message,
+      response.status,
+      data
+    );
   }
 
   return data;
@@ -35,32 +55,55 @@ async function handleApiResponse(response) {
 
 async function fetchWithTimeout(url, options = {}) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    REQUEST_TIMEOUT
+  );
 
   try {
-    const response = await fetch(url, {
+    return await fetch(url, {
       ...options,
       signal: controller.signal,
       credentials: options.credentials ?? "include",
     });
-    return response;
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-async function fetchWithRetry(url, options = {}, retries = MAX_RETRIES) {
+async function fetchWithRetry(
+  url,
+  options = {},
+  retries = MAX_RETRIES
+) {
+  const {
+    handleUnauthorized = true,
+    ...fetchOptions
+  } = options;
+
   try {
-    const response = await fetchWithTimeout(url, options);
-    return await handleApiResponse(response);
+    const response = await fetchWithTimeout(url, fetchOptions);
+
+    return await handleApiResponse(
+      response,
+      handleUnauthorized
+    );
   } catch (error) {
     const canRetry =
       error.name === "AbortError" ||
       (error instanceof ApiError && error.status >= 500);
 
     if (canRetry && retries > 0) {
-      await delay(RETRY_DELAY * (MAX_RETRIES - retries + 1));
-      return fetchWithRetry(url, options, retries - 1);
+      await delay(
+        RETRY_DELAY * (MAX_RETRIES - retries + 1)
+      );
+
+      return fetchWithRetry(
+        url,
+        options,
+        retries - 1
+      );
     }
 
     throw error;
@@ -76,7 +119,11 @@ export const apiClient = {
     return fetchWithRetry(`${API_BASE_URL}/api/login`, {
       method: "POST",
       headers: jsonHeaders(),
-      body: JSON.stringify({ email: email.toLowerCase().trim(), password }),
+      body: JSON.stringify({
+        email: email.toLowerCase().trim(),
+        password,
+      }),
+      handleUnauthorized: false,
     });
   },
 

@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useCallback } from "react";
 import { AuthContext } from "./AuthContextObject";
+import { setUnauthorizedHandler } from "../api/client";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -56,7 +57,20 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
+
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authUser");
   }, []);
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      logout();
+    });
+
+    return () => {
+      setUnauthorizedHandler(null);
+    };
+  }, [logout]);
 
   const value = {
     user,
