@@ -4,7 +4,6 @@ import { useAuth } from "../hooks/useAuth";
 export default function ProtectedRoute({ allowedRoles = [] }) {
   const { isAuthenticated, isLoading, user } = useAuth();
 
-  // Show loading spinner while auth state is being restored from localStorage
   if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-gray-100">
@@ -16,24 +15,16 @@ export default function ProtectedRoute({ allowedRoles = [] }) {
     );
   }
 
-  // Not authenticated - redirect to login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  // Check role-based access if allowed roles are specified
   if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/dashboard" replace />;
-  }
+    const isParent = user?.role === "Parent" || user?.role === "Guardian";
 
-  // Should redirect parents to parent dashboard
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
-    // Redirect based on user role
-    if (user?.role === "Parent" || user?.role === "Guardian") {
-      return <Navigate to="/parent/dashboard" replace />;
-    } else {
-      return <Navigate to="/dashboard" replace />;
-    }
+    return (
+      <Navigate to={isParent ? "/parent/dashboard" : "/dashboard"} replace />
+    );
   }
 
   return <Outlet />;

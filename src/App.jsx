@@ -26,13 +26,25 @@ const PhotoGallery = lazy(() => import("./pages/PhotoGallery"));
 const AccountsManagement = lazy(() => import("./pages/AccountManagement"));
 const Settings = lazy(() => import("./pages/Settings"));
 const NotFound = lazy(() => import("./pages/ErrorPage"));
-
-const ParentDashboard = lazy(() => import("./pages/parentPortal/parentDashboard"));
-const ParentStudentProfile = lazy(() => import("./pages/parentPortal/parentStudentProfile"));
-const ParentAttendance = lazy(() => import("./pages/parentPortal/parentAttendance"));
-const ParentMaterials = lazy(() => import("./pages/parentPortal/parentMaterials"));
-const ParentPhotoGallery = lazy(() => import("./pages/parentPortal/parentPhotoGallery"));
-const ParentSettings = lazy(() => import("./pages/parentPortal/parentSettings"));
+// For Parent Portal
+const ParentDashboard = lazy(
+  () => import("./pages/parentPortal/parentDashboard"),
+);
+const ParentStudentProfile = lazy(
+  () => import("./pages/parentPortal/parentStudentProfile"),
+);
+const ParentAttendance = lazy(
+  () => import("./pages/parentPortal/parentAttendance"),
+);
+const ParentMaterials = lazy(
+  () => import("./pages/parentPortal/parentMaterials"),
+);
+const ParentPhotoGallery = lazy(
+  () => import("./pages/parentPortal/parentPhotoGallery"),
+);
+const ParentSettings = lazy(
+  () => import("./pages/parentPortal/parentSettings"),
+);
 
 function RouteSpinner() {
   return (
@@ -82,7 +94,12 @@ export default function App() {
               </Route>
 
               {/* Protected Routes */}
-              <Route element={<ProtectedRoute />}>
+              {/* Staff routes */}
+              <Route
+                element={
+                  <ProtectedRoute allowedRoles={["Admin", "Teacher"]} />
+                }
+              >
                 <Route element={<Layout />}>
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/attendance" element={<Attendance />} />
@@ -104,16 +121,11 @@ export default function App() {
                   <Route
                     path="/event-photos/:albumId"
                     element={<PhotoGallery />}
-                  />{" "}
+                  />
                   <Route path="/settings" element={<Settings />} />
-                  {/* Admin only pages */}
-                  <Route
-                    element={
-                      <ProtectedRoute
-                        allowedRoles={["Admin", "Lead Educator"]}
-                      />
-                    }
-                  >
+
+                  {/* Admin only */}
+                  <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
                     <Route
                       path="/accounts-management"
                       element={<AccountsManagement />}
@@ -122,6 +134,7 @@ export default function App() {
                 </Route>
               </Route>
 
+              {/* Parent routes */}
               <Route
                 element={
                   <ProtectedRoute allowedRoles={["Parent", "Guardian"]} />
