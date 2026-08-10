@@ -14,25 +14,25 @@ import Layout from "./components/Layout";
 import ParentLayout from "./components/parentLayout";
 
 // Lazy loaded pages
-const Login = lazy(() => import("./Pages/Loginpage"));
-const Dashboard = lazy(() => import("./Pages/Dashboard"));
-const Attendance = lazy(() => import("./Pages/Attendance"));
-const StudentInfo = lazy(() => import("./Pages/StudentInfo"));
-const StudentForm = lazy(() => import("./Pages/StudentForm"));
-const StudentDetail = lazy(() => import("./Pages/StudentDetail"));
-const LearningMaterials = lazy(() => import("./Pages/Materials"));
-const EventPhotos = lazy(() => import("./Pages/EventPhotos"));
-const PhotoGallery = lazy(() => import("./Pages/PhotoGallery"));
-const AccountsManagement = lazy(() => import("./Pages/AccountManagement"));
-const Settings = lazy(() => import("./Pages/Settings"));
-const NotFound = lazy(() => import("./Pages/ErrorPage"));
+const Login = lazy(() => import("./pages/Loginpage"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Attendance = lazy(() => import("./pages/Attendance"));
+const StudentInfo = lazy(() => import("./pages/StudentInfo"));
+const StudentForm = lazy(() => import("./pages/StudentForm"));
+const StudentDetail = lazy(() => import("./pages/StudentDetail"));
+const LearningMaterials = lazy(() => import("./pages/Materials"));
+const EventPhotos = lazy(() => import("./pages/EventPhotos"));
+const PhotoGallery = lazy(() => import("./pages/PhotoGallery"));
+const AccountsManagement = lazy(() => import("./pages/AccountManagement"));
+const Settings = lazy(() => import("./pages/Settings"));
+const NotFound = lazy(() => import("./pages/ErrorPage"));
 
-const ParentDashboard = lazy(() => import("./Pages/parentPortal/parentDashboard"));
-const ParentStudentProfile = lazy(() => import("./Pages/parentPortal/parentStudentProfile"));
-const ParentAttendance = lazy(() => import("./Pages/parentPortal/parentAttendance"));
-const ParentMaterials = lazy(() => import("./Pages/parentPortal/ParentMaterials"));
-const ParentPhotoGallery = lazy(() => import("./Pages/parentPortal/ParentPhotoGallery"));
-const ParentSettings = lazy(() => import("./Pages/parentPortal/ParentSettings"));
+const ParentDashboard = lazy(() => import("./pages/parentPortal/parentDashboard"));
+const ParentStudentProfile = lazy(() => import("./pages/parentPortal/parentStudentProfile"));
+const ParentAttendance = lazy(() => import("./pages/parentPortal/parentAttendance"));
+const ParentMaterials = lazy(() => import("./pages/parentPortal/parentMaterials"));
+const ParentPhotoGallery = lazy(() => import("./pages/parentPortal/parentPhotoGallery"));
+const ParentSettings = lazy(() => import("./pages/parentPortal/parentSettings"));
 
 function RouteSpinner() {
   return (
