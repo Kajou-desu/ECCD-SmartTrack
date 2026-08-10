@@ -33,7 +33,7 @@ export default function AdminSettings() {
   ];
 
   return (
-    <div className="min-h-[calc(100vh-70px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
+    <div className="flex h-full min-h-0 flex-col gap-6 overflow-hidden bg-[#f8f9ff] p-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
@@ -96,7 +96,7 @@ export default function AdminSettings() {
       )}
 
       {activeTab === "notifications" && (
-        <div className="w-full sm:max-w-4xl sm:mx-auto">
+        <div className="w-full sm:mx-auto">
           {/* Notification Settings */}
           <NotificationSettings />
         </div>

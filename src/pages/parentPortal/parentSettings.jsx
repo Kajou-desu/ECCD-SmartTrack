@@ -116,7 +116,7 @@ export default function ParentSettings() {
       )}
 
       {activeTab === "notifications" && (
-        <div className="w-full sm:max-w-4xl sm:mx-auto">
+        <div className="w-full sm:mx-auto">
           {/* Notification Settings */}
           <NotificationSettings />
         </div>

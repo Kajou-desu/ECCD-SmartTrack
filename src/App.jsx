@@ -166,7 +166,7 @@ export default function App() {
 
 function RootRedirect() {
   const { isAuthenticated, isLoading, user } = useAuth();
-  const userIsParent = isParent(user.role);
+  const userIsParent = isParent(user?.role);
 
   if (isLoading) {
     return <RouteSpinner />;
