@@ -26,7 +26,7 @@ export default function Login() {
     email: "demo@eccd.com",
     password: "P@ssw0rd123",
     name: "Demo User",
-    role: "Developer",
+    role: "Admin",
   };
 
   const sampleParentCredentials = {

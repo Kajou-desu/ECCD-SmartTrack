@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useAuth } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -6,6 +6,7 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+import { useAuth } from "./hooks/useAuth";
 import { AuthProvider } from "./context/Authcontext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -96,7 +97,11 @@ export default function App() {
               {/* Protected Routes */}
               {/* Staff routes */}
               <Route
-                element={<ProtectedRoute allowedRoles={["Developer", "Admin", "Teacher"]} />}
+                element={
+                  <ProtectedRoute
+                    allowedRoles={["Admin", "Teacher"]}
+                  />
+                }
               >
                 <Route element={<Layout />}>
                   <Route path="/dashboard" element={<Dashboard />} />

@@ -2,9 +2,19 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 export default function PublicRoute() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isLoading) {
+    return null;
+  }
 
-  return <Outlet />;
+  if (!isAuthenticated) {
+    return <Outlet />;
+  }
+
+  const isParent = user?.role === "Parent" || user?.role === "Guardian";
+
+  return (
+    <Navigate to={isParent ? "/parent/dashboard" : "/dashboard"} replace />
+  );
 }
