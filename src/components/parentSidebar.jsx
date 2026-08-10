@@ -18,11 +18,35 @@ import {
 } from "lucide-react";
 
 const PARENT_NAV_ITEMS = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/parent/dashboard" },
-  { icon: UserRound, label: "Profile", href: "/parent/studentprofile" },
-  { icon: Calendar, label: "Attendance", href: "/parent/attendance" },
-  { icon: BookOpen, label: "Materials", href: "/parent/materials" },
-  { icon: Images, label: "Photo Gallery", href: "/parent/photo-gallery" },
+  {
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    href: "/parent/dashboard",
+  },
+  {
+    icon: UserRound,
+    label: "Profile",
+    href: "/parent/studentprofile",
+    activePaths: ["/parent/studentprofile"],
+  },
+  {
+    icon: Calendar,
+    label: "Attendance",
+    href: "/parent/attendance",
+    activePaths: ["/parent/attendance"],
+  },
+  {
+    icon: BookOpen,
+    label: "Materials",
+    href: "/parent/materials",
+    activePaths: ["/parent/materials"],
+  },
+  {
+    icon: Images,
+    label: "Photo Gallery",
+    href: "/parent/photo-gallery",
+    activePaths: ["/parent/photo-gallery"],
+  },
 ];
 
 export default function ParentSidebar({
@@ -161,16 +185,18 @@ export default function ParentSidebar({
 
           {/* Navigation */}
           <nav className="mt-8 flex flex-col gap-2">
-            {PARENT_NAV_ITEMS.map(({ icon: Icon, label, href }) => (
-              <SidebarLink
-                key={href}
-                icon={<Icon size={20} />}
-                label={label}
-                href={href}
-                isActive={location.pathname === href}
-                collapsed={isMobileOpen ? false : isCollapsed}
-              />
-            ))}
+            {PARENT_NAV_ITEMS.map(
+              ({ icon: Icon, label, href, activePaths }) => (
+                <SidebarLink
+                  key={href}
+                  icon={<Icon size={20} />}
+                  label={label}
+                  href={href}
+                  activePaths={activePaths}
+                  collapsed={isMobileOpen ? false : isCollapsed}
+                />
+              ),
+            )}
           </nav>
 
           {/* Footer profile box */}
@@ -225,7 +251,14 @@ export default function ParentSidebar({
   );
 }
 
-function SidebarLink({ icon, label, href, isActive, collapsed }) {
+function SidebarLink({ icon, label, href, collapsed, activePaths = [href] }) {
+  const location = useLocation();
+
+  const isActive = activePaths.some(
+    (path) =>
+      location.pathname === path || location.pathname.startsWith(`${path}/`),
+  );
+
   return (
     <Link
       to={href}
@@ -243,7 +276,8 @@ function SidebarLink({ icon, label, href, isActive, collapsed }) {
       `}
       title={collapsed ? label : undefined}
     >
-      <span className="shrink-0">{icon}</span>
+      {icon}
+
       {!collapsed && (
         <span className="font-medium whitespace-nowrap">{label}</span>
       )}

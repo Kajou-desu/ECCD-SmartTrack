@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { isParent } from "../auth/permissions";
 
 export default function ProtectedRoute({ allowedRoles = [] }) {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -20,11 +21,11 @@ export default function ProtectedRoute({ allowedRoles = [] }) {
   }
 
   if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
-    const isParent = user?.role === "Parent" || user?.role === "Guardian";
-
-    return (
-      <Navigate to={isParent ? "/parent/dashboard" : "/dashboard"} replace />
-    );
+    const destination = isParent(user?.role)
+      ? "/parent/dashboard"
+      : "/dashboard";
+  
+    return <Navigate to={destination} replace />;
   }
 
   return <Outlet />;

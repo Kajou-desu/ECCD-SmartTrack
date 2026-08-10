@@ -82,8 +82,20 @@ async function fetchWithRetry(
     ...fetchOptions
   } = options;
 
+  const method = (
+    fetchOptions.method || "GET"
+  ).toUpperCase();
+
+  const isRetryableMethod =
+    method === "GET" ||
+    method === "HEAD" ||
+    method === "OPTIONS";
+
   try {
-    const response = await fetchWithTimeout(url, fetchOptions);
+    const response = await fetchWithTimeout(
+      url,
+      fetchOptions
+    );
 
     return await handleApiResponse(
       response,
@@ -91,8 +103,14 @@ async function fetchWithRetry(
     );
   } catch (error) {
     const canRetry =
-      error.name === "AbortError" ||
-      (error instanceof ApiError && error.status >= 500);
+      isRetryableMethod &&
+      (
+        error.name === "AbortError" ||
+        (
+          error instanceof ApiError &&
+          error.status >= 500
+        )
+      );
 
     if (canRetry && retries > 0) {
       await delay(
@@ -190,9 +208,9 @@ export const apiClient = {
 
   async postFormData(endpoint, formData, extraOptions = {}) {
     return fetchWithRetry(`${API_BASE_URL}${endpoint}`, {
+      ...extraOptions,
       method: "POST",
       body: formData,
-      ...extraOptions,
     });
   },
 

@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import logo from "../assets/ECCDST_Logo.png";
 import ProfileBox from "./ProfileBox.jsx";
 import { getInitials } from "../utils/user.js";
+import { canManageAccounts } from "../auth/permissions.js";
 import {
   PanelLeftClose,
   PanelLeftOpen,
@@ -19,11 +20,32 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: UserSquare, label: "Attendance", href: "/attendance" },
-  { icon: Users, label: "Students", href: "/student-info" },
-  { icon: LibraryBig, label: "Materials", href: "/learning-materials" },
-  { icon: Images, label: "Events", href: "/event-photos" },
+  {
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    href: "/dashboard",
+  },
+  {
+    icon: UserSquare,
+    label: "Attendance",
+    href: "/attendance",
+  },
+  {
+    icon: Users,
+    label: "Students",
+    href: "/student-info",
+    activePaths: ["/student-info", "/student"],
+  },
+  {
+    icon: LibraryBig,
+    label: "Materials",
+    href: "/learning-materials",
+  },
+  {
+    icon: Images,
+    label: "Events",
+    href: "/event-photos",
+  },
 ];
 
 const ADMIN_NAV_ITEMS = [
@@ -98,8 +120,7 @@ export default function Sidebar({
     };
   }, [isProfileMenuOpen]);
 
-  const adminOnly =
-    user?.role && ["Admin", "Lead Educator"].includes(user.role);
+  const adminOnly = canManageAccounts(user?.role);
   const navItems = adminOnly ? [...NAV_ITEMS, ...ADMIN_NAV_ITEMS] : NAV_ITEMS;
 
   return (
@@ -170,13 +191,13 @@ export default function Sidebar({
 
           {/* Navigation */}
           <nav className="mt-8 flex flex-col gap-2">
-            {navItems.map(({ icon: Icon, label, href }) => (
+            {navItems.map(({ icon: Icon, label, href, activePaths }) => (
               <SidebarLink
                 key={href}
                 icon={<Icon size={20} />}
                 label={label}
                 href={href}
-                isActive={location.pathname === href}
+                activePaths={activePaths}
                 collapsed={isMobileOpen ? false : isCollapsed}
               />
             ))}
@@ -236,7 +257,14 @@ export default function Sidebar({
   );
 }
 
-function SidebarLink({ icon, label, href, isActive, collapsed }) {
+function SidebarLink({ icon, label, href, collapsed, activePaths = [href] }) {
+  const location = useLocation();
+
+  const isActive = activePaths.some(
+    (path) =>
+      location.pathname === path || location.pathname.startsWith(`${path}/`),
+  );
+
   return (
     <Link
       to={href}
@@ -255,6 +283,7 @@ function SidebarLink({ icon, label, href, isActive, collapsed }) {
       title={collapsed ? label : undefined}
     >
       <span className="shrink-0">{icon}</span>
+
       {!collapsed && (
         <span className="font-medium whitespace-nowrap">{label}</span>
       )}
