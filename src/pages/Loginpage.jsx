@@ -22,7 +22,6 @@ export default function Login() {
   const [successMessage, setSuccessMessage] = useState("");
   const [forgotEmail, setForgotEmail] = useState("");
 
-  const debugLoginEnabled = !!import.meta.env.VITE_ENABLE_DEV_LOGIN;
   const devCredentials = {
     email: "demo@eccd.com",
     password: "P@ssw0rd123",
@@ -89,7 +88,6 @@ export default function Login() {
       }
 
       if (
-        debugLoginEnabled &&
         email === devCredentials.email.toLowerCase() &&
         password === devCredentials.password
       ) {
