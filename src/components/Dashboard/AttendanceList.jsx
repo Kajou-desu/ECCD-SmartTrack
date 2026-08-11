@@ -26,7 +26,7 @@ export function AttendanceList() {
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>
-      <div className="max-h-80 lg:max-h-none lg:flex-1 lg:min-h-0 overflow-y-auto space-y-2 pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
+      <div className="overflow-y-auto space-y-2 pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
         {attendanceData.length > 0 ? (
           attendanceData.map((attendance) => (
             <AttendanceListItem key={attendance.id} attendance={attendance} />

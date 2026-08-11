@@ -136,14 +136,19 @@ export default function Sidebar({
 
       <aside
         className={`
-          h-full shrink-0 bg-[#f8f9ff] shadow-md border-r border-slate-200
-          transition-all duration-300 ease-in-out
+          h-full bg-[#f8f9ff] shadow-md border-r border-slate-200
+          transition-[width,transform] duration-300 ease-in-out
 
+          ${
+            isCollapsed
+              ? "lg:static lg:w-20"
+              : "lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:w-72"
+          }
+      
           fixed inset-y-0 left-0 z-50
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-
-          lg:static lg:translate-x-0 lg:z-auto
-
+          lg:translate-x-0
+      
           ${isMobileOpen ? "w-72" : isCollapsed ? "w-20" : "w-72"}
         `}
       >
