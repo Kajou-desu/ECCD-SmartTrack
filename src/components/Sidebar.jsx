@@ -220,16 +220,29 @@ export default function Sidebar({
               aria-haspopup="true"
             />
 
-            {isProfileMenuOpen && (isMobileOpen || !isCollapsed) && (
-              <div className="absolute bottom-20 left-0 right-0 z-10 rounded-3xl border border-slate-200 bg-white p-4 shadow-xl">
+            {isProfileMenuOpen && (
+              <div
+                className={`
+      absolute z-60 rounded-3xl border border-slate-200
+      bg-white p-4 shadow-xl
+
+      ${
+        isCollapsed && !isMobileOpen
+          ? "bottom-0 left-full ml-3 w-72"
+          : "bottom-20 left-0 right-0"
+      }
+    `}
+              >
                 <div className="mb-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-lg font-semibold text-[#C2570C]">
                     {getInitials(user?.name)}
                   </div>
+
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
                       {user?.name ?? "User"}
                     </p>
+
                     <p className="text-xs text-slate-500">
                       {user?.role ?? "Member"}
                     </p>

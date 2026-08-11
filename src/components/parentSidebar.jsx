@@ -130,14 +130,19 @@ export default function ParentSidebar({
 
       <aside
         className={`
-          h-full shrink-0 bg-[#f8f9ff] shadow-md border-r border-slate-200
-          transition-all duration-300 ease-in-out
+          h-full bg-[#f8f9ff] shadow-md border-r border-slate-200
+          transition-[width,transform] duration-300 ease-in-out
 
+          ${
+            isCollapsed
+              ? "lg:static lg:w-20"
+              : "lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:w-72"
+          }
+      
           fixed inset-y-0 left-0 z-50
           ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-
-          lg:static lg:translate-x-0 lg:z-auto
-
+          lg:translate-x-0
+      
           ${isMobileOpen ? "w-72" : isCollapsed ? "w-20" : "w-72"}
         `}
       >
@@ -211,17 +216,32 @@ export default function ParentSidebar({
               aria-haspopup="true"
             />
 
-            {isProfileMenuOpen && (isMobileOpen || !isCollapsed) && (
-              <div className="absolute bottom-20 left-0 right-0 z-10 rounded-3xl border border-slate-200 bg-white p-4 shadow-xl">
+            {isProfileMenuOpen && (
+              <div
+                className={`
+      absolute z-60 rounded-3xl border border-slate-200
+      bg-white p-4 shadow-xl
+
+      ${
+        isCollapsed && !isMobileOpen
+          ? "bottom-0 left-full ml-3 w-72"
+          : "bottom-20 left-0 right-0"
+      }
+    `}
+              >
                 <div className="mb-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-lg font-semibold text-[#C2570C]">
                     {getInitials(user?.name)}
                   </div>
+
                   <div>
                     <p className="text-sm font-semibold text-slate-900">
-                      {user?.name ?? "Parent"}
+                      {user?.name ?? "User"}
                     </p>
-                    <p className="text-xs text-slate-500">Parent/Guardian</p>
+
+                    <p className="text-xs text-slate-500">
+                      {user?.role ?? "Member"}
+                    </p>
                   </div>
                 </div>
 
