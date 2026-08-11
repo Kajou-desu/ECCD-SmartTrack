@@ -33,7 +33,7 @@ export default function AdminSettings() {
   ];
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-6 overflow-hidden bg-[#f8f9ff] p-6">
+    <div className="flex h-full min-h-0 flex-col gap-6 overflow-y-scroll bg-[#f8f9ff] p-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
