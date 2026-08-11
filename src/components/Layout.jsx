@@ -8,7 +8,7 @@ export default function Layout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex h-screen w-full">
       <Sidebar
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
@@ -23,7 +23,7 @@ export default function Layout() {
           onOpenSidebar={() => setIsMobileSidebarOpen(true)}
         />
 
-        <main className="min-h-0 min-w-0 flex-1 overflow-hidden bg-gray-100">
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-scroll bg-gray-100">
           <Outlet />
         </main>
       </div>
