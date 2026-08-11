@@ -113,10 +113,12 @@ function SettingToggle({ label, description, checked, onChange }) {
       </div>
       <label className="flex items-center cursor-pointer">
         <input
+        id={id}
           type="checkbox"
+          role="switch"
           checked={checked}
           onChange={onChange}
-          className="sr-only"
+          aria-describedby={`${id}-description`}
         />
         <div
           className={`w-12 h-6 rounded-full transition ${

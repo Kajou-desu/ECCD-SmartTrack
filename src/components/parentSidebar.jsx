@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import logo from "../assets/ECCDST_Logo.png";
 import ProfileBox from "./ProfileBox.jsx";
 import { getInitials } from "../utils/user.js";
+
 import {
   PanelLeftClose,
   PanelLeftOpen,
@@ -56,40 +57,116 @@ export default function ParentSidebar({
   onToggleCollapse,
 }) {
   const [internalCollapsed, setInternalCollapsed] = useState(true);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
   const isCollapsed =
     typeof collapsed === "boolean" ? collapsed : internalCollapsed;
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const profileMenuRef = useRef(null);
 
+  const profileMenuRef = useRef(null);
+  const closeButtonRef = useRef(null);
+
+  /*
+   * Toggle desktop sidebar.
+   */
   const toggleSidebar = () => {
-    if (onToggleCollapse) onToggleCollapse();
-    else setInternalCollapsed((prev) => !prev);
+    if (onToggleCollapse) {
+      onToggleCollapse();
+    } else {
+      setInternalCollapsed((prev) => !prev);
+    }
+
     setIsProfileMenuOpen(false);
   };
 
-  const closeProfileMenu = () => setIsProfileMenuOpen(false);
-  const toggleProfileMenu = () => setIsProfileMenuOpen((prev) => !prev);
+  /*
+   * Profile menu.
+   */
+  const closeProfileMenu = () => {
+    setIsProfileMenuOpen(false);
+  };
 
+  const toggleProfileMenu = () => {
+    setIsProfileMenuOpen((prev) => !prev);
+  };
+
+  /*
+   * Logout.
+   */
   const handleLogout = () => {
+    closeProfileMenu();
     logout();
     navigate("/login", { replace: true });
   };
 
+  /*
+   * Settings.
+   */
   const handleSettings = () => {
     closeProfileMenu();
     navigate("/parent/settings");
   };
 
-  // Close mobile sidebar whenever the route changes
+  /*
+   * Close mobile sidebar whenever route changes.
+   */
   useEffect(() => {
     onCloseMobile?.();
-  }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [location.pathname, onCloseMobile]);
 
+  /*
+   * Focus close button when mobile sidebar opens.
+   */
   useEffect(() => {
-    function handleClickOutside(event) {
+    if (isMobileOpen) {
+      requestAnimationFrame(() => {
+        closeButtonRef.current?.focus();
+      });
+    }
+  }, [isMobileOpen]);
+
+  /*
+   * Keyboard handling.
+   *
+   * Escape:
+   * 1. Close profile menu first.
+   * 2. Otherwise close mobile sidebar.
+   */
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      if (isProfileMenuOpen) {
+        closeProfileMenu();
+        return;
+      }
+
+      if (isMobileOpen) {
+        onCloseMobile?.();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isProfileMenuOpen, isMobileOpen, onCloseMobile]);
+
+  /*
+   * Close profile menu when clicking outside.
+   */
+  useEffect(() => {
+    if (!isProfileMenuOpen) {
+      return;
+    }
+
+    function handlePointerDown(event) {
       if (
         profileMenuRef.current &&
         !profileMenuRef.current.contains(event.target)
@@ -98,70 +175,86 @@ export default function ParentSidebar({
       }
     }
 
-    function handleEscapeKey(event) {
-      if (event.key === "Escape") {
-        closeProfileMenu();
-      }
-    }
-
-    if (isProfileMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("touchstart", handleClickOutside);
-      document.addEventListener("keydown", handleEscapeKey);
-    }
+    document.addEventListener("pointerdown", handlePointerDown);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-      document.removeEventListener("keydown", handleEscapeKey);
+      document.removeEventListener("pointerdown", handlePointerDown);
     };
   }, [isProfileMenuOpen]);
 
   return (
     <>
-      {/* Mobile backdrop — click to close */}
+      {/* Mobile backdrop */}
       {isMobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        <button
+          type="button"
+          aria-label="Close navigation"
           onClick={onCloseMobile}
-          aria-hidden="true"
+          className="
+            fixed inset-0 z-40
+            bg-black/50
+            lg:hidden
+          "
         />
       )}
 
+      {/* Sidebar */}
       <aside
+        id="parent-sidebar"
+        aria-label="Parent navigation"
         className={`
-          h-full bg-[#f8f9ff] shadow-md border-r border-slate-200
-          transition-[width,transform] duration-300 ease-in-out
+          fixed inset-y-0 left-0 z-50
+          h-dvh
+          bg-[#f8f9ff]
+          shadow-md
+          border-r border-slate-200
+
+          transition-[width,transform]
+          duration-300
+          ease-in-out
 
           ${
             isCollapsed
               ? "lg:static lg:w-20"
               : "lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:w-72"
           }
-      
-          fixed inset-y-0 left-0 z-50
-          ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+
+          ${isMobileOpen ? "translate-x-0 w-72" : "-translate-x-full"}
+
           lg:translate-x-0
-      
-          ${isMobileOpen ? "w-72" : isCollapsed ? "w-20" : "w-72"}
         `}
       >
         <div className="flex h-full flex-col p-4">
           {/* Header */}
           <div
-            className={`flex items-center ${isMobileOpen || !isCollapsed ? "justify-between" : "justify-center"}`}
+            className={`
+              flex items-center
+              ${
+                isMobileOpen || !isCollapsed
+                  ? "justify-between"
+                  : "justify-center"
+              }
+            `}
           >
+            {/* Logo */}
             {(isMobileOpen || !isCollapsed) && (
               <div className="flex items-center gap-3">
                 <img
                   src={logo}
-                  alt="ECCD SmartTrack Logo"
-                  className="h-12 w-12 rounded-full object-cover drop-shadow-xl"
+                  alt="ECCD SmartTrack"
+                  className="
+                    h-12 w-12
+                    rounded-full
+                    object-cover
+                    drop-shadow-xl
+                  "
                 />
+
                 <div>
                   <h2 className="text-xl font-bold leading-5 text-[#C2570C]">
                     ECCD
                   </h2>
+
                   <p className="text-xs font-semibold uppercase text-[#C2570C]/70">
                     SmartTrack
                   </p>
@@ -169,43 +262,85 @@ export default function ParentSidebar({
               </div>
             )}
 
-            {/* Desktop collapse toggle */}
+            {/* Desktop collapse */}
             <button
+              type="button"
               onClick={toggleSidebar}
-              className="hidden lg:block cursor-pointer p-2 text-[#C2570C] transition hover:drop-shadow-md"
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-expanded={!isCollapsed}
+              className="
+                hidden
+                min-h-11 min-w-11
+                items-center justify-center
+                rounded-lg
+                text-[#C2570C]
+                transition
+                hover:bg-orange-50
+
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[#C2570C]
+                focus-visible:ring-offset-2
+
+                lg:flex
+              "
             >
-              {isCollapsed ? <PanelLeftOpen /> : <PanelLeftClose />}
+              {isCollapsed ? (
+                <PanelLeftOpen aria-hidden="true" className="h-5 w-5" />
+              ) : (
+                <PanelLeftClose aria-hidden="true" className="h-5 w-5" />
+              )}
             </button>
 
-            {/* Mobile close button */}
+            {/* Mobile close */}
             <button
+              ref={closeButtonRef}
+              type="button"
               onClick={onCloseMobile}
-              className="lg:hidden cursor-pointer p-2 text-[#C2570C]"
-              aria-label="Close sidebar"
+              aria-label="Close navigation"
+              className="
+                flex
+                min-h-11 min-w-11
+                items-center justify-center
+                rounded-lg
+                text-[#C2570C]
+                transition
+                hover:bg-orange-50
+
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[#C2570C]
+                focus-visible:ring-offset-2
+
+                lg:hidden
+              "
             >
-              <X />
+              <X aria-hidden="true" className="h-5 w-5" />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="mt-8 flex flex-col gap-2">
+          <nav
+            aria-label="Parent navigation"
+            className="mt-8 flex flex-col gap-2"
+          >
             {PARENT_NAV_ITEMS.map(
               ({ icon: Icon, label, href, activePaths }) => (
                 <SidebarLink
                   key={href}
-                  icon={<Icon size={20} />}
+                  icon={<Icon aria-hidden="true" size={20} />}
                   label={label}
                   href={href}
                   activePaths={activePaths}
                   collapsed={isMobileOpen ? false : isCollapsed}
+                  onNavigate={onCloseMobile}
                 />
               ),
             )}
           </nav>
 
-          {/* Footer profile box */}
-          <div className="mt-auto relative" ref={profileMenuRef}>
+          {/* Profile */}
+          <div className="relative mt-auto" ref={profileMenuRef}>
             <ProfileBox
               collapsed={isMobileOpen ? false : isCollapsed}
               name={user?.name}
@@ -213,53 +348,111 @@ export default function ParentSidebar({
               avatarUrl={user?.avatarUrl}
               onClick={toggleProfileMenu}
               aria-expanded={isProfileMenuOpen}
-              aria-haspopup="true"
+              aria-haspopup="menu"
             />
 
             {isProfileMenuOpen && (
               <div
+                role="menu"
+                aria-label="Profile menu"
                 className={`
-      absolute z-60 rounded-3xl border border-slate-200
-      bg-white p-4 shadow-xl
+                  absolute z-60
+                  rounded-3xl
+                  border border-slate-200
+                  bg-white
+                  p-4
+                  shadow-xl
 
-      ${
-        isCollapsed && !isMobileOpen
-          ? "bottom-0 left-full ml-3 w-72"
-          : "bottom-20 left-0 right-0"
-      }
-    `}
+                  ${
+                    isCollapsed && !isMobileOpen
+                      ? "bottom-0 left-full ml-3 w-72"
+                      : "bottom-20 left-0 right-0"
+                  }
+                `}
               >
+                {/* User information */}
                 <div className="mb-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-lg font-semibold text-[#C2570C]">
+                  <div
+                    aria-hidden="true"
+                    className="
+                      flex h-12 w-12
+                      items-center justify-center
+                      rounded-full
+                      bg-orange-100
+                      text-lg font-semibold
+                      text-[#C2570C]
+                    "
+                  >
                     {getInitials(user?.name)}
                   </div>
 
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-900">
                       {user?.name ?? "User"}
                     </p>
 
-                    <p className="text-xs text-slate-500">
-                      {user?.role ?? "Member"}
+                    <p className="truncate text-xs text-slate-500">
+                      Parent/Guardian
                     </p>
                   </div>
                 </div>
 
+                {/* Settings */}
                 <button
                   type="button"
+                  role="menuitem"
                   onClick={handleSettings}
-                  className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-800 transition hover:border-orange-300 hover:bg-orange-50"
+                  className="
+                    flex min-h-11 w-full
+                    items-center gap-3
+                    rounded-2xl
+                    border border-slate-200
+                    bg-slate-50
+                    px-4 py-3
+                    text-left
+                    text-sm font-semibold
+                    text-slate-800
+                    transition
+                    hover:border-orange-300
+                    hover:bg-orange-50
+
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-[#C2570C]
+                    focus-visible:ring-offset-2
+                  "
                 >
-                  <Settings size={18} />
+                  <Settings aria-hidden="true" size={18} />
                   Settings
                 </button>
 
+                {/* Logout */}
                 <button
                   type="button"
+                  role="menuitem"
                   onClick={handleLogout}
-                  className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-800 transition hover:border-red-300 hover:bg-red-50"
+                  className="
+                    mt-3
+                    flex min-h-11 w-full
+                    items-center gap-3
+                    rounded-2xl
+                    border border-slate-200
+                    bg-white
+                    px-4 py-3
+                    text-left
+                    text-sm font-semibold
+                    text-slate-800
+                    transition
+                    hover:border-red-300
+                    hover:bg-red-50
+
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-red-500
+                    focus-visible:ring-offset-2
+                  "
                 >
-                  <LogOut size={18} />
+                  <LogOut aria-hidden="true" size={18} />
                   Logout
                 </button>
               </div>
@@ -271,7 +464,14 @@ export default function ParentSidebar({
   );
 }
 
-function SidebarLink({ icon, label, href, collapsed, activePaths = [href] }) {
+function SidebarLink({
+  icon,
+  label,
+  href,
+  collapsed,
+  activePaths = [href],
+  onNavigate,
+}) {
   const location = useLocation();
 
   const isActive = activePaths.some(
@@ -282,24 +482,36 @@ function SidebarLink({ icon, label, href, collapsed, activePaths = [href] }) {
   return (
     <Link
       to={href}
+      onClick={onNavigate}
+      aria-current={isActive ? "page" : undefined}
+      aria-label={collapsed ? label : undefined}
+      title={collapsed ? label : undefined}
       className={`
         group
-        flex w-full items-center rounded-lg p-3
-        transition-all duration-200
-        cursor-pointer
+        flex min-h-11 w-full
+        items-center
+        rounded-lg
+        p-3
+        transition-colors duration-200
+
+        focus-visible:outline-none
+        focus-visible:ring-2
+        focus-visible:ring-[#C2570C]
+        focus-visible:ring-offset-2
+
         ${
           isActive
             ? "bg-[#C2570C] text-white shadow-md"
             : "text-gray-700 hover:bg-orange-800 hover:text-white"
         }
+
         ${collapsed ? "justify-center" : "gap-3"}
       `}
-      title={collapsed ? label : undefined}
     >
-      {icon}
+      <span className="shrink-0">{icon}</span>
 
       {!collapsed && (
-        <span className="font-medium whitespace-nowrap">{label}</span>
+        <span className="whitespace-nowrap font-medium">{label}</span>
       )}
     </Link>
   );

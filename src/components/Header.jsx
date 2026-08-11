@@ -3,7 +3,12 @@ import ReminderBanner from "../components/reminderBanner.jsx";
 import Logo from "../assets/ECCDST_Logo.png";
 import { CalendarDays, Bell, Play, Pause, Menu } from "lucide-react";
 
-export default function Header({ reminder, isSideBarOpen, onOpenSidebar }) {
+export default function Header({
+  reminder,
+  isSideBarOpen,
+  onOpenSidebar,
+  mobileMenuButtonRef,
+}) {
   const [isRecording, setIsRecording] = useState(false);
 
   const toggleAttendance = () => {
@@ -20,13 +25,15 @@ export default function Header({ reminder, isSideBarOpen, onOpenSidebar }) {
         {/* Left: Mobile hamburger + spacer */}
         <div className="flex flex-1 items-center gap-2">
           <button
+            ref={mobileMenuButtonRef}
             type="button"
             onClick={onOpenSidebar}
-            className="lg:hidden rounded-lg p-2.5 text-slate-600 transition hover:bg-slate-100 hover:text-orange-800 cursor-pointer"
             aria-expanded={isSideBarOpen}
             aria-controls="app-sidebar"
+            aria-label="Open navigation"
+            className="lg:hidden flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
           >
-            <Menu className="h-5 w-5" />
+            <Menu aria-hidden="true" className="h-5 w-5" />
           </button>
           {!isSideBarOpen ? (
             <div className="flex items-center gap-2">

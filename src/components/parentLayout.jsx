@@ -1,29 +1,52 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import ParentHeader from "./parentHeader";
 import ParentSidebar from "./parentSidebar";
 
 export default function ParentLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
+  const mobileMenuButtonRef = useRef(null);
+
+  const openMobileSidebar = () => {
+    setIsMobileSidebarOpen(true);
+  };
+
+  const closeMobileSidebar = () => {
+    setIsMobileSidebarOpen(false);
+
+    requestAnimationFrame(() => {
+      mobileMenuButtonRef.current?.focus();
+    });
+  };
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed((prev) => !prev);
+  };
+
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
+    <div className="flex h-dvh w-full overflow-hidden">
       <ParentSidebar
         isMobileOpen={isMobileSidebarOpen}
-        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        onCloseMobile={closeMobileSidebar}
         collapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed((s) => !s)}
+        onToggleCollapse={toggleSidebarCollapse}
       />
 
-      <div className="flex flex-1 flex-col min-w-0">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <ParentHeader
           reminder="Welcome to your parent portal. Stay updated on your child's progress."
-          isSideBarOpen={isMobileSidebarOpen || !isSidebarCollapsed}
-          onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+          isSidebarOpen={isMobileSidebarOpen}
+          onOpenSidebar={openMobileSidebar}
+          mobileMenuButtonRef={mobileMenuButtonRef}
         />
 
-        <main className="flex-1 overflow-y-auto bg-gray-100">
+        <main
+          id="main-content"
+          className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-gray-100"
+        >
           <Outlet />
         </main>
       </div>
