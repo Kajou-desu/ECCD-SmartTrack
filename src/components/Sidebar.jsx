@@ -66,27 +66,21 @@ export default function Sidebar({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const { user, logout } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
 
   const sidebarRef = useRef(null);
   const mobileCloseButtonRef = useRef(null);
-  const mobileOpenButtonRef = useRef(null);
   const profileMenuRef = useRef(null);
 
   const adminOnly = canManageAccounts(user?.role);
 
   const navItems = adminOnly ? [...NAV_ITEMS, ...ADMIN_NAV_ITEMS] : NAV_ITEMS;
 
-  useEffect(() => {
-    onCloseMobile?.();
-  }, [location.pathname, onCloseMobile]);
+  // Close sidebar when navigation links are clicked (via onNavigate callback)
 
   useEffect(() => {
     if (isMobileOpen) {
       mobileCloseButtonRef.current?.focus();
-    } else {
-      mobileOpenButtonRef.current?.focus();
     }
   }, [isMobileOpen]);
 
@@ -154,16 +148,13 @@ export default function Sidebar({
     <>
       {/* Mobile backdrop */}
       {isMobileOpen && (
-        <button
-          type="button"
+        <div
           aria-label="Close navigation"
-          onClick={onCloseMobile}
-          className="
-            fixed inset-0 z-40
-            cursor-default
-            bg-black/50
-            lg:hidden
-          "
+          onClick={(e) => {
+            e.stopPropagation();
+            onCloseMobile?.();
+          }}
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden cursor-pointer"
         />
       )}
 
@@ -171,16 +162,8 @@ export default function Sidebar({
         id="app-sidebar"
         ref={sidebarRef}
         aria-label="Main navigation"
-        className={`
-          fixed inset-y-0 left-0 z-50
-          h-dvh
-          border-r border-slate-200
-          bg-[#f8f9ff]
-          shadow-md
-
-          transition-[width,transform]
-          duration-300
-          ease-in-out
+        className={`fixed inset-y-0 left-0 z-50 h-dvh border-r border-slate-200 bg-[#f8f9ff] shadow-md
+          transition-[width,transform] duration-300 ease-in-out
 
           ${isMobileOpen ? "translate-x-0 w-72" : "-translate-x-full w-72"}
 
@@ -228,20 +211,7 @@ export default function Sidebar({
               onClick={handleToggleSidebar}
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               aria-expanded={!collapsed}
-              className="
-                hidden
-                min-h-11 min-w-11
-                items-center justify-center
-                rounded-lg
-                text-[#C2570C]
-                transition
-                hover:bg-orange-50
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-[#C2570C]
-                focus-visible:ring-offset-2
-                lg:flex
-              "
+              className="hidden min-h-11 min-w-11 items-center justify-center rounded-lg text-[#C2570C] transition hover:bg-orange-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2 lg:flex cursor-pointer"
             >
               {collapsed ? (
                 <PanelLeftOpen aria-hidden="true" className="h-5 w-5" />
@@ -256,20 +226,7 @@ export default function Sidebar({
               type="button"
               onClick={onCloseMobile}
               aria-label="Close navigation"
-              className="
-                flex
-                min-h-11 min-w-11
-                items-center justify-center
-                rounded-lg
-                text-[#C2570C]
-                transition
-                hover:bg-orange-50
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-[#C2570C]
-                focus-visible:ring-offset-2
-                lg:hidden
-              "
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-[#C2570C] transition hover:bg-orange-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2 lg:hidden"
             >
               <X aria-hidden="true" className="h-5 w-5" />
             </button>
@@ -369,6 +326,7 @@ export default function Sidebar({
                     focus-visible:outline-none
                     focus-visible:ring-2
                     focus-visible:ring-[#C2570C]
+                    cursor-pointer
                   "
                 >
                   <Settings aria-hidden="true" size={18} />
@@ -395,6 +353,7 @@ export default function Sidebar({
                     focus-visible:outline-none
                     focus-visible:ring-2
                     focus-visible:ring-red-500
+                    cursor-pointer
                   "
                 >
                   <LogOut aria-hidden="true" size={18} />

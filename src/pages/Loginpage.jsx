@@ -23,10 +23,10 @@ export default function Login() {
   const [forgotEmail, setForgotEmail] = useState("");
 
   const devCredentials = {
-    email: "demo@eccd.com",
-    password: "P@ssw0rd123",
-    name: "Demo User",
-    role: "Admin",
+    email: "teacher@eccd.com",
+    password: "TeacherPass123",
+    name: "Sample Teacher",
+    role: "Teacher",
   };
 
   const sampleParentCredentials = {

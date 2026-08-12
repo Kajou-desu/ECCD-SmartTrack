@@ -12,10 +12,10 @@ export default function Layout() {
 
   const closeMobileSidebar = () => {
     setIsMobileSidebarOpen(false);
+  };
 
-    requestAnimationFrame(() => {
-      mobileMenuButtonRef.current?.focus();
-    });
+  const openMobileSidebar = () => {
+    setIsMobileSidebarOpen(true);
   };
 
   return (
@@ -29,8 +29,8 @@ export default function Layout() {
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <Header
-          isSideBarOpen={isMobileSidebarOpen}
-          onOpenSidebar={() => setIsMobileSidebarOpen(true)}
+          isSidebarOpen={isMobileSidebarOpen}
+          onOpenSidebar={openMobileSidebar}
           mobileMenuButtonRef={mobileMenuButtonRef}
         />
 
