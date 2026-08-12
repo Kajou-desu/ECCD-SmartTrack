@@ -111,7 +111,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="h-[calc(100vh-70px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
+    <div className="h-screen flex flex-col gap-6 bg-[#f8f9ff] p-6">
       <div className="flex flex-col justify-between items-center sm:flex-row gap-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">

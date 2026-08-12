@@ -4,7 +4,7 @@ import { useDebounce } from "../hooks/useDebounce";
 import { usePagination } from "../hooks/usePagination";
 import { apiClient } from "../api/client.js";
 import { StudentTableSkeleton } from "../components/LoadingSkeleton";
-import { initialStudents } from "../data/mockData.js";
+import { getAllStudentsData } from "../data/mockData.js";
 import {
   UserRoundPlus,
   SquareArrowRightExit,
@@ -15,6 +15,32 @@ import {
 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 10;
+
+const initialStudents = getAllStudentsData().map(({ student, guardians }) => {
+  const guardian = guardians?.[0];
+
+  const today = new Date();
+  const birthDate = new Date(student.birthday);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+
+  return {
+    ...student,
+    age,
+    status: student.status.toLowerCase().includes("active")
+      ? "active"
+      : "inactive",
+    guardianName: guardian?.name ?? "N/A",
+    guardianPhone: guardian?.phone ?? "N/A",
+  };
+});
 
 export default function StudentInfo() {
   const navigate = useNavigate();
@@ -349,7 +375,7 @@ function StudentListRow({
 
       <td className="p-4">
         <span className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium">
-          {age}
+          {age} years old
         </span>
       </td>
 

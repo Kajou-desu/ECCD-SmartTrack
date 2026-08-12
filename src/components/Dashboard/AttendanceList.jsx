@@ -1,40 +1,115 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, X, AlertCircle, ArrowRight } from "lucide-react";
+import { Check, ArrowRight } from "lucide-react";
 import { initialRecords } from "../../data/mockData.js";
 
+// Helpers
+function timeToMinutes(time) {
+  if (!time) return 0;
+
+  const [value, period] = time.trim().split(/\s+/);
+  let [hours, minutes] = value.split(":").map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return 0;
+  }
+  if (period?.toUpperCase() === "AM" && hours === 12) {
+    hours = 0;
+  }
+  if (period?.toUpperCase() === "PM" && hours !== 12) {
+    hours += 12;
+  }
+  return hours * 60 + minutes;
+}
+
 export function AttendanceList() {
-  const [attendanceData, setAttendanceData] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setAttendanceData(initialRecords);
-    }, 150);
+  const [selectedPeriod, setSelectedPeriod] = useState("am");
 
-    return () => window.clearTimeout(timer);
-  }, []);
+  const filteredData = useMemo(() => {
+    return initialRecords
+      .filter((attendance) => {
+        // Only show present records
+        if (attendance.status !== "present") {
+          return false;
+        }
+        if (selectedPeriod === "am") {
+          return attendance.time?.toUpperCase().includes("AM");
+        }
+
+        if (selectedPeriod === "pm") {
+          return attendance.time?.toUpperCase().includes("PM");
+        }
+        return true;
+      })
+      .sort((a, b) => timeToMinutes(b.time) - timeToMinutes(a.time));
+  }, [selectedPeriod]);
 
   return (
-    <div className="flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm p-6 gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full">
-      <div className="flex items-center flex-nowrap justify-between">
-        <h4 className="font-semibold text-lg sm:text-xl text-gray-800">
-          Today's Attendance
-        </h4>
-        <button onClick={() => navigate("/attendance")} className="flex items-center text-sm text-[#C2570C] hover:text-orange-800 cursor-pointer">
-          See Attendance
-          <ArrowRight className="h-4 w-4" />
-        </button>
+    <div className="flex h-full min-h-0 flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg">
+      {/* Header */}
+      <div className="flex shrink-0 flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <h4 className="text-lg font-semibold text-gray-800 sm:text-xl">
+            Today's Attendance
+          </h4>
+
+          <button
+            type="button"
+            onClick={() => navigate("/attendance")}
+            className="flex shrink-0 items-center text-sm sm:text-xs text-[#C2570C] transition-colors hover:text-orange-800 cursor-pointer"
+          >
+            <span>See Attendance</span>
+
+            <ArrowRight aria-hidden="true" className="ml-1 h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Morning / Afternoon Filter */}
+
+        <div className="flex justify-center gap-2" role="group" aria-label="Attendance period">
+          <button
+            type="button"
+            aria-pressed={selectedPeriod === "am"}
+            onClick={() => setSelectedPeriod("am")}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors w-full cursor-pointer ${
+              selectedPeriod === "am"
+                ? "bg-[#C2570C] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            AM
+          </button>
+
+          <button
+            type="button"
+            aria-pressed={selectedPeriod === "pm"}
+            onClick={() => setSelectedPeriod("pm")}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors w-full cursor-pointer ${
+              selectedPeriod === "pm"
+                ? "bg-[#C2570C] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            PM
+          </button>
+        </div>
       </div>
-      <div className="overflow-y-auto space-y-2 pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
-        {attendanceData.length > 0 ? (
-          attendanceData.map((attendance) => (
+
+      <div
+        className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-2 max-h-75 md:max-h-none
+          [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 hover:[&::-webkit-scrollbar-thumb]:bg-gray-400"
+        role="list"
+        aria-label="Today's present attendance records"
+      >
+        {filteredData.length > 0 ? (
+          filteredData.map((attendance) => (
             <AttendanceListItem key={attendance.id} attendance={attendance} />
           ))
         ) : (
-          <div className="flex items-center justify-center h-24">
-            <p className="text-sm text-gray-400 italic">
-              No attendance records
+          <div className="flex h-24 items-center justify-center">
+            <p className="text-sm italic text-gray-400">
+              No present attendance records
             </p>
           </div>
         )}
@@ -44,54 +119,30 @@ export function AttendanceList() {
 }
 
 function AttendanceListItem({ attendance }) {
-  const statusConfig = {
-    present: {
-      bgColor: "bg-green-50",
-      hoverColor: "hover:bg-green-100",
-      borderColor: "border-green-200",
-      iconBgColor: "bg-green-200",
-      iconColor: "text-green-700",
-      textHoverColor: "group-hover:text-green-700",
-      icon: Check,
-    },
-    absent: {
-      bgColor: "bg-red-50",
-      hoverColor: "hover:bg-red-100",
-      borderColor: "border-red-200",
-      iconBgColor: "bg-red-200",
-      iconColor: "text-red-700",
-      textHoverColor: "group-hover:text-red-700",
-      icon: X,
-    },
-    excused: {
-      bgColor: "bg-yellow-50",
-      hoverColor: "hover:bg-yellow-100",
-      borderColor: "border-yellow-200",
-      iconBgColor: "bg-yellow-200",
-      iconColor: "text-yellow-700",
-      textHoverColor: "group-hover:text-yellow-700",
-      icon: AlertCircle,
-    },
-  };
-
-  const config = statusConfig[attendance.status] || statusConfig.present;
-  const IconComponent = config.icon;
-
   return (
     <div
-      className={`flex items-center justify-between p-3 ${config.bgColor} ${config.hoverColor} rounded-lg transition-colors duration-200 border ${config.borderColor} group`}
+      role="listitem"
+      aria-label={`Present: ${attendance.name}, ${attendance.time}`}
+      className="group flex items-center justify-between rounded-lg border p-3 transition-colors duration-200 bg-green-50 hover:bg-green-100 border-green-200"
     >
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className={`p-2 ${config.iconBgColor} rounded-full shrink-0`}>
-          <IconComponent className={`h-4 w-4 ${config.iconColor}`} />
-        </div>
-        <p
-          className={`text-sm font-medium text-gray-800 truncate ${config.textHoverColor} transition-colors`}
+      {/* Student Information */}
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div
+          className="shrink-0 rounded-full p-2 bg-green-200"
+          aria-hidden="true"
         >
+          <Check className="h-4 w-4 text-green-700" />
+        </div>
+
+        <p className="min-w-0 truncate text-sm font-medium text-gray-800 transition-colors group-hover:text-green-700">
           {attendance.name}
         </p>
+
+        <span className="sr-only">Present</span>
       </div>
-      <p className="text-xs text-gray-500 whitespace-nowrap ml-2 shrink-0">
+
+      {/* Attendance Time */}
+      <p className="ml-2 shrink-0 whitespace-nowrap text-xs text-gray-500">
         {attendance.time}
       </p>
     </div>

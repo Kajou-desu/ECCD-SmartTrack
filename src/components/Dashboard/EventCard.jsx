@@ -1,64 +1,129 @@
+import { useState } from "react";
 import { CalendarFold, Cake } from "lucide-react";
+import { getAllStudentsData } from "../../data/mockData.js";
 
 export function EventCard({ events }) {
-  const hasBirthdays = events.birthdays.length > 0;
+  const [selectedEvent, setSelectedEvent] = useState("birthdays");
+
+  const currentMonth = new Date().getMonth();
+
+  const birthdays = getAllStudentsData()
+    .map(({ student }) => ({
+      id: student.id,
+      name: student.name,
+      date: student.birthday,
+      photo: student.photo,
+    }))
+    .sort((a, b) => {
+      const monthA = new Date(a.date).getMonth();
+      const monthB = new Date(b.date).getMonth();
+
+      const distanceA = (monthA - currentMonth + 12) % 12;
+      const distanceB = (monthB - currentMonth + 12) % 12;
+
+      return distanceA - distanceB;
+    });
+
+  const hasBirthdays = birthdays.length > 0;
   const hasHolidays = events.holidays.length > 0;
 
+  const displayedEvents =
+    selectedEvent === "birthdays" ? birthdays : events.holidays;
+
   return (
-    <div className="flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm p-6 gap-2 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:h-full">
-      <div className="flex items-center gap-2">
-        <div>
-          <CalendarFold className="text-[#C2570C] h-6 w-6" />
-        </div>
-        <h4 className="font-semibold text-lg sm:text-xl text-gray-800">Events</h4>
+    <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg sm:h-full">
+      <div className="flex shrink-0 items-center gap-2">
+        <CalendarFold className="h-6 w-6 text-[#C2570C]" />
+        <h4 className="text-lg font-semibold text-gray-800 sm:text-xl">
+          Events
+        </h4>
       </div>
 
-      <div className="max-h-80 lg:max-h-none lg:flex-1 lg:min-h-0 overflow-y-auto space-y-2 pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
-        <div className="space-y-2">
-          <h6 className="text-xs font-semibold uppercase tracking-widest text-gray-500">Birthdays</h6>
-          {hasBirthdays ? (
-            events.birthdays.map((birthday) => (
+      <div className="flex shrink-0 gap-2" role="group" aria-label="Event type">
+        <button
+          type="button"
+          aria-pressed={selectedEvent === "birthdays"}
+          onClick={() => setSelectedEvent("birthdays")}
+          className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors w-full cursor-pointer ${
+            selectedEvent === "birthdays"
+              ? "bg-[#C2570C] text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          Birthdays
+        </button>
+
+        <button
+          type="button"
+          aria-pressed={selectedEvent === "holidays"}
+          onClick={() => setSelectedEvent("holidays")}
+          className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors w-full cursor-pointer ${
+            selectedEvent === "holidays"
+              ? "bg-[#C2570C] text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          Holidays
+        </button>
+      </div>
+
+      <div className="min-h-0 flex-1 max-h-80 space-y-2 overflow-y-auto pr-2 lg:max-h-none [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
+        {selectedEvent === "birthdays" ? (
+          hasBirthdays ? (
+            displayedEvents.map((birthday) => (
               <div
                 key={birthday.id}
-                className="flex items-center gap-4 p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors duration-200"
+                className="flex items-center gap-4 rounded-lg bg-orange-50 p-3 transition-colors duration-200 hover:bg-orange-100"
               >
                 <img
-                  src="https://placehold.co/40x40"
+                  src={birthday.photo || "https://placehold.co/40x40"}
                   alt={birthday.name}
-                  className="h-10 w-10 rounded-full object-cover shrink-0"
+                  className="h-10 w-10 shrink-0 rounded-full object-cover"
                 />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{birthday.name}</p>
-                  <p className="text-xs text-gray-500">{birthday.date}</p>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-gray-800">
+                    {birthday.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(birthday.date).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
                 </div>
-                <Cake className="h-5 w-5 text-[#C2570C] shrink-0" />
+
+                <Cake className="h-5 w-5 shrink-0 text-[#C2570C]" />
               </div>
             ))
           ) : (
-            <p className="text-sm text-gray-400 italic">No birthdays this week</p>
-          )}
-        </div>
-
-        <div className="h-px bg-gray-200" />
-
-        <div className="space-y-2">
-          <h6 className="text-xs font-semibold uppercase tracking-widest text-gray-500">Holidays</h6>
-          {hasHolidays ? (
-            events.holidays.map((holiday) => (
-              <div
-                key={holiday.id}
-                className="flex items-center justify-between gap-4 p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors duration-200"
-              >
-                <div>
-                  <p className="text-sm font-medium text-gray-800">{holiday.name}</p>
-                  <p className="text-xs text-gray-500">{holiday.month} {holiday.day}</p>
-                </div>
+            <div className="flex h-24 items-center justify-center">
+              <p className="text-sm italic text-gray-400">No birthdays found</p>
+            </div>
+          )
+        ) : hasHolidays ? (
+          displayedEvents.map((holiday) => (
+            <div
+              key={holiday.id}
+              className="flex items-center justify-between gap-4 rounded-lg bg-slate-50 p-3 transition-colors duration-200 hover:bg-slate-100"
+            >
+              <div>
+                <p className="text-sm font-medium text-gray-800">
+                  {holiday.name}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {holiday.month} {holiday.day}
+                </p>
               </div>
-            ))
-          ) : (
-            <p className="text-sm text-gray-400 italic">No upcoming holidays found</p>
-          )}
-        </div>
+            </div>
+          ))
+        ) : (
+          <div className="flex h-24 items-center justify-center">
+            <p className="text-sm italic text-gray-400">
+              No upcoming holidays found
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
