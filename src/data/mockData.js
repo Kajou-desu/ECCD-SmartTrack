@@ -1,3 +1,18 @@
+// Daily theme mock data
+export const DAILY_THEME = {
+    letter: "Aa",
+    label: "Letter A",
+    subtitle: "Today's featured letter",
+    title: "Alphabet Learning: Module 1",
+    description:
+        "Focusing on phonetic sounds of vowels and identifying everyday objects that begin with the letter A.",
+    objectives: [
+        "Identify the letter 'A' in five different words.",
+        "Trace uppercase and lowercase 'A' correctly.",
+        "Recognize objects beginning with the letter 'A'.",
+    ],
+};
+
 // Mock data for attendance records
 export const initialRecords = [
     { id: 1, name: "Chloe Garcia", status: "present", time: "7:58 am" },

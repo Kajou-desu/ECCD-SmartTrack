@@ -9,35 +9,12 @@ import { AttendanceList } from "../components/Dashboard/AttendanceList";
 import { EventCard } from "../components/Dashboard/EventCard";
 import { UsersRound, UserCheck, UserX, CalendarDays } from "lucide-react";
 
-const fetchDashboardTheme = async () => {
-  await new Promise((resolve) => window.setTimeout(resolve, 200));
-
-  return {
-    letter: "Aa",
-    label: "Letter A",
-    subtitle: "Today's featured letter",
-    title: "Alphabet Learning: Module 1",
-    description:
-      "Focusing on phonetic sounds of vowels and identifying everyday objects that begin with the letter A.",
-    objectives: [
-      "Identify the letter 'A' in five different words.",
-      "Trace uppercase and lowercase 'A' correctly.",
-      "Recognize objects beginning with the letter 'A'.",
-    ],
-  };
-};
-
 export default function Dashboard() {
+  // Get user name and time of day for dashboard greetings 
   const { user } = useAuth();
-
   const firstName = user?.name?.split(" ")[0] ?? "Educator";
-
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
-  const [dailyTheme, setDailyTheme] = useState(null);
-  const [dashboardError, setDashboardError] = useState("");
-
   const currentHour = currentDateTime.getHours();
-
   const greeting =
     currentHour < 12
       ? "Good morning"
@@ -53,36 +30,11 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    let ignore = false;
-
-    const fetchDashboardData = async () => {
-      try {
-        const [theme] = await ([fetchDashboardTheme()]);
-
-        if (!ignore) {
-          setDailyTheme(theme);
-          setDashboardError("");
-        }
-      } catch (error) {
-        if (!ignore) {
-          console.error(error);
-          setDashboardError("Unable to load today's highlights.");
-        }
-      }
-    };
-
-    fetchDashboardData();
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden bg-[#f8f9ff] p-6">
       {/* Page heading */}
       <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
+        {/* Dashboard greeting */}
         <div>
           <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">
             {greeting}, {firstName}!
@@ -92,7 +44,7 @@ export default function Dashboard() {
             Here's what's happening at {LOCATION_CONFIG.name} today.
           </p>
         </div>
-
+        {/* Weather and time card */}
         <div className="flex shrink-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-sm sm:gap-4">
           <div className="flex flex-col">
             <p className="text-xs font-bold uppercase text-orange-900/75">
@@ -122,13 +74,6 @@ export default function Dashboard() {
           />
         </div>
       </div>
-
-      {/* Error message */}
-      {dashboardError ? (
-        <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
-          {dashboardError}
-        </div>
-      ) : null}
 
       {/* Statistics */}
       <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
@@ -164,7 +109,7 @@ export default function Dashboard() {
       {/* Dashboard cards */}
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-4 lg:overflow-hidden">
         <div className="min-h-0 lg:col-span-2">
-          {dailyTheme ? <DailyThemeCard theme={dailyTheme} /> : null}
+          <DailyThemeCard />
         </div>
 
         <div className="min-h-0 lg:col-span-1">

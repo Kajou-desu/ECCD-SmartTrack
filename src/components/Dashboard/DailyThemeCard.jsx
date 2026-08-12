@@ -1,15 +1,24 @@
+import { DAILY_THEME } from "../../data/mockData";
 import { ArrowRight, CircleCheck } from "lucide-react";
 
-export function DailyThemeCard({ theme }) {
+export function DailyThemeCard() {
+  const theme = DAILY_THEME;
+
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full">
       <div className="flex flex-col md:flex-row h-full">
         <div className="flex min-w-45 flex-col items-center justify-center bg-[#e5eeff] p-8">
           <div className="flex h-28 w-28 items-center justify-center rounded-full bg-white shadow-md">
-            <span className="text-6xl font-extrabold text-[#C2570C]">{theme.letter}</span>
+            <span className="text-6xl font-extrabold text-[#C2570C]">
+              {theme.letter}
+            </span>
           </div>
-          <p className="mt-4 text-lg font-semibold text-orange-700">{theme.label}</p>
-          <p className="mt-1 text-center text-sm text-orange-600">{theme.subtitle}</p>
+          <p className="mt-4 text-lg font-semibold text-orange-700">
+            {theme.label}
+          </p>
+          <p className="mt-1 text-center text-sm text-orange-600">
+            {theme.subtitle}
+          </p>
         </div>
 
         <div className="flex flex-1 flex-col gap-3 p-6">
