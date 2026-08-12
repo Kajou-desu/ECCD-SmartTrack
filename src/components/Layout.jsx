@@ -5,7 +5,6 @@ import Sidebar from "./Sidebar";
 
 export default function Layout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   const mobileMenuButtonRef = useRef(null);
@@ -19,7 +18,7 @@ export default function Layout() {
   };
 
   return (
-    <div className="flex h-dvh w-full overflow-hidden">
+    <div className="fixed inset-0 flex w-full overflow-hidden">
       <Sidebar
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={closeMobileSidebar}
@@ -27,7 +26,7 @@ export default function Layout() {
         onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
       />
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <Header
           isSidebarOpen={isMobileSidebarOpen}
           onOpenSidebar={openMobileSidebar}
@@ -37,7 +36,7 @@ export default function Layout() {
 
         <main
           id="main-content"
-          className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-gray-100"
+          className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-scroll bg-gray-100"
         >
           <Outlet />
         </main>

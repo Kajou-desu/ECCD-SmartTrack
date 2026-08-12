@@ -36,7 +36,6 @@ const fetchDashboardEvents = async () => {
   await new Promise((resolve) => window.setTimeout(resolve, 200));
 
   return {
-    birthdays: [{ id: 1, name: "Emma Johnson", date: "Dec 15" }],
     holidays: [
       { id: 1, month: "JAN", day: "01", name: "New Year's Day" },
       { id: 2, month: "APR", day: "09", name: "Araw ng Kagitingan" },
@@ -46,7 +45,12 @@ const fetchDashboardEvents = async () => {
       { id: 6, month: "AUG", day: "31", name: "National Heroes Day" },
       { id: 7, month: "NOV", day: "01", name: "All Saints' Day" },
       { id: 8, month: "NOV", day: "30", name: "Bonifacio Day" },
-      { id: 9, month: "DEC", day: "08", name: "Feast of the Immaculate Conception" },
+      {
+        id: 9,
+        month: "DEC",
+        day: "08",
+        name: "Feast of the Immaculate Conception",
+      },
       { id: 10, month: "DEC", day: "24", name: "Christmas Eve" },
       { id: 11, month: "DEC", day: "25", name: "Christmas Day" },
       { id: 12, month: "DEC", day: "30", name: "Rizal Day" },
@@ -60,17 +64,22 @@ export default function Dashboard() {
 
   const firstName = user?.name?.split(" ")[0] ?? "Educator";
 
-  const greeting = () => {
-    const currentHour = currentDateTime.getHours();
-    if (currentHour < 12) return "Good morning";
-    if (currentHour < 18) return "Good afternoon";
-    return "Good evening";
-  };
-
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [dailyTheme, setDailyTheme] = useState(null);
-  const [events, setEvents] = useState({ birthdays: [], holidays: [] });
+  const [events, setEvents] = useState({
+    birthdays: [],
+    holidays: [],
+  });
   const [dashboardError, setDashboardError] = useState("");
+
+  const greeting = () => {
+    const currentHour = currentDateTime.getHours();
+
+    if (currentHour < 12) return "Good morning";
+    if (currentHour < 18) return "Good afternoon";
+
+    return "Good evening";
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -111,20 +120,22 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="h-[calc(100vh-75px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
-      <div className="flex flex-col justify-between items-center sm:flex-row gap-6">
+    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden bg-[#f8f9ff] p-6">
+      {/* Page heading */}
+      <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">
             {greeting()}, {firstName}!
           </h1>
+
           <p className="mt-3 text-sm leading-6 text-gray-600">
             Here's what's happening at {LOCATION_CONFIG.name} today.
           </p>
         </div>
 
-        <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-6 py-4 gap-2 sm:gap-4 shadow-sm shrink-0">
+        <div className="flex shrink-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-sm sm:gap-4">
           <div className="flex flex-col">
-            <p className="text-xs font-bold text-orange-900/75 uppercase">
+            <p className="text-xs font-bold uppercase text-orange-900/75">
               {currentDateTime.toLocaleDateString("en-US", {
                 weekday: "long",
                 month: "short",
@@ -133,7 +144,7 @@ export default function Dashboard() {
               })}
             </p>
 
-            <p className="text-lg font-bold text-end text-[#C2570C]">
+            <p className="text-end text-lg font-bold text-[#C2570C]">
               {currentDateTime.toLocaleTimeString("en-US", {
                 hour: "numeric",
                 minute: "2-digit",
@@ -143,7 +154,7 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="mx-1 h-6 w-px bg-slate-200"></div>
+          <div className="mx-1 h-6 w-px bg-slate-200" />
 
           <WeatherCard
             latitude={LOCATION_CONFIG.latitude}
@@ -152,13 +163,15 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Error message */}
       {dashboardError ? (
         <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
           {dashboardError}
         </div>
       ) : null}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* Statistics */}
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         <StatCard
           Icon={UsersRound}
           label="Total Students"
@@ -188,16 +201,17 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid lg:flex-1 lg:min-h-0 grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 lg:overflow-hidden">
-        <div className="lg:col-span-2 min-h-0">
+      {/* Dashboard cards */}
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-4 lg:overflow-hidden">
+        <div className="min-h-0 lg:col-span-2">
           {dailyTheme ? <DailyThemeCard theme={dailyTheme} /> : null}
         </div>
 
-        <div className="lg:col-span-1 min-h-0">
+        <div className="min-h-0 lg:col-span-1">
           <AttendanceList />
         </div>
 
-        <div className="lg:col-span-1 min-h-0">
+        <div className="min-h-0 lg:col-span-1">
           <EventCard events={events} />
         </div>
       </div>
