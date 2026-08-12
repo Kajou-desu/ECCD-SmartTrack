@@ -21,11 +21,11 @@ function timeToMinutes(time) {
   return hours * 60 + minutes;
 }
 
-export function AttendanceList() {
+export default function AttendanceList() {
   const navigate = useNavigate();
 
+  // Filter attendance morning to afternoon
   const [selectedPeriod, setSelectedPeriod] = useState("am");
-
   const filteredData = useMemo(() => {
     return initialRecords
       .filter((attendance) => {
@@ -60,14 +60,17 @@ export function AttendanceList() {
             className="flex shrink-0 items-center text-sm sm:text-xs text-[#C2570C] transition-colors hover:text-orange-800 cursor-pointer"
           >
             <span>See Attendance</span>
-
             <ArrowRight aria-hidden="true" className="ml-1 h-4 w-4" />
           </button>
         </div>
 
-        {/* Morning / Afternoon Filter */}
-
-        <div className="flex justify-center gap-2" role="group" aria-label="Attendance period">
+        {/* Filter buttons */}
+        <div
+          className="flex justify-center gap-2"
+          role="group"
+          aria-label="Attendance period"
+        >
+          {/* Morning */}
           <button
             type="button"
             aria-pressed={selectedPeriod === "am"}
@@ -80,7 +83,7 @@ export function AttendanceList() {
           >
             AM
           </button>
-
+          {/* Afternoon */}
           <button
             type="button"
             aria-pressed={selectedPeriod === "pm"}
@@ -96,6 +99,7 @@ export function AttendanceList() {
         </div>
       </div>
 
+      {/* Attendance item list */}
       <div
         className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-2 max-h-75 md:max-h-none
           [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 hover:[&::-webkit-scrollbar-thumb]:bg-gray-400"

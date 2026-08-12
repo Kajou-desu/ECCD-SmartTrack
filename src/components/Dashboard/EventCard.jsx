@@ -8,6 +8,7 @@ export function EventCard() {
 
   const currentMonth = new Date().getMonth();
 
+  // Get data for student
   const birthdays = getAllStudentsData()
     .map(({ student }) => ({
       id: student.id,
@@ -18,10 +19,8 @@ export function EventCard() {
     .sort((a, b) => {
       const monthA = new Date(a.date).getMonth();
       const monthB = new Date(b.date).getMonth();
-
       const distanceA = (monthA - currentMonth + 12) % 12;
       const distanceB = (monthB - currentMonth + 12) % 12;
-
       return distanceA - distanceB;
     });
 
@@ -32,15 +31,17 @@ export function EventCard() {
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg sm:h-full">
+      {/* Header */}
       <div className="flex shrink-0 items-center gap-2">
         <CalendarFold className="h-6 w-6 text-[#C2570C]" />
-
         <h4 className="text-lg font-semibold text-gray-800 sm:text-xl">
           Events
         </h4>
       </div>
 
+      {/* Filter Button */}
       <div className="flex shrink-0 gap-2" role="group" aria-label="Event type">
+        {/* Birthday */}
         <button
           type="button"
           aria-pressed={selectedEvent === "birthdays"}
@@ -53,7 +54,7 @@ export function EventCard() {
         >
           Birthdays
         </button>
-
+        {/* Holidays */}
         <button
           type="button"
           aria-pressed={selectedEvent === "holidays"}
@@ -68,6 +69,7 @@ export function EventCard() {
         </button>
       </div>
 
+      {/* Event item list */}
       <div className="min-h-0 max-h-80 flex-1 space-y-2 overflow-y-auto pr-2 lg:max-h-none [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
         {selectedEvent === "birthdays" ? (
           hasBirthdays ? (

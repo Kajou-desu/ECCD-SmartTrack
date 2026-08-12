@@ -7,6 +7,7 @@ export function DailyThemeCard() {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full">
       <div className="flex flex-col md:flex-row h-full">
+        {/* Right Panel */}
         <div className="flex min-w-45 flex-col items-center justify-center bg-[#e5eeff] p-8">
           <div className="flex h-28 w-28 items-center justify-center rounded-full bg-white shadow-md">
             <span className="text-6xl font-extrabold text-[#C2570C]">
@@ -21,6 +22,7 @@ export function DailyThemeCard() {
           </p>
         </div>
 
+        {/* Left Panel */}
         <div className="flex flex-1 flex-col gap-3 p-6">
           <div className="self-start rounded-full bg-orange-100 px-3 py-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#C2570C]">

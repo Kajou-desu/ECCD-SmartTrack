@@ -10,7 +10,8 @@ const iconMap = {
   "cloud-lightning": CloudLightning,
 };
 
-export function WeatherCard({ latitude, longitude }) {
+export default function WeatherCard({ latitude, longitude }) {
+  // Weather card state
   const [weather, setWeather] = useState({
     temperature: "--",
     description: "Loading...",
@@ -19,7 +20,7 @@ export function WeatherCard({ latitude, longitude }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [retrying, setRetrying] = useState(false);
-
+  // Weather data call
   const fetchWeather = useCallback(async () => {
     setLoading(true);
     setError(false);
