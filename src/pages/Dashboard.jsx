@@ -10,7 +10,7 @@ import { EventCard } from "../components/Dashboard/EventCard";
 import { UsersRound, UserCheck, UserX, CalendarDays } from "lucide-react";
 
 export default function Dashboard() {
-  // Get user name and time of day for dashboard greetings 
+  // Get user name and time of day for dashboard greetings
   const { user } = useAuth();
   const firstName = user?.name?.split(" ")[0] ?? "Educator";
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -31,7 +31,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden bg-[#f8f9ff] p-6">
+    <div className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-6">
       {/* Page heading */}
       <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
         {/* Dashboard greeting */}
@@ -45,7 +45,7 @@ export default function Dashboard() {
           </p>
         </div>
         {/* Weather and time card */}
-        <div className="flex shrink-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-sm sm:gap-4">
+        <div className="flex shrink-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-sm sm:gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
           <div className="flex flex-col">
             <p className="text-xs font-bold uppercase text-orange-900/75">
               {currentDateTime.toLocaleDateString("en-US", {
@@ -107,16 +107,16 @@ export default function Dashboard() {
       </div>
 
       {/* Dashboard cards */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-4 lg:overflow-hidden">
-        <div className="min-h-0 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-4 lg:overflow-hidden">
+        <div className="lg:col-span-2 lg:min-h-0">
           <DailyThemeCard />
         </div>
 
-        <div className="min-h-0 lg:col-span-1">
+        <div className="lg:col-span-1 lg:min-h-0">
           <AttendanceList />
         </div>
 
-        <div className="min-h-0 lg:col-span-1">
+        <div className="lg:col-span-1 lg:min-h-0">
           <EventCard />
         </div>
       </div>

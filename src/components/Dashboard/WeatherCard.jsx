@@ -10,7 +10,7 @@ const iconMap = {
   "cloud-lightning": CloudLightning,
 };
 
-export default function WeatherCard({ latitude, longitude }) {
+export function WeatherCard({ latitude, longitude }) {
   // Weather card state
   const [weather, setWeather] = useState({
     temperature: "--",
@@ -77,7 +77,7 @@ export default function WeatherCard({ latitude, longitude }) {
   const Icon = weather.icon;
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 ">
       <Icon className="h-8 w-8 text-[#C2570C]" />
       <div className="flex flex-col">
         <span className="text-sm font-bold text-gray-800">

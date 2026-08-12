@@ -1,56 +1,87 @@
 import { useEffect, useMemo, useState } from "react";
-import StatCard from "../components/StatCard";
 import { apiClient } from "../api/client.js";
 import { initialRecords } from "../data/mockData.js";
-import {
-  UsersRound,
-  UserCheck,
-  UserX,
-  Clock,
-  SquareArrowRightExit,
-  Calendar,
-  AlertCircle,
-} from "lucide-react";
+import StatCard from "../components/StatCard";
+import { UsersRound, UserCheck, UserX, CalendarCheck } from "lucide-react";
+
+const STATUS_OPTIONS = [
+  { value: "present", label: "Present" },
+  { value: "absent", label: "Absent" },
+  { value: "excused", label: "Excused" },
+];
+
+const getTodayDate = () => {
+  const today = new Date();
+
+  return today.toISOString().split("T")[0];
+};
+
+const formatDate = (date) => {
+  const dateObject = new Date(`${date}T00:00:00`);
+
+  return dateObject.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 export default function Attendance() {
+  const [selectedDate, setSelectedDate] = useState(getTodayDate);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  });
-  const [saving, setSaving] = useState(null);
+  const [savingId, setSavingId] = useState(null);
+
+  const formattedDate = formatDate(selectedDate);
+
+  const filteredRecords = useMemo(() => {
+    if (filterStatus === "all") {
+      return attendanceRecords;
+    }
+
+    return attendanceRecords.filter((record) => record.status === filterStatus);
+  }, [attendanceRecords, filterStatus]);
+
+  const presentCount = attendanceRecords.filter(
+    (record) => record.status === "present",
+  ).length;
+
+  const absentCount = attendanceRecords.filter(
+    (record) => record.status === "absent",
+  ).length;
+
+  const excusedCount = attendanceRecords.filter(
+    (record) => record.status === "excused",
+  ).length;
 
   useEffect(() => {
     let isMounted = true;
-    Promise.resolve().then(() => {
-      if (isMounted) {
-        setLoading(true);
-        setError("");
-      }
-    });
 
     const fetchAttendance = async () => {
+      setError("");
+
       try {
         const data = await apiClient.getAttendance(selectedDate);
-        if (!isMounted) return;
 
-        if (Array.isArray(data)) {
-          setAttendanceRecords(data);
-        } else if (data?.records) {
-          setAttendanceRecords(data.records);
-        } else {
-          setAttendanceRecords(initialRecords);
+        if (!isMounted) {
+          return;
         }
-      } catch (err) {
-        console.error("Failed to fetch attendance:", err);
-        if (!isMounted) return;
 
-        // Use fallback data and show a warning instead of error screen
+        setAttendanceRecords(data);
+      } catch (error) {
+        console.error(error);
+
+        if (!isMounted) {
+          return;
+        }
+
         setAttendanceRecords(initialRecords);
-        setError("Unable to sync with server. Showing cached data.");
+        setError(
+          "Unable to load attendance from the server. Showing mock data.",
+        );
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -65,25 +96,21 @@ export default function Attendance() {
     };
   }, [selectedDate]);
 
-  const filteredRecords = useMemo(() => {
-    if (filterStatus === "all") return attendanceRecords;
-    return attendanceRecords.filter((record) => record.status === filterStatus);
-  }, [attendanceRecords, filterStatus]);
+  const handleDateChange = (event) => {
+    const nextDate = event.target.value;
 
-  const presentCount = attendanceRecords.filter(
-    (record) => record.status === "present",
-  ).length;
-  const absentCount = attendanceRecords.filter(
-    (record) => record.status === "absent",
-  ).length;
-  const excusedCount = attendanceRecords.filter(
-    (record) => record.status === "excused",
-  ).length;
+    setSelectedDate(nextDate);
+    setAttendanceRecords([]);
+    setLoading(true);
+    setError("");
+    setFilterStatus("all");
+  };
 
   const handleStatusChange = async (id, nextStatus) => {
-    setSaving(id);
-
     const previousRecords = attendanceRecords;
+
+    setSavingId(id);
+    setError("");
 
     setAttendanceRecords((current) =>
       current.map((record) =>
@@ -92,74 +119,84 @@ export default function Attendance() {
     );
 
     try {
-      await apiClient.updateAttendance(id, selectedDate, nextStatus);
-    } catch (err) {
-      console.error("Failed to update attendance:", err);
-      setAttendanceRecords(previousRecords);
-      setError("Failed to save attendance. Your changes were not saved.");
-    } finally {
-      setSaving(null);
-    }
-  };
+      await apiClient.updateAttendance(id, {
+        status: nextStatus,
+        date: selectedDate,
+      });
+    } catch (error) {
+      console.error(error);
 
-  const handleExport = () => {
-    const rows = filteredRecords.map(
-      (record) => `${record.name},${record.status},${record.time}`,
-    );
-    const csv = ["name,status,time", ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "attendance.csv";
-    link.click();
-    window.URL.revokeObjectURL(url);
+      setAttendanceRecords(previousRecords);
+      setError("Unable to update attendance. Please try again.");
+    } finally {
+      setSavingId(null);
+    }
   };
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-70px)] flex items-center justify-center bg-[#f8f9ff] p-6">
-        <div className="text-center">
-          <div className="inline-flex h-12 w-12 animate-spin rounded-full border-4 border-[#C2570C] border-t-transparent mb-4" />
-          <p className="text-gray-600">Loading attendance records...</p>
+      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden bg-[#f8f9ff] p-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">
+            Attendance
+          </h1>
+
+          <p className="mt-2 text-sm text-gray-600">
+            Loading attendance records...
+          </p>
+        </div>
+
+        <div className="flex min-h-0 flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white">
+          <p className="text-sm text-gray-500">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // If no records at all (no data and no error fallback)
-  if (attendanceRecords.length === 0) {
+  if (!attendanceRecords.length) {
     return (
-      <div className="min-h-[calc(100vh-70px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden bg-[#f8f9ff] p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
-              Attendance Record
+            <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">
+              Attendance
             </h1>
-            <p className="mt-1 text-sm text-gray-600">{formattedDate}</p>
+
+            <p className="mt-2 text-sm text-gray-600">{formattedDate}</p>
           </div>
 
-          {/* Date Picker */}
-          <div className="flex items-center gap-2 bg-white rounded-xl border border-gray-200 px-4 py-2 shadow-sm">
-            <Calendar className="h-5 w-5 text-[#C2570C]" />
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="attendance-date"
+              className="text-sm font-medium text-gray-700"
+            >
+              Date
+            </label>
+
             <input
+              id="attendance-date"
               type="date"
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="text-sm font-medium text-gray-800 outline-none"
+              onChange={handleDateChange}
+              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-[#C2570C] focus:ring-2 focus:ring-orange-100"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-center rounded-3xl border-2 border-dashed border-gray-300 bg-white p-12">
-          <div className="text-center max-w-sm">
-            <UsersRound className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">
-              No Attendance Records
-            </h3>
-            <p className="text-gray-500 text-sm">
-              No students are enrolled yet or data is not available for this
-              date.
+        {error ? (
+          <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+            {error}
+          </div>
+        ) : null}
+
+        <div className="flex min-h-0 flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white">
+          <div className="text-center">
+            <p className="font-medium text-gray-700">
+              No attendance records found
+            </p>
+
+            <p className="mt-1 text-sm text-gray-500">
+              There are no attendance records for {formattedDate}.
             </p>
           </div>
         </div>
@@ -167,136 +204,134 @@ export default function Attendance() {
     );
   }
 
-  const selectedDateObj = new Date(selectedDate + "T00:00:00");
-  const formattedDate = selectedDateObj.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
   return (
-    <div className="min-h-[calc(100vh-70px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden bg-[#f8f9ff] p-6">
+      {/* Page heading */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">
-            Attendance Record
+          <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">
+            Attendance
           </h1>
-          <p className="mt-1 text-sm text-gray-600">{formattedDate}</p>
+
+          <p className="mt-2 text-sm text-gray-600">{formattedDate}</p>
         </div>
 
-        {/* Date Picker */}
-        <div className="flex items-center gap-2 bg-white rounded-xl border border-gray-200 px-4 py-2 shadow-sm">
-          <Calendar className="h-5 w-5 text-[#C2570C]" />
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="attendance-date"
+            className="text-sm font-medium text-gray-700"
+          >
+            Date
+          </label>
+
           <input
+            id="attendance-date"
             type="date"
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="text-sm font-medium text-gray-800 outline-none"
+            onChange={handleDateChange}
+            className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 outline-none transition focus:border-[#C2570C] focus:ring-2 focus:ring-orange-100"
           />
         </div>
       </div>
 
-      {error && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <span>{error}</span>
+      {/* Error */}
+      {error ? (
+        <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+          {error}
+        </div>
+      ) : null}
+
+      {/* Statistics */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          label="Total"
+          value={attendanceRecords.length}
+          Icon={UsersRound}
+          color="bg-blue-100 text-blue-600"
+        />
+
+        <StatCard
+          label="Present"
+          value={presentCount}
+          Icon={UserCheck}
+          color="bg-green-100 text-green-600"
+        />
+
+        <StatCard
+          label="Absent"
+          value={absentCount}
+          Icon={UserX}
+          color="bg-red-100 text-red-600"
+        />
+
+        <StatCard
+          label="Excused"
+          value={excusedCount}
+          Icon={CalendarCheck}
+          color="bg-orange-100 text-orange-600"
+        />
+      </div>
+
+      {/* Attendance records */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        {/* Filter */}
+        <div className="flex shrink-0 flex-col gap-3 border-b border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-semibold text-gray-800">Attendance Records</h2>
+
+            <p className="mt-1 text-xs text-gray-500">
+              {filteredRecords.length}{" "}
+              {filteredRecords.length === 1 ? "record" : "records"}
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setError("")}
-            className="text-amber-600 hover:text-amber-800 transition font-bold"
-          >
-            ✕
-          </button>
-        </div>
-      )}
 
-      <div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            Icon={UsersRound}
-            label="Total Students"
-            value={String(attendanceRecords.length)}
-            color="bg-blue-100 text-blue-600"
-          />
-          <StatCard
-            Icon={UserCheck}
-            label="Present Today"
-            value={String(presentCount)}
-            color="bg-green-100 text-green-600"
-          />
-          <StatCard
-            Icon={UserX}
-            label="Absent Today"
-            value={String(absentCount)}
-            color="bg-red-100 text-red-600"
-          />
-          <StatCard
-            Icon={Clock}
-            label="Excused"
-            value={String(excusedCount)}
-            color="bg-orange-100 text-orange-600"
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-col bg-white rounded-3xl p-6 gap-6 border border-gray-200 shadow-sm">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <h3 className="text-lg font-bold">Today's Attendance</h3>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-1">
-              {[
-                { key: "all", label: "All" },
-                { key: "present", label: "Present" },
-                { key: "absent", label: "Absent" },
-                { key: "excused", label: "Excused" },
-              ].map((option) => (
-                <button
-                  key={option.key}
-                  type="button"
-                  onClick={() => setFilterStatus(option.key)}
-                  aria-label={`Filter ${option.label}`}
-                  className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
-                    filterStatus === option.key
-                      ? "bg-[#C2570C] text-white"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={handleExport}
-              disabled={loading}
-              className="flex shrink-0 items-center gap-2 rounded-lg p-2.5 font-semibold text-white bg-[#C2570C] transition sm:px-3 sm:gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => setFilterStatus("all")}
+              className={`cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                filterStatus === "all"
+                  ? "bg-[#C2570C] text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
             >
-              <SquareArrowRightExit className="h-5 w-5" />
-              <span className="hidden sm:inline text-sm">Export</span>
+              All
             </button>
+
+            {STATUS_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setFilterStatus(option.value)}
+                className={`cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                  filterStatus === option.value
+                    ? "bg-[#C2570C] text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredRecords.length > 0 ? (
-            filteredRecords.map((record) => (
-              <AttendanceCard
-                key={record.id}
-                record={record}
-                onMarkStatus={handleStatusChange}
-                isSaving={saving === record.id}
-              />
-            ))
+        {/* Records */}
+        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          {filteredRecords.length ? (
+            <div className="space-y-3">
+              {filteredRecords.map((record) => (
+                <AttendanceCard
+                  key={record.id}
+                  record={record}
+                  onMarkStatus={handleStatusChange}
+                  isSaving={savingId === record.id}
+                />
+              ))}
+            </div>
           ) : (
-            <div className="col-span-full rounded-xl border border-dashed border-gray-200 p-8 text-center">
-              <Clock className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">
-                No records match the selected filter.
+            <div className="flex h-full min-h-32 items-center justify-center">
+              <p className="text-sm italic text-gray-400">
+                No {filterStatus} attendance records found.
               </p>
             </div>
           )}
@@ -307,85 +342,48 @@ export default function Attendance() {
 }
 
 function AttendanceCard({ record, onMarkStatus, isSaving }) {
-  const isPresent = record.status === "present";
-  const statusLabel =
-    record.status.charAt(0).toUpperCase() + record.status.slice(1);
-
   return (
-    <div
-      className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${isSaving ? "opacity-60" : ""}`}
-    >
-      <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gray-200">
-          <span className="text-xl font-bold text-gray-500">
-            {record.name.charAt(0)}
-          </span>
-        </div>
+    <div className="flex flex-col gap-4 rounded-xl border border-gray-200 p-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 items-center gap-3">
+        <img
+          src={record.photo || "https://placehold.co/48x48"}
+          alt={record.name}
+          className="h-12 w-12 shrink-0 rounded-full object-cover"
+        />
 
-        <div className="flex-1 min-w-0">
-          <h4 className="truncate text-lg font-semibold text-gray-800">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-gray-800">
             {record.name}
-          </h4>
-          <p className="text-sm text-gray-500">Arrived at {record.time}</p>
-        </div>
+          </p>
 
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold ${
-            isPresent
-              ? "bg-green-100 text-green-700"
-              : record.status === "excused"
-                ? "bg-amber-100 text-amber-700"
-                : "bg-red-100 text-red-700"
-          }`}
-        >
-          {statusLabel}
-        </span>
+          {record.studentId ? (
+            <p className="mt-1 text-xs text-gray-500">
+              Student ID: {record.studentId}
+            </p>
+          ) : null}
+        </div>
       </div>
 
-      <div className="my-5 h-px bg-gray-200"></div>
+      <div className="flex flex-wrap gap-2">
+        {STATUS_OPTIONS.map((option) => {
+          const isSelected = record.status === option.value;
 
-      <div className="grid grid-cols-3 gap-2">
-        <button
-          type="button"
-          aria-label={`Mark ${record.name} present`}
-          onClick={() => onMarkStatus(record.id, "present")}
-          disabled={isSaving}
-          className={`rounded-xl px-3 py-2.5 text-xs font-semibold text-white transition ${
-            isPresent
-              ? "bg-green-600 hover:bg-green-700"
-              : "bg-gray-400 hover:bg-gray-500"
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          {isSaving ? "..." : "Present"}
-        </button>
-
-        <button
-          type="button"
-          aria-label={`Mark ${record.name} absent`}
-          onClick={() => onMarkStatus(record.id, "absent")}
-          disabled={isSaving}
-          className={`rounded-xl px-3 py-2.5 text-xs font-semibold text-white transition ${
-            record.status === "absent"
-              ? "bg-red-600 hover:bg-red-700"
-              : "bg-gray-400 hover:bg-gray-500"
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          {isSaving ? "..." : "Absent"}
-        </button>
-
-        <button
-          type="button"
-          aria-label={`Mark ${record.name} excused`}
-          onClick={() => onMarkStatus(record.id, "excused")}
-          disabled={isSaving}
-          className={`rounded-xl px-3 py-2.5 text-xs font-semibold text-white transition ${
-            record.status === "excused"
-              ? "bg-amber-600 hover:bg-amber-700"
-              : "bg-gray-400 hover:bg-gray-500"
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          {isSaving ? "..." : "Excused"}
-        </button>
+          return (
+            <button
+              key={option.value}
+              type="button"
+              disabled={isSaving}
+              onClick={() => onMarkStatus(record.id, option.value)}
+              className={`cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                isSelected
+                  ? "bg-[#C2570C] text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              {isSaving && isSelected ? "Saving..." : option.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

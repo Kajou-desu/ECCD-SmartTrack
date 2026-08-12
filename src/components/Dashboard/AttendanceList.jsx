@@ -21,7 +21,7 @@ function timeToMinutes(time) {
   return hours * 60 + minutes;
 }
 
-export default function AttendanceList() {
+export function AttendanceList() {
   const navigate = useNavigate();
 
   // Filter attendance morning to afternoon
@@ -46,7 +46,7 @@ export default function AttendanceList() {
   }, [selectedPeriod]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg">
+    <div className="flex h-full min-h-0 flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Header */}
       <div className="flex shrink-0 flex-col gap-3">
         <div className="flex items-center justify-between gap-3">

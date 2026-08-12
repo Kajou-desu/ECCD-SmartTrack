@@ -30,7 +30,7 @@ export function EventCard() {
   const displayedEvents = selectedEvent === "birthdays" ? birthdays : HOLIDAYS;
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg sm:h-full">
+    <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:h-full">
       {/* Header */}
       <div className="flex shrink-0 items-center gap-2">
         <CalendarFold className="h-6 w-6 text-[#C2570C]" />
