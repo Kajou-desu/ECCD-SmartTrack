@@ -35,7 +35,7 @@ export default function ParentDashboard() {
   }, []);
 
   return (
-    <div className="min-h-[calc(100vh-70px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
+    <div className="min-h-[calc(100vh-75px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
       {/* Header Section */}
       <div className="flex flex-col justify-between items-start sm:flex-row sm:items-center gap-6">
         <div>

@@ -32,6 +32,7 @@ export default function Layout() {
           isSidebarOpen={isMobileSidebarOpen}
           onOpenSidebar={openMobileSidebar}
           mobileMenuButtonRef={mobileMenuButtonRef}
+          reminder="No reminder for today."
         />
 
         <main
