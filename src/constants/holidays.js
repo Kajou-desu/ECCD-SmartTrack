@@ -1,0 +1,20 @@
+export const HOLIDAYS = [
+    { id: 1, month: "JAN", day: "01", name: "New Year's Day" },
+    { id: 2, month: "APR", day: "09", name: "Araw ng Kagitingan" },
+    { id: 3, month: "MAY", day: "01", name: "Labor Day" },
+    { id: 4, month: "JUN", day: "12", name: "Independence Day" },
+    { id: 5, month: "AUG", day: "21", name: "Ninoy Aquino Day" },
+    { id: 6, month: "AUG", day: "31", name: "National Heroes Day" },
+    { id: 7, month: "NOV", day: "01", name: "All Saints' Day" },
+    { id: 8, month: "NOV", day: "30", name: "Bonifacio Day" },
+    {
+        id: 9,
+        month: "DEC",
+        day: "08",
+        name: "Feast of the Immaculate Conception",
+    },
+    { id: 10, month: "DEC", day: "24", name: "Christmas Eve" },
+    { id: 11, month: "DEC", day: "25", name: "Christmas Day" },
+    { id: 12, month: "DEC", day: "30", name: "Rizal Day" },
+    { id: 13, month: "DEC", day: "31", name: "New Year's Eve" },
+];

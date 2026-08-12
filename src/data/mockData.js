@@ -12,6 +12,17 @@ export const initialRecords = [
     { id: 10, name: "Lucas Jackson", status: "present", time: "7:54 AM" },
 ];
 
+// Dashboard stats mock data
+export const DASHBOARD_STATS = {
+    totalStudents: initialRecords.length,
+    presentToday: initialRecords.filter(
+        (record) => record.status === "present"
+    ).length,
+    absentToday: initialRecords.filter(
+        (record) => record.status !== "present"
+    ).length,
+};
+
 // Mock data for learning materials
 export const MATERIALS_DATA = [
     {

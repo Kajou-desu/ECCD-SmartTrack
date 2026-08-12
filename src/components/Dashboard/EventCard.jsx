@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { CalendarFold, Cake } from "lucide-react";
 import { getAllStudentsData } from "../../data/mockData.js";
+import { HOLIDAYS } from "../../constants/holidays.js";
 
-export function EventCard({ events }) {
+export function EventCard() {
   const [selectedEvent, setSelectedEvent] = useState("birthdays");
 
   const currentMonth = new Date().getMonth();
@@ -25,15 +26,15 @@ export function EventCard({ events }) {
     });
 
   const hasBirthdays = birthdays.length > 0;
-  const hasHolidays = events.holidays.length > 0;
+  const hasHolidays = HOLIDAYS.length > 0;
 
-  const displayedEvents =
-    selectedEvent === "birthdays" ? birthdays : events.holidays;
+  const displayedEvents = selectedEvent === "birthdays" ? birthdays : HOLIDAYS;
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-lg sm:h-full">
       <div className="flex shrink-0 items-center gap-2">
         <CalendarFold className="h-6 w-6 text-[#C2570C]" />
+
         <h4 className="text-lg font-semibold text-gray-800 sm:text-xl">
           Events
         </h4>
@@ -44,7 +45,7 @@ export function EventCard({ events }) {
           type="button"
           aria-pressed={selectedEvent === "birthdays"}
           onClick={() => setSelectedEvent("birthdays")}
-          className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors w-full cursor-pointer ${
+          className={`w-full cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
             selectedEvent === "birthdays"
               ? "bg-[#C2570C] text-white"
               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -57,7 +58,7 @@ export function EventCard({ events }) {
           type="button"
           aria-pressed={selectedEvent === "holidays"}
           onClick={() => setSelectedEvent("holidays")}
-          className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors w-full cursor-pointer ${
+          className={`w-full cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
             selectedEvent === "holidays"
               ? "bg-[#C2570C] text-white"
               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -67,7 +68,7 @@ export function EventCard({ events }) {
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 max-h-80 space-y-2 overflow-y-auto pr-2 lg:max-h-none [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
+      <div className="min-h-0 max-h-80 flex-1 space-y-2 overflow-y-auto pr-2 lg:max-h-none [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
         {selectedEvent === "birthdays" ? (
           hasBirthdays ? (
             displayedEvents.map((birthday) => (
@@ -85,6 +86,7 @@ export function EventCard({ events }) {
                   <p className="truncate text-sm font-medium text-gray-800">
                     {birthday.name}
                   </p>
+
                   <p className="text-xs text-gray-500">
                     {new Date(birthday.date).toLocaleDateString("en-US", {
                       month: "long",
@@ -111,6 +113,7 @@ export function EventCard({ events }) {
                 <p className="text-sm font-medium text-gray-800">
                   {holiday.name}
                 </p>
+
                 <p className="text-xs text-gray-500">
                   {holiday.month} {holiday.day}
                 </p>

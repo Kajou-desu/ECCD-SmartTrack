@@ -1,18 +1,13 @@
 import { useState, useEffect } from "react";
 import StatCard from "../components/StatCard";
 import { useAuth } from "../hooks/useAuth";
+import { DASHBOARD_STATS } from "../data/mockData";
+import { LOCATION_CONFIG } from "../constants/location";
 import { WeatherCard } from "../components/Dashboard/WeatherCard";
 import { DailyThemeCard } from "../components/Dashboard/DailyThemeCard";
 import { AttendanceList } from "../components/Dashboard/AttendanceList";
 import { EventCard } from "../components/Dashboard/EventCard";
 import { UsersRound, UserCheck, UserX, CalendarDays } from "lucide-react";
-
-const LOCATION_CONFIG = {
-  name: "Poblacion II ECCD Center",
-  latitude: 14.9749,
-  longitude: 120.4957,
-  timezone: "Asia/Manila",
-};
 
 const fetchDashboardTheme = async () => {
   await new Promise((resolve) => window.setTimeout(resolve, 200));
@@ -32,33 +27,6 @@ const fetchDashboardTheme = async () => {
   };
 };
 
-const fetchDashboardEvents = async () => {
-  await new Promise((resolve) => window.setTimeout(resolve, 200));
-
-  return {
-    holidays: [
-      { id: 1, month: "JAN", day: "01", name: "New Year's Day" },
-      { id: 2, month: "APR", day: "09", name: "Araw ng Kagitingan" },
-      { id: 3, month: "MAY", day: "01", name: "Labor Day" },
-      { id: 4, month: "JUN", day: "12", name: "Independence Day" },
-      { id: 5, month: "AUG", day: "21", name: "Ninoy Aquino Day" },
-      { id: 6, month: "AUG", day: "31", name: "National Heroes Day" },
-      { id: 7, month: "NOV", day: "01", name: "All Saints' Day" },
-      { id: 8, month: "NOV", day: "30", name: "Bonifacio Day" },
-      {
-        id: 9,
-        month: "DEC",
-        day: "08",
-        name: "Feast of the Immaculate Conception",
-      },
-      { id: 10, month: "DEC", day: "24", name: "Christmas Eve" },
-      { id: 11, month: "DEC", day: "25", name: "Christmas Day" },
-      { id: 12, month: "DEC", day: "30", name: "Rizal Day" },
-      { id: 13, month: "DEC", day: "31", name: "New Year's Eve" },
-    ],
-  };
-};
-
 export default function Dashboard() {
   const { user } = useAuth();
 
@@ -66,20 +34,16 @@ export default function Dashboard() {
 
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [dailyTheme, setDailyTheme] = useState(null);
-  const [events, setEvents] = useState({
-    birthdays: [],
-    holidays: [],
-  });
   const [dashboardError, setDashboardError] = useState("");
 
-  const greeting = () => {
-    const currentHour = currentDateTime.getHours();
+  const currentHour = currentDateTime.getHours();
 
-    if (currentHour < 12) return "Good morning";
-    if (currentHour < 18) return "Good afternoon";
-
-    return "Good evening";
-  };
+  const greeting =
+    currentHour < 12
+      ? "Good morning"
+      : currentHour < 18
+        ? "Good afternoon"
+        : "Good evening";
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -94,14 +58,10 @@ export default function Dashboard() {
 
     const fetchDashboardData = async () => {
       try {
-        const [theme, eventData] = await Promise.all([
-          fetchDashboardTheme(),
-          fetchDashboardEvents(),
-        ]);
+        const [theme] = await ([fetchDashboardTheme()]);
 
         if (!ignore) {
           setDailyTheme(theme);
-          setEvents(eventData);
           setDashboardError("");
         }
       } catch (error) {
@@ -125,7 +85,7 @@ export default function Dashboard() {
       <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">
-            {greeting()}, {firstName}!
+            {greeting}, {firstName}!
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-gray-600">
@@ -175,21 +135,21 @@ export default function Dashboard() {
         <StatCard
           Icon={UsersRound}
           label="Total Students"
-          value="10"
+          value={DASHBOARD_STATS.totalStudents}
           color="bg-blue-100 text-blue-600"
         />
 
         <StatCard
           Icon={UserCheck}
           label="Present Today"
-          value="8"
+          value={DASHBOARD_STATS.presentToday}
           color="bg-green-100 text-green-600"
         />
 
         <StatCard
           Icon={UserX}
           label="Absent Today"
-          value="2"
+          value={DASHBOARD_STATS.absentToday}
           color="bg-red-100 text-red-600"
         />
 
@@ -212,7 +172,7 @@ export default function Dashboard() {
         </div>
 
         <div className="min-h-0 lg:col-span-1">
-          <EventCard events={events} />
+          <EventCard />
         </div>
       </div>
     </div>
