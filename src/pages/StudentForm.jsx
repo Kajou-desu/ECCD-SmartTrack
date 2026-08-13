@@ -372,7 +372,7 @@ export default function StudentForm() {
               <button
                 type="button"
                 onClick={() => navigate("/student-info")}
-                className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:min-w-36"
+                className="cursor-pointer rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:min-w-36"
               >
                 Cancel
               </button>
@@ -380,7 +380,7 @@ export default function StudentForm() {
               <button
                 type="submit"
                 disabled={form.isSubmitting || loading}
-                className="rounded-xl bg-[#C2570C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#9f4709] disabled:cursor-not-allowed disabled:bg-slate-300 sm:min-w-44"
+                className="cursor-pointer rounded-xl bg-[#C2570C] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#9f4709] disabled:cursor-not-allowed disabled:bg-slate-300 sm:min-w-44"
               >
                 {form.isSubmitting
                   ? "Saving..."
@@ -418,7 +418,7 @@ function PageHeader({ isEditing, onBack }) {
       <button
         type="button"
         onClick={onBack}
-        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto"
+        className="cursor-pointer w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto"
       >
         Back to Students
       </button>

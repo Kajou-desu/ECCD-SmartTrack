@@ -30,7 +30,7 @@ export default function StudentDetail() {
       <div className="min-h-[calc(100vh-70px)] bg-[#f8f9ff] p-4 sm:p-6 lg:p-8">
         <button
           onClick={() => navigate("/student-info")}
-          className="flex items-center gap-2 text-[#C2570C] hover:text-orange-700 font-semibold mb-4 transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
+          className="cursor-pointer flex items-center gap-2 text-[#C2570C] hover:text-orange-700 font-semibold mb-4 transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
         >
           <ArrowLeft size={20} />
           <span>Back</span>
@@ -50,7 +50,7 @@ export default function StudentDetail() {
       <div className="mb-8">
         <button
           onClick={() => navigate("/student-info")}
-          className="flex items-center gap-2 text-[#C2570C] hover:text-orange-700 font-semibold mb-4 transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
+          className="cursor-pointer flex items-center gap-2 text-[#C2570C] hover:text-orange-700 font-semibold mb-4 transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
           aria-label="Go back to student information"
         >
           <ArrowLeft size={20} />
@@ -174,11 +174,11 @@ function GuardianContacts({ guardians }) {
   return (
     <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
       <div className="flex flex-row items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Guardian Contacts</h2>
+        <h2 className="text-xl font-bold text-gray-800">Guardian Information</h2>
 
         <button
           type="button"
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#C2570C] transition-colors hover:bg-orange-50 hover:text-orange-700"
+          className="cursor-pointer flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#C2570C] transition-colors hover:bg-orange-50 hover:text-orange-700"
           aria-label="Edit guardian details"
         >
           <Pencil size={18} />
