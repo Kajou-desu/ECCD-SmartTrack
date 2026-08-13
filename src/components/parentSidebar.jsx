@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import logo from "../assets/ECCDST_Logo.png";
-import ProfileBox from "./ProfileBox.jsx";
-import { getInitials } from "../utils/user.js";
+import ProfileBox from "../components/ProfileBox.jsx";
 
 import {
   PanelLeftClose,
@@ -371,31 +370,19 @@ export default function ParentSidebar({
                 `}
               >
                 {/* User information */}
-                <div className="mb-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
-                  <div
-                    aria-hidden="true"
-                    className="
-                      flex h-12 w-12
-                      items-center justify-center
-                      rounded-full
-                      bg-orange-100
-                      text-lg font-semibold
-                      text-[#C2570C]
-                    "
-                  >
-                    {getInitials(user?.name)}
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-900">
-                      {user?.name ?? "User"}
-                    </p>
-
-                    <p className="truncate text-xs text-slate-500">
-                      Parent/Guardian
-                    </p>
-                  </div>
-                </div>
+                <ProfileBox
+                  name={user?.name}
+                  role="Parent/Guardian"
+                  avatarUrl={user?.avatarUrl}
+                  onClick={() => {}}
+                  className="
+    mb-4 cursor-default
+    border-0 bg-slate-50 shadow-none
+    hover:border-0 hover:bg-slate-50
+  "
+                  aria-hidden="true"
+                  tabIndex={-1}
+                />
 
                 {/* Settings */}
                 <button

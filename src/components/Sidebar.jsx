@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import logo from "../assets/ECCDST_Logo.png";
-import ProfileBox from "./ProfileBox.jsx";
-import { getInitials } from "../utils/user.js";
+import ProfileBox from "../components/ProfileBox.jsx";
 import { canManageAccounts } from "../auth/permissions.js";
 
 import {
@@ -266,14 +265,7 @@ export default function Sidebar({
               <div
                 role="menu"
                 aria-label="Profile menu"
-                className={`
-                  absolute z-60
-                  rounded-3xl
-                  border border-slate-200
-                  bg-white
-                  p-4
-                  shadow-xl
-
+                className={`absolute z-60 rounded-3xl border border-slate-200 bg-white p-4 shadow-xl
                   ${
                     collapsed && !isMobileOpen
                       ? "bottom-0 left-full ml-3 w-72"
@@ -281,53 +273,23 @@ export default function Sidebar({
                   }
                 `}
               >
-                <div className="mb-4 flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
-                  <div
-                    aria-hidden="true"
-                    className="
-                      flex h-12 w-12
-                      items-center justify-center
-                      rounded-full
-                      bg-orange-100
-                      text-lg font-semibold
-                      text-[#C2570C]
-                    "
-                  >
-                    {getInitials(user?.name)}
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-900">
-                      {user?.name ?? "User"}
-                    </p>
-
-                    <p className="truncate text-xs text-slate-500">
-                      {user?.role ?? "Member"}
-                    </p>
-                  </div>
-                </div>
+                <ProfileBox
+                  name={user?.name}
+                  role={user?.role}
+                  avatarUrl={user?.avatarUrl}
+                  onClick={() => {}}
+                  className="mb-4 cursor-default border-0 bg-slate-50 shadow-none hover:border-0 hover:bg-slate-50"
+                  aria-hidden="true"
+                  tabIndex={-1}
+                />
 
                 <button
                   type="button"
                   role="menuitem"
                   onClick={handleSettings}
-                  className="
-                    flex min-h-11 w-full
-                    items-center gap-3
-                    rounded-2xl
-                    border border-slate-200
-                    bg-slate-50
-                    px-4 py-3
-                    text-left text-sm font-semibold
-                    text-slate-800
-                    transition
-                    hover:border-orange-300
-                    hover:bg-orange-50
-                    focus-visible:outline-none
-                    focus-visible:ring-2
-                    focus-visible:ring-[#C2570C]
-                    cursor-pointer
-                  "
+                  className="flex min-h-11 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-800
+                    transition hover:border-orange-300 hover:bg-orange-50
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] cursor-pointer"
                 >
                   <Settings aria-hidden="true" size={18} />
                   Settings
@@ -337,24 +299,8 @@ export default function Sidebar({
                   type="button"
                   role="menuitem"
                   onClick={handleLogout}
-                  className="
-                    mt-3
-                    flex min-h-11 w-full
-                    items-center gap-3
-                    rounded-2xl
-                    border border-slate-200
-                    bg-white
-                    px-4 py-3
-                    text-left text-sm font-semibold
-                    text-slate-800
-                    transition
-                    hover:border-red-300
-                    hover:bg-red-50
-                    focus-visible:outline-none
-                    focus-visible:ring-2
-                    focus-visible:ring-red-500
-                    cursor-pointer
-                  "
+                  className="mt-3 flex min-h-11 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-800
+                    transition hover:border-red-300 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
                 >
                   <LogOut aria-hidden="true" size={18} />
                   Logout
@@ -389,19 +335,8 @@ function SidebarLink({
       onClick={onNavigate}
       aria-current={isActive ? "page" : undefined}
       title={collapsed ? label : undefined}
-      className={`
-        group
-        flex min-h-11 w-full
-        items-center
-        rounded-lg
-        p-3
-        transition-colors duration-200
-
-        focus-visible:outline-none
-        focus-visible:ring-2
-        focus-visible:ring-[#C2570C]
-        focus-visible:ring-offset-2
-
+      className={`group flex min-h-11 w-full items-center rounded-lg p-3 
+        transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2
         ${
           isActive
             ? "bg-[#C2570C] text-white shadow-md"

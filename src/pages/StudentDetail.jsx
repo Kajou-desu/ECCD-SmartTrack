@@ -83,46 +83,64 @@ export default function StudentDetail() {
 }
 
 function StudentHeader({ student }) {
+  const sessionLabel =
+    String(student.session ?? "").toLowerCase() === "afternoon" ? "PM" : "AM";
+
+  const statusLabel =
+    String(student.status ?? "").toLowerCase() === "active"
+      ? "Active"
+      : "Inactive";
+
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
-      {/* Photo and Header */}
-      <div className="flex flex-col sm:flex-row gap-6 sm:gap-8 items-start">
-        {/* Student Photo */}
+    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="flex flex-col items-start gap-6 sm:flex-row sm:gap-8">
         <div className="shrink-0">
           <img
             src={student.photo}
             alt={`${student.name}'s profile`}
-            className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border-2 border-gray-100 shadow-md"
+            className="h-28 w-28 rounded-2xl border-2 border-gray-100 object-cover shadow-md sm:h-32 sm:w-32"
           />
         </div>
 
-        {/* Header Info */}
-        <div className="flex-1 w-full min-w-0">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div className="w-full min-w-0 flex-1">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 truncate">
+              <h2 className="truncate text-2xl font-bold text-gray-800 sm:text-3xl">
                 {student.name}
               </h2>
-              <p className="text-gray-500 text-sm mt-1">{student.school}</p>
+
+              <p className="mt-1 text-sm text-gray-500">
+                {student.school || "N/A"}
+              </p>
             </div>
 
-            {/* Status Badge */}
-            <span className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm">
-              {student.status}
+            <span
+              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ${
+                statusLabel === "Active"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {statusLabel}
             </span>
           </div>
 
-          {/* Student Information Grid */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <InfoItem label="Student ID" value={student.id} />
-            <InfoItem label="Session" value={student.session} />
-            <InfoItem label="Teacher" value={student.teacher} />
+          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <InfoItem label="Student ID" value={student.id || "N/A"} />
+            <InfoItem label="Session" value={sessionLabel} />
+            <InfoItem label="Teacher" value={student.teacher || "N/A"} />
+
             <InfoItem
               label="Age"
               value={`${calculateAge(student.birthday)} Years Old`}
             />
-            <InfoItem label="Birthday" value={formatDate(student.birthday)} />
-            <InfoItem label="Address" value={student.address} />
+
+            <InfoItem
+              label="Birthday"
+              value={student.birthday ? formatDate(student.birthday) : "N/A"}
+            />
+
+            <InfoItem label="Address" value={student.address || "N/A"} />
           </div>
         </div>
       </div>
@@ -131,30 +149,36 @@ function StudentHeader({ student }) {
 }
 
 function InfoItem({ label, value }) {
+  const displayValue = value ?? "N/A";
+
   return (
     <div>
-      <p className="text-xs uppercase tracking-widest font-semibold text-gray-500">
+      <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
         {label}
       </p>
+
       <p
-        className="mt-2 text-gray-800 font-medium truncate hover:text-clip"
-        title={value}
+        className="mt-2 truncate font-medium text-gray-800 hover:text-clip"
+        title={String(displayValue)}
       >
-        {value}
+        {displayValue}
       </p>
     </div>
   );
 }
 
 function GuardianContacts({ guardians }) {
+  const primaryGuardian =
+    guardians?.find((guardian) => guardian.isPrimary) ?? guardians?.[0];
+
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="flex flex-row items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">Guardian Contacts</h2>
+
         <button
           type="button"
-          className="flex items-center gap-2 cursor-pointer text-[#C2570C] hover:text-orange-700 font-semibold text-sm transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#C2570C] transition-colors hover:bg-orange-50 hover:text-orange-700"
           aria-label="Edit guardian details"
         >
           <Pencil size={18} />
@@ -162,16 +186,38 @@ function GuardianContacts({ guardians }) {
         </button>
       </div>
 
-      {/* Guardian Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-6">
+        {/* Primary Guardian */}
+        {primaryGuardian ? (
+          <div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Primary Guardian
+            </p>
+            <GuardianCard
+              guardian={{
+                ...primaryGuardian,
+                type: "Primary Guardian",
+              }}
+            />
+          </div>
+        ) : null}
+
+        {/* All Guardians/Parents */}
         {guardians && guardians.length > 0 ? (
-          guardians.map((guardian) => (
-            <GuardianCard key={guardian.id} guardian={guardian} />
-          ))
+          <div>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+              Parents
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {guardians.map((guardian) => (
+                <GuardianCard key={guardian.id} guardian={guardian} />
+              ))}
+            </div>
+          </div>
         ) : (
-          <div className="col-span-full p-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-300">
-            <User size={32} className="mx-auto text-gray-400 mb-2" />
-            <p className="text-gray-500 text-sm">
+          <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
+            <User size={32} className="mx-auto mb-2 text-gray-400" />
+            <p className="text-sm text-gray-500">
               No guardian information available
             </p>
           </div>
@@ -235,7 +281,7 @@ function GuardianCard({ guardian }) {
 function MedicalNotes({ medical }) {
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="flex items-center justify-between gap-4 mb-6">
         <h2 className="text-xl font-bold text-gray-800">
           Medical & Special Notes
         </h2>
@@ -249,7 +295,7 @@ function MedicalNotes({ medical }) {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="flex flex-col gap-5">
         <MedicalCard
           icon={<AlertCircle size={20} className="text-red-600" />}
           colorClass="border-red-200 bg-red-50"
@@ -266,15 +312,13 @@ function MedicalNotes({ medical }) {
           description={medical.dietaryDetail}
         />
 
-        <div className="lg:col-span-2">
-          <MedicalCard
-            icon={<Accessibility size={20} className="text-purple-600" />}
-            colorClass="border-purple-200 bg-purple-50"
-            title="Learning Accommodations"
-            subtitle={medical.accommodations}
-            description={medical.accommodationsDetail}
-          />
-        </div>
+        <MedicalCard
+          icon={<Accessibility size={20} className="text-purple-600" />}
+          colorClass="border-purple-200 bg-purple-50"
+          title="Learning Accommodations"
+          subtitle={medical.accommodations}
+          description={medical.accommodationsDetail}
+        />
       </div>
     </div>
   );

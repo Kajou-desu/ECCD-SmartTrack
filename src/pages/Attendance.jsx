@@ -14,6 +14,7 @@ import {
   Search,
 } from "lucide-react";
 
+// Filter options
 const STATUS_OPTIONS = [
   { key: "all", label: "All" },
   { key: "present", label: "Present" },
@@ -27,6 +28,7 @@ const TIME_OPTIONS = [
   { key: "pm", label: "PM" },
 ];
 
+// Get current date
 function getLocalDateString() {
   const date = new Date();
   const offset = date.getTimezoneOffset();
@@ -49,6 +51,7 @@ export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState(getLocalDateString);
   const [savingIds, setSavingIds] = useState(() => new Set());
 
+  // Format Date
   const formattedDate = useMemo(() => {
     const selectedDateObj = new Date(`${selectedDate}T00:00:00`);
 
@@ -60,6 +63,7 @@ export default function Attendance() {
     });
   }, [selectedDate]);
 
+  // Fetching Attendance Record
   useEffect(() => {
     let isMounted = true;
 
@@ -104,6 +108,7 @@ export default function Attendance() {
     };
   }, [selectedDate]);
 
+  // Filter Function
   const filteredRecords = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
 
@@ -113,7 +118,7 @@ export default function Attendance() {
 
       const timeMatch =
         filterTime === "all" ||
-        String(record.shift ?? "").toLowerCase() === filterTime;
+        String(record.session ?? "").toLowerCase() === filterTime;
 
       const searchMatch =
         normalizedSearch === "" ||
@@ -125,6 +130,7 @@ export default function Attendance() {
     });
   }, [attendanceRecords, filterStatus, filterTime, searchQuery]);
 
+  // Set Statistics
   const attendanceStats = useMemo(() => {
     return attendanceRecords.reduce(
       (stats, record) => {
@@ -155,6 +161,7 @@ export default function Attendance() {
     );
   }, [attendanceRecords]);
 
+  // Changing student attendance status
   const handleStatusChange = async (id, nextStatus) => {
     if (savingIds.has(id)) return;
 
@@ -188,6 +195,7 @@ export default function Attendance() {
     }
   };
 
+  // Export Function
   const handleExport = () => {
     try {
       const rows = filteredRecords.map((record) =>
@@ -217,6 +225,7 @@ export default function Attendance() {
     }
   };
 
+  // Header
   const pageHeader = (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
@@ -295,6 +304,7 @@ export default function Attendance() {
 
       {error && <ErrorAlert message={error} onClose={() => setError("")} />}
 
+      {/* Statistic Cards */}
       <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         <StatCard
           Icon={UsersRound}
@@ -325,12 +335,15 @@ export default function Attendance() {
         />
       </div>
 
+      {/* Main Section for records */}
       <section className="flex flex-col gap-6 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+        {/* Header */}
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <h2 className="text-lg font-bold text-gray-800">
             Attendance Records
           </h2>
 
+          {/* Filter */}
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
             <FilterGroup
               options={STATUS_OPTIONS}
@@ -346,6 +359,7 @@ export default function Attendance() {
               ariaLabel="Filter attendance by time"
             />
 
+            {/* Search */}
             <div className="relative min-w-0 flex-1 sm:min-w-55 sm:flex-none">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
 
@@ -372,6 +386,7 @@ export default function Attendance() {
           </div>
         </div>
 
+        {/* Attendance List */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredRecords.length > 0 ? (
             filteredRecords.map((record) => (
@@ -415,6 +430,7 @@ export default function Attendance() {
   );
 }
 
+// Error Message
 function ErrorAlert({ message, onClose }) {
   return (
     <div
@@ -437,6 +453,7 @@ function ErrorAlert({ message, onClose }) {
     </div>
   );
 }
+
 
 function FilterGroup({ options, selectedValue, onChange, ariaLabel }) {
   return (

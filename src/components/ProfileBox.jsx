@@ -1,53 +1,71 @@
-import { getInitials } from "../utils/user";
+import { getInitials } from "../utils/user.js";
 
 export default function ProfileBox({
-  collapsed = false,
-  name = "John Doe",
-  role = "Day Care Worker",
+  name = "User",
+  role = "Member",
   avatarUrl,
+  collapsed = false,
   onClick,
-  ...rest
+  className = "",
+  ...buttonProps
 }) {
+  const displayName = name || "User";
+  const displayRole = role || "Member";
+  const initials = getInitials(displayName);
+
   return (
     <button
       type="button"
       onClick={onClick}
-      title={collapsed ? `${name} · ${role}` : undefined}
+      title={collapsed ? displayName : undefined}
+      aria-label={collapsed ? `${displayName}, ${displayRole}` : undefined}
       className={`
-          group
-          flex w-full items-center gap-3
-          rounded-xl
-          p-2
-          transition-all duration-200
-          hover:bg-orange-800
-          cursor-pointer
-          ${collapsed ? "justify-center" : "justify-start"}
-        `}
-      {...rest}
+        flex min-h-16 w-full items-center rounded-2xl
+        border border-slate-200 bg-white p-3
+        text-left shadow-sm transition
+        hover:border-orange-300 hover:bg-orange-50
+        focus-visible:outline-none
+        focus-visible:ring-2
+        focus-visible:ring-[#C2570C]
+        focus-visible:ring-offset-2
+        cursor-pointer
+        ${collapsed ? "justify-center" : "gap-3"}
+        ${className}
+      `}
+      {...buttonProps}
     >
-      {/* Avatar — shows the image if we have one, otherwise falls back to initials */}
-      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-orange-100 text-lg font-semibold text-orange-800 transition-colors group-hover:bg-white group-hover:text-orange-800">
+      <div className="relative shrink-0">
         {avatarUrl ? (
           <img
             src={avatarUrl}
-            alt={name}
-            className="h-full w-full object-cover"
+            alt=""
+            className="
+              h-11 w-11 rounded-full
+              border border-orange-100
+              object-cover
+            "
           />
         ) : (
-          <span>{getInitials(name)}</span>
+          <div
+            aria-hidden="true"
+            className="
+              flex h-11 w-11 items-center justify-center
+              rounded-full bg-orange-100
+              text-sm font-semibold text-[#C2570C]
+            "
+          >
+            {initials}
+          </div>
         )}
       </div>
 
-      {/* User Info */}
       {!collapsed && (
-        <div className="min-w-0 text-left">
-          <p className="truncate text-sm font-semibold text-gray-800 transition-colors group-hover:text-white">
-            {name}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-slate-900">
+            {displayName}
           </p>
 
-          <p className="truncate text-xs text-gray-500 transition-colors group-hover:text-orange-100">
-            {role}
-          </p>
+          <p className="truncate text-xs text-slate-500">{displayRole}</p>
         </div>
       )}
     </button>
