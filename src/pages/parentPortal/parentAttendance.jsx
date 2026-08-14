@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import StatCard from "../../components/StatCard";
+import StatCard from "../../components/shared/StatCard";
 import { ATTENDANCE_DATA } from "../../data/mockParentData";
 import {
   ChevronLeft,
@@ -8,7 +8,6 @@ import {
   TrendingUp,
   AlertCircle,
 } from "lucide-react";
-
 
 export default function ParentAttendance() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 7));

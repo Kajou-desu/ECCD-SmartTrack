@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { NotificationModal, Toast } from "../components/NotificationModal";
+import { NotificationModal, Toast } from "../components/ui/NotificationModal";
 import { MATERIALS_DATA, getAllStudentsData } from "../data/mockData";
 import {
   Plus,

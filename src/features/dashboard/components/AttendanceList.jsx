@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { initialRecords } from "../../../data/mockData.js";
 import { Check, ArrowRight } from "lucide-react";
-import { initialRecords } from "../../data/mockData.js";
 
 // Helpers
 function timeToMinutes(time) {
@@ -46,7 +46,7 @@ export function AttendanceList() {
   }, [selectedPeriod]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <div className="flex min-h-0 h-full overflow-hidden flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Header */}
       <div className="flex shrink-0 flex-col gap-3">
         <div className="flex items-center justify-between gap-3">

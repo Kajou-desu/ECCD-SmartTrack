@@ -60,14 +60,23 @@ async function handleApiResponse(
 async function fetchWithTimeout(url, options = {}) {
   const controller = new AbortController();
 
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    REQUEST_TIMEOUT
-  );
+  // If caller provided an external signal, forward its abort to our internal controller
+  if (options.signal) {
+    if (options.signal.aborted) controller.abort();
+    else
+      options.signal.addEventListener("abort", () => {
+        try {
+          controller.abort();
+        } catch (e) {
+          /* ignore */
+        }
+      });
+  }
+
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
   try {
     const token = getAuthToken();
-
     const headers = new Headers(options.headers || {});
 
     if (token && !url.endsWith("/api/login")) {
@@ -237,11 +246,12 @@ export const apiClient = {
    * const records = await apiClient.getAttendance(new Date());
    */
   async getAttendance(date) {
-    const dateString = date instanceof Date
-      ? date.toISOString().split('T')[0]
-      : date;
+    const dateString = date instanceof Date ? date.toISOString().split("T")[0] : date;
+    // allow callers to pass fetch options (e.g., signal)
+    const options = arguments[1] || {};
     return fetchWithRetry(`${API_BASE_URL}/api/attendance?date=${dateString}`, {
       method: "GET",
+      ...options,
     });
   },
 

@@ -1,11 +1,11 @@
-import { DAILY_THEME } from "../../data/mockData";
+import { DAILY_THEME } from "../../../data/mockData";
 import { ArrowRight, CircleCheck } from "lucide-react";
 
 export function DailyThemeCard() {
   const theme = DAILY_THEME;
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg h-full">
+    <div className="h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <div className="flex flex-col md:flex-row h-full">
         {/* Right Panel */}
         <div className="flex min-w-45 flex-col items-center justify-center bg-[#e5eeff] p-8">
@@ -23,21 +23,25 @@ export function DailyThemeCard() {
         </div>
 
         {/* Left Panel */}
-        <div className="flex flex-1 flex-col gap-3 p-6">
+        <div className="flex flex-1 flex-col gap-4 p-6 min-h-0 overflow-y-auto">
           <div className="self-start rounded-full bg-orange-100 px-3 py-1">
             <span className="text-xs font-semibold uppercase tracking-wide text-[#C2570C]">
               Today's Theme
             </span>
           </div>
-          <h2 className="text-2xl font-bold text-gray-800">{theme.title}</h2>
-          <p className="text-sm leading-6 text-gray-600">{theme.description}</p>
-          <div className="space-y-3 hidden sm:block">
-            {theme.objectives.map((objective, idx) => (
-              <div key={idx} className="flex items-start gap-3">
-                <CircleCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#C2570C]" />
-                <p className="text-sm leading-6 text-gray-700">{objective}</p>
-              </div>
-            ))}
+          <div className="flex flex-col gap-2 my-auto">
+            <h2 className="text-2xl font-bold text-gray-800">{theme.title}</h2>
+            <p className="text-sm leading-6 text-gray-600">
+              {theme.description}
+            </p>
+            <div className="space-y-3">
+              {theme.objectives.map((objective, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <CircleCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#C2570C]" />
+                  <p className="text-sm leading-6 text-gray-700">{objective}</p>
+                </div>
+              ))}
+            </div>
           </div>
           <button
             type="button"

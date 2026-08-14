@@ -1,125 +1,58 @@
-import { useState, useEffect } from "react";
-import StatCard from "../components/StatCard";
+import useDashboardGreeting from "../features/dashboard/hooks/useDashboardGreeting";
+import StatCard from "../components/shared/StatCard";
 import { useAuth } from "../hooks/useAuth";
 import { DASHBOARD_STATS } from "../data/mockData";
-import { LOCATION_CONFIG } from "../constants/location";
-import { WeatherCard } from "../components/Dashboard/WeatherCard";
-import { DailyThemeCard } from "../components/Dashboard/DailyThemeCard";
-import { AttendanceList } from "../components/Dashboard/AttendanceList";
-import { EventCard } from "../components/Dashboard/EventCard";
-import { UsersRound, UserCheck, UserX, CalendarDays } from "lucide-react";
+import {
+  STAT_CARDS,
+  MAIN_CARDS,
+} from "../features/dashboard/components/DashboardStats";
+import DashboardHeader from "../features/dashboard/components/DashboardHeader";
+import DashboardContentGrid from "../features/dashboard/components/DashboardContentGrid";
 
 export default function Dashboard() {
-  // Get user name and time of day for dashboard greetings
   const { user } = useAuth();
-  const firstName = user?.name?.split(" ")[0] ?? "Educator";
-  const [currentDateTime, setCurrentDateTime] = useState(new Date());
-  const currentHour = currentDateTime.getHours();
-  const greeting =
-    currentHour < 12
-      ? "Good morning"
-      : currentHour < 18
-        ? "Good afternoon"
-        : "Good evening";
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDateTime(new Date());
-    }, 30000);
-
-    return () => clearInterval(timer);
-  }, []);
+  const { greeting, firstName, currentDateTime } = useDashboardGreeting(
+    user?.name,
+  );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-6">
-      {/* Page heading */}
-      <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-        {/* Dashboard greeting */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">
-            {greeting}, {firstName}!
-          </h1>
+    <div className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
+      <DashboardHeader
+        greeting={greeting}
+        firstName={firstName}
+        currentDateTime={currentDateTime}
+      />
 
-          <p className="mt-3 text-sm leading-6 text-gray-600">
-            Here's what's happening at {LOCATION_CONFIG.name} today.
-          </p>
-        </div>
-        {/* Weather and time card */}
-        <div className="flex shrink-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-sm sm:gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-          <div className="flex flex-col">
-            <p className="text-xs font-bold uppercase text-orange-900/75">
-              {currentDateTime.toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "short",
-                day: "numeric",
-                timeZone: LOCATION_CONFIG.timezone,
-              })}
-            </p>
-
-            <p className="text-end text-lg font-bold text-[#C2570C]">
-              {currentDateTime.toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-                hour12: true,
-                timeZone: LOCATION_CONFIG.timezone,
-              })}
-            </p>
-          </div>
-
-          <div className="mx-1 h-6 w-px bg-slate-200" />
-
-          <WeatherCard
-            latitude={LOCATION_CONFIG.latitude}
-            longitude={LOCATION_CONFIG.longitude}
-          />
-        </div>
-      </div>
-
-      {/* Statistics */}
-      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-        <StatCard
-          Icon={UsersRound}
-          label="Total Students"
-          value={DASHBOARD_STATS.totalStudents}
-          color="bg-blue-100 text-blue-600"
-        />
-
-        <StatCard
-          Icon={UserCheck}
-          label="Present Today"
-          value={DASHBOARD_STATS.presentToday}
-          color="bg-green-100 text-green-600"
-        />
-
-        <StatCard
-          Icon={UserX}
-          label="Absent Today"
-          value={DASHBOARD_STATS.absentToday}
-          color="bg-red-100 text-red-600"
-        />
-
-        <StatCard
-          Icon={CalendarDays}
-          label="School Days"
-          value="60"
-          color="bg-orange-100 text-orange-600"
-        />
-      </div>
-
-      {/* Dashboard cards */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-4 lg:overflow-hidden">
-        <div className="lg:col-span-2 lg:min-h-0">
-          <DailyThemeCard />
-        </div>
-
-        <div className="lg:col-span-1 lg:min-h-0">
-          <AttendanceList />
-        </div>
-
-        <div className="lg:col-span-1 lg:min-h-0">
-          <EventCard />
-        </div>
-      </div>
+      <DashboardContentGrid
+        stats={
+          <>
+            {STAT_CARDS.map((c) => (
+              <StatCard
+                key={c.key}
+                Icon={c.Icon}
+                label={c.label}
+                value={c.value ?? DASHBOARD_STATS[c.valueKey] ?? "--"}
+                color={c.color}
+              />
+            ))}
+          </>
+        }
+        cards={
+          <>
+            {MAIN_CARDS.map((card) => {
+              const Comp = card.component;
+              return (
+                <div
+                  key={card.key}
+                  className={`lg:col-span-${card.colSpan} lg:min-h-0`}
+                >
+                  <Comp />
+                </div>
+              );
+            })}
+          </>
+        }
+      />
     </div>
   );
 }

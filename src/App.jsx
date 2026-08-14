@@ -10,11 +10,11 @@ import { ROLES } from "./auth/roles";
 import { isParent } from "./auth/permissions";
 import { useAuth } from "./hooks/useAuth";
 import { AuthProvider } from "./context/Authcontext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import PublicRoute from "./components/PublicRoute";
-import ErrorBoundary from "./components/ErrorBoundary";
-import Layout from "./components/Layout";
-import ParentLayout from "./components/parentLayout";
+import ProtectedRoute from "./components/shared/ProtectedRoute";
+import PublicRoute from "./components/shared/PublicRoute";
+import ErrorBoundary from "./components/shared/ErrorBoundary";
+import Layout from "./layouts/Layout";
+import ParentLayout from "./layouts/ParentLayout";
 
 // Lazy loaded pages
 const Login = lazy(() => import("./pages/Loginpage"));

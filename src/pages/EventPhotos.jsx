@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import Button from "../components/ui/Button";
 import { ArrowLeft, Folder, ImagePlus, Plus, X } from "lucide-react";
-import Button from "../components/Button";
 
 export default function EventPhotos() {
   const fileInputRef = useRef(null);

@@ -1,51 +1,42 @@
 import { useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
-import ParentHeader from "./parentHeader";
-import ParentSidebar from "./parentSidebar";
+import Header from "../components/navigation/Header";
+import Sidebar from "../components/navigation/Sidebar";
 
-export default function ParentLayout() {
+export default function Layout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   const mobileMenuButtonRef = useRef(null);
+
+  const closeMobileSidebar = () => {
+    setIsMobileSidebarOpen(false);
+  };
 
   const openMobileSidebar = () => {
     setIsMobileSidebarOpen(true);
   };
 
-  const closeMobileSidebar = () => {
-    setIsMobileSidebarOpen(false);
-
-    requestAnimationFrame(() => {
-      mobileMenuButtonRef.current?.focus();
-    });
-  };
-
-  const toggleSidebarCollapse = () => {
-    setIsSidebarCollapsed((prev) => !prev);
-  };
-
   return (
-    <div className="flex h-dvh w-full overflow-hidden">
-      <ParentSidebar
+    <div className="fixed inset-0 flex w-full overflow-hidden">
+      <Sidebar
         isMobileOpen={isMobileSidebarOpen}
         onCloseMobile={closeMobileSidebar}
         collapsed={isSidebarCollapsed}
-        onToggleCollapse={toggleSidebarCollapse}
+        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
       />
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <ParentHeader
-          reminder="Welcome to your parent portal. Stay updated on your child's progress."
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <Header
           isSidebarOpen={isMobileSidebarOpen}
           onOpenSidebar={openMobileSidebar}
           mobileMenuButtonRef={mobileMenuButtonRef}
+          reminder="No reminder for today."
         />
 
         <main
           id="main-content"
-          className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-gray-100"
+          className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-gray-100"
         >
           <Outlet />
         </main>

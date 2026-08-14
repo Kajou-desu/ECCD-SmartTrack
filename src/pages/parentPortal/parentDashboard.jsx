@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import StatCard from "../../components/StatCard";
+import StatCard from "../../components/shared/StatCard";
 import { useAuth } from "../../hooks/useAuth";
-import { WeatherCard } from "../../components/Dashboard/WeatherCard";
+import { WeatherCard } from "../../features/dashboard/components/WeatherCard";
 import { TrendingUp, BookUser, CalendarDays, Award } from "lucide-react";
 import { CHILD_DATA, PROGRESS_DATA } from "../../data/mockParentData";
 

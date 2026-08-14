@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import logo from "../assets/ECCDST_Logo.png";
-import ProfileBox from "../components/ProfileBox.jsx";
+import { useAuth } from "../../hooks/useAuth";
+import logo from "../../assets/ECCDST_Logo.png";
+import ProfileBox from "../shared/ProfileBox";
 
 import {
   PanelLeftClose,
