@@ -39,6 +39,7 @@ export const DASHBOARD_STATS = {
 };
 
 // Mock data for learning materials
+import Material1 from '../assets/COR.pdf';
 export const MATERIALS_DATA = [
     {
         id: 1,
@@ -48,6 +49,7 @@ export const MATERIALS_DATA = [
             "Guided exercises for learning primary and secondary colors through painting.",
         bgColor: "bg-gradient-to-r from-orange-400 to-purple-500",
         icon: "🎨",
+        pdfUrl: Material1,
     },
     {
         id: 2,
@@ -593,3 +595,241 @@ export const getStudentData = (studentId) => {
 export const getAllStudentsData = () => {
     return Object.values(studentDataAll);
 };
+
+export const EVENTS_DATA = {
+    '2026-08': {
+      daily: {
+        1: 'Today',
+        2: 'Holiday',
+        5: 'Birthday',
+        7: 'Today',
+        8: 'Others',
+        10: 'Holiday',
+        12: 'Birthday',
+        14: 'Today',
+        15: 'Today',
+        17: 'Others',
+        19: 'Birthday',
+        21: 'Holiday',
+        22: 'Today',
+        25: 'Today',
+        28: 'Birthday',
+        31: 'Holiday',
+      },
+      logs: [
+        {
+          date: 'Aug 1, 2026',
+          time: '08:30 AM',
+          status: 'Present',
+        },
+        {
+          date: 'Aug 2, 2026',
+          time: '---',
+          status: 'Holiday',
+        },
+        {
+          date: 'Aug 5, 2026',
+          time: '09:00 AM',
+          status: 'Birthday Event',
+        },
+        {
+          date: 'Aug 7, 2026',
+          time: '08:00 AM',
+          status: 'Present',
+        },
+        {
+          date: 'Aug 8, 2026',
+          time: '10:15 AM',
+          status: 'Late',
+        },
+        {
+          date: 'Aug 10, 2026',
+          time: '---',
+          status: 'No Classes',
+        },
+        {
+          date: 'Aug 12, 2026',
+          time: '11:00 AM',
+          status: 'Birthday Event',
+        },
+        {
+          date: 'Aug 14, 2026',
+          time: '08:45 AM',
+          status: 'Completed',
+        },
+        {
+          date: 'Aug 15, 2026',
+          time: '09:30 AM',
+          status: 'Present',
+        },
+        {
+          date: 'Aug 17, 2026',
+          time: '02:00 PM',
+          status: 'Late',
+        },
+        {
+          date: 'Aug 19, 2026',
+          time: '03:00 PM',
+          status: 'Birthday Event',
+        },
+        {
+          date: 'Aug 21, 2026',
+          time: '---',
+          status: 'Holiday Event',
+        },
+        {
+          date: 'Aug 22, 2026',
+          time: '08:15 AM',
+          status: 'Present',
+        },
+        {
+          date: 'Aug 25, 2026',
+          time: '09:00 AM',
+          status: 'Completed',
+        },
+        {
+          date: 'Aug 28, 2026',
+          time: '10:30 AM',
+          status: 'Birthday Event',
+        },
+        {
+          date: 'Aug 31, 2026',
+          time: '---',
+          status: 'Day Off',
+        },
+      ],
+    },
+    '2026-07': {
+      daily: {
+        3: 'Today',
+        4: 'Birthday',
+        7: 'Holiday',
+        10: 'Today',
+        15: 'Today',
+        18: 'Birthday',
+        20: 'Holiday',
+        24: 'Today',
+        25: 'Others',
+      },
+      logs: [
+        {
+          date: 'Jul 3, 2026',
+          time: '08:30 AM',
+          status: 'Present',
+        },
+        {
+          date: 'Jul 4, 2026',
+          time: '05:00 PM',
+          status: 'Birthday Event',
+        },
+        {
+          date: 'Jul 7, 2026',
+          time: '---',
+          status: 'Holiday',
+        },
+        {
+          date: 'Jul 10, 2026',
+          time: '09:00 AM',
+          status: 'Completed',
+        },
+        {
+          date: 'Jul 15, 2026',
+          time: '08:45 AM',
+          status: 'Present',
+        },
+        {
+          date: 'Jul 18, 2026',
+          time: '06:00 PM',
+          status: 'Birthday Event',
+        },
+        {
+          date: 'Jul 20, 2026',
+          time: '---',
+          status: 'No Classes',
+        },
+        {
+          date: 'Jul 24, 2026',
+          time: '09:15 AM',
+          status: 'Late',
+        },
+        {
+          date: 'Jul 25, 2026',
+          time: '02:30 PM',
+          status: 'Late',
+        },
+      ],
+    },
+    '2026-09': {
+      daily: {
+        2: 'Holiday',
+        5: 'Today',
+        8: 'Birthday',
+        10: 'Today',
+        12: 'Holiday',
+        16: 'Today',
+        18: 'Others',
+        20: 'Birthday',
+        22: 'Today',
+        25: 'Holiday',
+        28: 'Today',
+      },
+      logs: [
+        {
+          date: 'Sep 2, 2026',
+          time: '---',
+          status: 'Holiday Event',
+        },
+        {
+          date: 'Sep 5, 2026',
+          time: '08:00 AM',
+          status: 'Present',
+        },
+        {
+          date: 'Sep 8, 2026',
+          time: '04:00 PM',
+          status: 'Birthday Event',
+        },
+        {
+          date: 'Sep 10, 2026',
+          time: '09:30 AM',
+          status: 'Completed',
+        },
+        {
+          date: 'Sep 12, 2026',
+          time: '---',
+          status: 'No Classes',
+        },
+        {
+          date: 'Sep 16, 2026',
+          time: '08:30 AM',
+          status: 'Present',
+        },
+        {
+          date: 'Sep 18, 2026',
+          time: '10:45 AM',
+          status: 'Late',
+        },
+        {
+          date: 'Sep 20, 2026',
+          time: '07:00 PM',
+          status: 'Birthday Event',
+        },
+        {
+          date: 'Sep 22, 2026',
+          time: '09:00 AM',
+          status: 'Present',
+        },
+        {
+          date: 'Sep 25, 2026',
+          time: '---',
+          status: 'Day Off',
+        },
+        {
+          date: 'Sep 28, 2026',
+          time: '08:15 AM',
+          status: 'Completed',
+        },
+      ],
+    },
+  };
+  

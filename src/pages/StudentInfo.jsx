@@ -292,9 +292,9 @@ export default function StudentInfo() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
+    <main className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
       <div className="flex w-full flex-col gap-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">
             Student Records
           </h1>
@@ -307,7 +307,7 @@ export default function StudentInfo() {
             <UserRoundPlus className="h-5 w-5" />
             <span className="text-sm">Add Student</span>
           </button>
-        </div>
+        </header>
 
         {notice && (
           <ErrorAlert message={notice} onClose={() => setNotice("")} />
@@ -458,7 +458,7 @@ export default function StudentInfo() {
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }
 

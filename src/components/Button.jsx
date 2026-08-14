@@ -10,14 +10,14 @@ export default function Button({
   let colorClasses = "";
 
   if (variant === "primary") {
-    colorClasses = "bg-amber-700 hover:bg-amber-800 text-white";
+    colorClasses = "bg-[#C2570C] hover:bg-orange-800 text-white";
   } else if (variant === "secondary") {
     colorClasses = "bg-orange-100 hover:bg-orange-200 text-orange-900 text-sm";
   }
 
   return (
     <button
-      type="button"
+      type="submit"
       onClick={onClick}
       disabled={disabled}
       className={`${baseClasses} ${colorClasses} ${
