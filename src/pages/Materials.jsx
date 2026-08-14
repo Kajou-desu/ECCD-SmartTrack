@@ -209,7 +209,7 @@ export default function Materials() {
             <button
               type="button"
               onClick={handleAddMaterial}
-              className="flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 active:shadow-sm"
+              className="flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#C2570C] px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 active:shadow-sm"
             >
               <Plus size={18} aria-hidden="true" />
               Add Material
@@ -385,7 +385,7 @@ function LearningMaterialCard({
             type="button"
             onClick={onView}
             aria-label={`View ${material.title} PDF`}
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-orange-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#C2570C] px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
           >
             <FileText size={16} aria-hidden="true" />
             View PDF
@@ -428,7 +428,7 @@ function EmptyMaterialsState({ onAddMaterial }) {
       <button
         type="button"
         onClick={onAddMaterial}
-        className="mt-6 flex cursor-pointer items-center gap-2 rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
+        className="mt-6 flex cursor-pointer items-center gap-2 rounded-lg bg-[#C2570C] px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
       >
         <Plus size={18} aria-hidden="true" />
         Add Material
@@ -726,7 +726,7 @@ function UploadStudentWorkModal({ material, onClose, onSuccess }) {
             <button
               type="submit"
               disabled={!selectedStudent || !selectedFile}
-              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#C2570C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Upload size={16} aria-hidden="true" />
               Upload Work
