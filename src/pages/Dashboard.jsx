@@ -16,7 +16,7 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
+    <div className="min-h-0 flex flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
       <DashboardHeader
         greeting={greeting}
         firstName={firstName}

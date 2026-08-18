@@ -1,10 +1,10 @@
 import { useState } from "react";
-import ProfileSettings from "../../components/SettingsComp/ProfileSettings.jsx";
-import SecuritySettings from "../../components/SettingsComp/SecuritySettings.jsx";
-import NotificationSettings from "../../components/SettingsComp/NotificationSettings.jsx";
-import AccountSettings from "../../components/SettingsComp/AccountSettings.jsx";
-import ChildrenSection from "../../components/SettingsComp/ChildrenSection.jsx";
-import EmergencyContacts from "../../components/SettingsComp/EmergencyContacts.jsx";
+import ProfileSettings from "../../components/settings/ProfileSettings.jsx";
+import SecuritySettings from "../../components/settings/SecuritySettings.jsx";
+import NotificationSettings from "../../components/settings/NotificationSettings.jsx";
+import AccountSettings from "../../components/settings/AccountSettings.jsx";
+import ChildrenSection from "../../components/settings/ChildrenSection.jsx";
+import EmergencyContacts from "../../components/settings/EmergencyContacts.jsx";
 import {
   UserRound,
   Bell,

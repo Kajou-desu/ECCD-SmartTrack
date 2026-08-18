@@ -148,6 +148,7 @@ export function useStudents({ itemsPerPage = ITEMS_PER_PAGE } = {}) {
     return {
         loading,
         notice,
+        setNotice,
         searchTerm,
         setSearchTerm,
         filterStatus,

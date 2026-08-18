@@ -45,10 +45,10 @@ export function DailyThemeCard() {
           </div>
           <button
             type="button"
-            className="sm:mt-auto flex items-center gap-2 rounded-lg bg-[#C2570C] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-orange-800 cursor-pointer"
+            className="flex w-full cursor-pointer items-center justify-start gap-2 rounded-lg bg-[#C2570C] px-4 py-2.5 font-semibold text-white transition hover:bg-[#a94709] sm:w-auto"
           >
-            View Lesson
-            <ArrowRight size={18} />
+            <span className="text-sm">View Lesson</span>
+            <ArrowRight className="h-5 w-5" />
           </button>
         </div>
       </div>

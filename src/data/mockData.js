@@ -15,16 +15,16 @@ export const DAILY_THEME = {
 
 // Mock data for attendance records
 export const initialRecords = [
-    { id: 1, name: "Chloe Garcia", session:"AM", status: "present", time: "7:58 am", date: "2026-08-13" },
-    { id: 2, name: "Lucas Ramirez", session:"AM", status: "present", time: "7:52 am", date: "2026-08-13" },
-    { id: 3, name: "Leo Miller", session:"AM", status: "present", time: "7:58 am", date: "2026-08-13" },
-    { id: 4, name: "Emma Johnson", session:"AM", status: "present", time: "7:55 am", date: "2026-08-13" },
-    { id: 5, name: "Lian Smith", session:"AM", status: "present", time: "7:56 am", date: "2026-08-13" },
-    { id: 6, name: "Noah Davis", session:"AM", status: "absent", time: "—", date: "2026-08-13" },
-    { id: 7, name: "Olivia Brown", session:"AM", status: "excused", time: "—", date: "2026-08-13" },
-    { id: 8, name: "Ave Castillo", session:"AM", status: "present", time: "7:50 am", date: "2026-08-13" },
-    { id: 9, name: "Isabella Thomas", session:"AM", status: "present", time: "7:51 AM", date: "2026-08-13" },
-    { id: 10, name: "Lucas Jackson", session:"AM", status: "present", time: "7:54 AM", date: "2026-08-13" },
+    { id: 1, name: "Chloe Garcia", session:"AM", status: "present", time: "7:58 am", date: "2026-08-18" },
+    { id: 2, name: "Lucas Ramirez", session:"AM", status: "present", time: "7:52 am", date: "2026-08-18" },
+    { id: 3, name: "Leo Miller", session:"AM", status: "present", time: "7:58 am", date: "2026-08-18" },
+    { id: 4, name: "Emma Johnson", session:"AM", status: "present", time: "7:55 am", date: "2026-08-18" },
+    { id: 5, name: "Lian Smith", session:"AM", status: "present", time: "7:56 am", date: "2026-08-18" },
+    { id: 6, name: "Noah Davis", session:"AM", status: "absent", time: "—", date: "2026-08-18" },
+    { id: 7, name: "Olivia Brown", session:"AM", status: "excused", time: "—", date: "2026-08-18" },
+    { id: 8, name: "Ave Castillo", session:"AM", status: "present", time: "7:50 am", date: "2026-08-18" },
+    { id: 9, name: "Isabella Thomas", session:"AM", status: "present", time: "7:51 AM", date: "2026-08-18" },
+    { id: 10, name: "Lucas Jackson", session:"AM", status: "present", time: "7:54 AM", date: "2026-08-18" },
 ];
 
 // Dashboard stats mock data

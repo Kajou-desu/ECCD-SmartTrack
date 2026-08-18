@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import Button from "../components/ui/Button";
+import { PrimaryButton, SecondaryButton } from "../components/ui/Button";
 import { ArrowLeft, Folder, ImagePlus, Plus, X } from "lucide-react";
 
 export default function EventPhotos() {
@@ -160,12 +160,12 @@ export default function EventPhotos() {
           </p>
         </div>
 
-        <Button variant="primary" onClick={handleOpenAlbumModal}>
-          <span className="flex items-center gap-2">
-            <Plus size={18} />
-            Add New Album
-          </span>
-        </Button>
+        <PrimaryButton
+          icon={<Plus className="h-5 w-5" />}
+          label="Add Album"
+          onClick={handleOpenAlbumModal}
+          ariaLabel="Add New Album"
+        />
       </div>
 
       {albums.length === 0 ? (
@@ -182,12 +182,12 @@ export default function EventPhotos() {
           </p>
 
           <div className="mt-6">
-            <Button variant="primary" onClick={handleOpenAlbumModal}>
-              <span className="flex items-center gap-2">
-                <Plus size={18} />
-                Add New Album
-              </span>
-            </Button>
+            <PrimaryButton
+              icon={<Plus className="h-5 w-5" />}
+              label="Add Album"
+              onClick={handleOpenAlbumModal}
+              ariaLabel="Add New Album"
+            />
           </div>
         </div>
       ) : (
@@ -254,12 +254,12 @@ export default function EventPhotos() {
             </div>
           </div>
 
-          <Button variant="primary" onClick={handleChoosePhotos}>
-            <span className="flex items-center gap-2">
-              <ImagePlus size={18} />
-              Add Photos
-            </span>
-          </Button>
+          <PrimaryButton
+            icon={<ImagePlus className="h-5 w-5" />}
+            label="Add Photos"
+            onClick={handleChoosePhotos}
+            ariaLabel="Add New Photos"
+          />
         </div>
 
         <input
@@ -288,12 +288,12 @@ export default function EventPhotos() {
             </p>
 
             <div className="mt-6">
-              <Button variant="primary" onClick={handleChoosePhotos}>
-                <span className="flex items-center gap-2">
-                  <ImagePlus size={18} />
-                  Upload Photos
-                </span>
-              </Button>
+              <PrimaryButton
+                icon={<ImagePlus className="h-5 w-5" />}
+                label="Add Photos"
+                onClick={handleChoosePhotos}
+                ariaLabel="Add New Photos"
+              />
             </div>
           </div>
         ) : (
@@ -370,6 +370,7 @@ export default function EventPhotos() {
               >
                 <X size={20} />
               </button>
+              
             </div>
 
             <form className="mt-6" onSubmit={handleCreateAlbum}>
@@ -399,17 +400,18 @@ export default function EventPhotos() {
               ) : null}
 
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <Button
-                  variant="secondary"
-                  type="button"
+                <SecondaryButton
+                  label="Cancel"
                   onClick={handleCloseAlbumModal}
-                >
-                  Cancel
-                </Button>
+                  ariaLabel="Cancel Album Modal"
+                />
 
-                <Button variant="primary" type="submit">
-                  Create Album
-                </Button>
+                <PrimaryButton
+                  icon={<Plus className="h-5 w-5" />}
+                  label="Add Album"
+                  onClick={handleOpenAlbumModal}
+                  ariaLabel="Add New Album"
+                />
               </div>
             </form>
           </div>
