@@ -1,13 +1,13 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { StudentTableSkeleton } from "../components/ui/LoadingSkeleton";
-import { PrimaryButton } from "../components/ui/Button";
-import ErrorMsg from "../components/ui/ErrorMsg";
-import { useStudents } from "../features/students/hooks/useStudents";
-import StudentFilters from "../features/students/components/StudentFilters";
-import StudentTable from "../features/students/components/StudentTable";
-import StudentPagination from "../features/students/components/StudentPagination";
-import StudentMobileList from "../features/students/components/StudentMobileList";
+import StudentFilters from "@features/students/components/StudentFilters";
+import StudentMobileList from "@features/students/components/StudentMobileList";
+import StudentPagination from "@features/students/components/StudentPagination";
+import StudentTable from "@features/students/components/StudentTable";
+import { useStudents } from "@features/students/hooks/useStudents";
+import { PrimaryButton } from "@components/ui/Button";
+import ErrorMsg from "@components/ui/ErrorMsg";
+import { StudentTableSkeleton } from "@components/ui/LoadingSkeleton";
 import { UserRoundPlus } from "lucide-react";
 
 const ITEMS_PER_PAGE = 10;
@@ -76,9 +76,7 @@ export default function StudentInfo() {
           />
         </header>
 
-        {notice && (
-          <ErrorMsg message={notice} onClose={() => setNotice("")} />
-        )}
+        {notice && <ErrorMsg message={notice} onClose={() => setNotice("")} />}
 
         <section className="flex flex-col rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">

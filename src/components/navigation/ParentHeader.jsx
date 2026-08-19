@@ -1,5 +1,5 @@
 import ReminderBanner from "../shared/ReminderBanner";
-import Logo from "../../assets/ECCDST_Logo.png";
+import Logo from "@assets/ECCDST_Logo.png";
 import { Bell, Menu } from "lucide-react";
 
 export default function ParentHeader({

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { FileText, Upload, X } from "lucide-react";
-import { PrimaryButton, SecondaryButton } from "../../../components/ui/Button";
 
 export default function EditMaterial({ material, onCancel, onConfirm }) {
   const fileInputRef = useRef(null);

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CalendarFold, Cake } from "lucide-react";
-import { getAllStudentsData } from "../../../data/mockData.js";
-import { HOLIDAYS } from "../../../constants/holidays.js";
+import { getAllStudentsData } from "@data/mockData.js";
+import { HOLIDAYS } from "@constants/holidays.js";
 
 export function EventCard() {
   const [selectedEvent, setSelectedEvent] = useState("birthdays");

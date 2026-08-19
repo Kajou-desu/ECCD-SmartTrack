@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { isParent } from "../../auth/permissions";
+import { useAuth } from "@hooks/useAuth";
+import { isParent } from "@auth/permissions";
 
 export default function PublicRoute() {
   const { isAuthenticated, isLoading, user } = useAuth();

@@ -1,5 +1,5 @@
-import { PrimaryButton } from "../../../components/ui/Button";
-import SearchInput from "../../../components/ui/SearchInput";
+import { PrimaryButton } from "@components/ui/Button";
+import SearchInput from "@components/ui/SearchInput";
 import { Download } from "lucide-react";
 
 export default function StudentFilters({

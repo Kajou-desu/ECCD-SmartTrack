@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import StatCard from "../../components/shared/StatCard";
-import { ATTENDANCE_DATA } from "../../data/mockParentData";
+import StatCard from "@components/shared/StatCard";
+import { ATTENDANCE_DATA } from "@data/mockData";
 import {
   ChevronLeft,
   ChevronRight,

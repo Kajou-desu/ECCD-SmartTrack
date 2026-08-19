@@ -1,6 +1,6 @@
-import calculateAge from "../../utils/calculateAge";
-import formatDate from "../../utils/formatDate";
-import { getStudentData } from "../../data/mockData";
+import calculateAge from "@utils/calculateAge";
+import formatDate from "@utils/formatDate";
+import { getStudentData } from "@data/mockData";
 import {
   AlertCircle,
   FileText,

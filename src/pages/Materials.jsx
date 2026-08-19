@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MATERIALS_DATA } from "@data/mockData";
+import LearningMaterialCard from "@features/materials/components/MaterialCard";
+import EmptyMaterialsState from "@features/materials/components/EmptyMaterialsState";
+import AddMaterial from "@features/materials/components/AddMaterial";
+import EditMaterial from "@features/materials/components/EditMaterial";
+import DeleteMaterial from "@features/materials/components/DeleteMaterial";
+import UploadStudentWork from "@features/materials/components/UploadStudentWork";
+import SearchInput from "@components/ui/SearchInput";
+import { PrimaryButton } from "@components/ui/Button";
+import { Toast } from "@components/ui/NotificationModal";
 import { Plus, Search } from "lucide-react";
-import LearningMaterialCard from "../features/materials/components/MaterialCard";
-import EmptyMaterialsState from "../features/materials/components/EmptyMaterialsState";
-import AddMaterial from "../features/materials/components/AddMaterial";
-import EditMaterial from "../features/materials/components/EditMaterial";
-import DeleteMaterial from "../features/materials/components/DeleteMaterial";
-import UploadStudentWork from "../features/materials/components/UploadStudentWork";
-import SearchInput from "../components/ui/SearchInput";
-import { PrimaryButton } from "../components/ui/Button";
-import { Toast } from "../components/ui/NotificationModal";
-import { MATERIALS_DATA } from "../data/mockData";
 
 export default function Materials() {
   const menuRef = useRef(null);

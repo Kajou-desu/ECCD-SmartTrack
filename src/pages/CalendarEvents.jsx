@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { EVENTS_DATA } from "./mockData.js";
+import { EVENTS_DATA } from "@data/mockData";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function CalendarEvents() {

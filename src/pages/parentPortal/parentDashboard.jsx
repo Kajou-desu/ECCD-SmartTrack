@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import StatCard from "../../components/shared/StatCard";
-import { useAuth } from "../../hooks/useAuth";
-import { WeatherCard } from "../../features/dashboard/components/WeatherCard";
+import { CHILD_DATA, PROGRESS_DATA } from "@data/mockParentData";
+import { useAuth } from "@hooks/useAuth";
+import { WeatherCard } from "@features/dashboard/components/WeatherCard";
+import StatCard from "@components/shared/StatCard";
 import { TrendingUp, BookUser, CalendarDays, Award } from "lucide-react";
-import { CHILD_DATA, PROGRESS_DATA } from "../../data/mockParentData";
 
 // For weather widget
 const LOCATION_CONFIG = {

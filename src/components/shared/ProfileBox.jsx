@@ -1,4 +1,4 @@
-import { getInitials } from "../../utils/user.js";
+import { getInitials } from "@utils/user.js";
 
 export default function ProfileBox({
   name = "User",

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { initialRecords } from "../../../data/mockData.js";
+import { initialRecords } from "@data/mockData.js";
 import { Check, ArrowRight } from "lucide-react";
 
 // Helpers

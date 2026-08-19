@@ -1,4 +1,4 @@
-import { PrimaryButton } from "../../../components/ui/Button";
+import { PrimaryButton } from "@components/ui/Button";
 import { Plus, FileText } from "lucide-react";
 
 export default function EmptyMaterialsState({ onAddMaterial }) {

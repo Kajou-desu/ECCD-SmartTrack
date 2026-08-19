@@ -1,4 +1,4 @@
-import { DAILY_THEME } from "../../../data/mockData";
+import { DAILY_THEME } from "@data/mockData";
 import { ArrowRight, CircleCheck } from "lucide-react";
 
 export function DailyThemeCard() {

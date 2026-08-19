@@ -1,12 +1,12 @@
 import { useMemo } from "react";
+import useAttendance from "@features/attendance/hooks/useAttendance";
+import AttendanceControls from "@features/attendance/components/AttendanceControls";
+import AttendanceStats from "@features/attendance/components/AttendanceStats";
+import AttendanceList from "@features/attendance/components/AttendanceList";
+import AttendanceLoadingState from "@features/attendance/components/AttendanceLoadingState";
+import ErrorMsg from "@components/ui/ErrorMsg";
+import { PrimaryButton } from "@components/ui/Button";
 import { Calendar, Download } from "lucide-react";
-import useAttendance from "../features/attendance/hooks/useAttendance";
-import AttendanceControls from "../features/attendance/components/AttendanceControls";
-import AttendanceStats from "../features/attendance/components/AttendanceStats";
-import AttendanceList from "../features/attendance/components/AttendanceList";
-import AttendanceLoadingState from "../features/attendance/components/AttendanceLoadingState";
-import ErrorMsg from "../components/ui/ErrorMsg";
-import { PrimaryButton } from "../components/ui/Button";
 
 export default function Attendance() {
   const {

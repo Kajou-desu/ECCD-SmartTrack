@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
-import ParentHeader from "../components/navigation/ParentHeader";
-import ParentSidebar from "../components/navigation/ParentSidebar";
+import ParentHeader from "@components/navigation/ParentHeader";
+import ParentSidebar from "@components/navigation/ParentSidebar";
 
 export default function ParentLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);

@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useCallback } from "react";
 import { AuthContext } from "./AuthContextObject";
-import { setUnauthorizedHandler } from "../api/client";
+import { setUnauthorizedHandler } from "@api/client";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

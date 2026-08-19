@@ -1,4 +1,4 @@
-import { PrimaryButton, SecondaryButton } from "../../../components/ui/Button";
+import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { Pencil, Trash2, MoreVertical, Upload, FileText } from "lucide-react";
 
 export default function LearningMaterialCard({

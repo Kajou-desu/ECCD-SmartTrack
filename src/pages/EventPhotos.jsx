@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { PrimaryButton, SecondaryButton } from "../components/ui/Button";
+import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { ArrowLeft, Folder, ImagePlus, Plus, X } from "lucide-react";
 
 export default function EventPhotos() {

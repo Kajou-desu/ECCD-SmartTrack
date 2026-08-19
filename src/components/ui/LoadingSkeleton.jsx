@@ -1,4 +1,4 @@
-export function StudentTableSkeleton({ rows = 7 }) {
+export function StudentTableSkeleton({ rows }) {
   return (
     <div className="mt-4 overflow-x-auto">
       <table className="min-w-272 w-full border-collapse animate-pulse text-left">

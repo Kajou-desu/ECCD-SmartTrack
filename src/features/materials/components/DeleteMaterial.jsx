@@ -1,6 +1,6 @@
 import { useEffect } from "react";
+import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { Trash2, X } from "lucide-react";
-import { PrimaryButton, SecondaryButton } from "../../../components/ui/Button";
 
 export default function DeleteMaterial({ material, onCancel, onConfirm }) {
   // Close the modal with the Escape key.

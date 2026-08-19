@@ -1,8 +1,8 @@
 import { useState } from "react";
-import ProfileSettings from "../components/settings/ProfileSettings.jsx";
-import SecuritySettings from "../components/settings/SecuritySettings.jsx";
-import NotificationSettings from "../components/settings/NotificationSettings.jsx";
-import AccountSettings from "../components/settings/AccountSettings.jsx";
+import ProfileSettings from "@components/settings/ProfileSettings.jsx";
+import SecuritySettings from "@components/settings/SecuritySettings.jsx";
+import NotificationSettings from "@components/settings/NotificationSettings.jsx";
+import AccountSettings from "@components/settings/AccountSettings.jsx";
 import { UserRound, Bell, Lock, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function AdminSettings() {

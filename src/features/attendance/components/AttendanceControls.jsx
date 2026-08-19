@@ -1,4 +1,4 @@
-import SearchInput from "../../../components/ui/SearchInput";
+import SearchInput from "@components/ui/SearchInput";
 
 export default function AttendanceControls({
   filterStatus,

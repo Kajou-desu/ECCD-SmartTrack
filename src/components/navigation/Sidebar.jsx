@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth.js";
-import logo from "../../assets/ECCDST_Logo.png";
+import { canManageAccounts } from "@auth/permissions.js";
+import { useAuth } from "@hooks/useAuth.js";
+import logo from "@assets/ECCDST_Logo.png";
 import ProfileBox from "../shared/ProfileBox.jsx";
-import { canManageAccounts } from "../../auth/permissions.js";
 
 import {
   PanelLeftClose,

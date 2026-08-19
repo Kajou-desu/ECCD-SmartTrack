@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { getAllStudentsData } from "@data/mockData";
 import { Upload, X } from "lucide-react";
-import { getAllStudentsData } from "../../../data/mockData";
 
 export default function UploadStudentWork({ material, onClose, onSuccess }) {
   const [studentQuery, setStudentQuery] = useState("");

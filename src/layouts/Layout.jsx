@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
-import Header from "../components/navigation/Header";
-import Sidebar from "../components/navigation/Sidebar";
+import Header from "@components/navigation/Header";
+import Sidebar from "@components/navigation/Sidebar";
 
 export default function Layout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);

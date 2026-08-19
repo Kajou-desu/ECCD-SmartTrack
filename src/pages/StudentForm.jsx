@@ -1,14 +1,14 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useFormValidation } from "../hooks/useFormValidation";
-import { studentSchema } from "../validation/student.js";
-import { apiClient } from "../api/client.js";
-import FormSection from "../features/students/components/form/FormSection";
-import FormField from "../features/students/components/form/FormField";
-import TextAreaField from "../features/students/components/form/TextAreaField";
-import ContactSection from "../features/students/components/form/ContactSection";
-import SessionSelector from "../features/students/components/form/SessionSelector";
-import FileUploadField from "../features/students/components/form/FileUploadField";
+import { useFormValidation } from "@hooks/useFormValidation";
+import { studentSchema } from "@validation/student.js";
+import { apiClient } from "@api/client.js";
+import ContactSection from "@features/students/components/form/ContactSection";
+import FileUploadField from "@features/students/components/form/FileUploadField";
+import FormField from "@features/students/components/form/FormField";
+import FormSection from "@features/students/components/form/FormSection";
+import SessionSelector from "@features/students/components/form/SessionSelector";
+import TextAreaField from "@features/students/components/form/TextAreaField";
 
 const initialValues = {
   firstName: "",

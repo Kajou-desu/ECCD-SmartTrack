@@ -1,4 +1,4 @@
-import StatCard from "../../../components/shared/StatCard";
+import StatCard from "@components/shared/StatCard";
 import { UsersRound, UserCheck, UserX, Clock } from "lucide-react";
 
 export default function AttendanceStats({ attendanceStats }) {

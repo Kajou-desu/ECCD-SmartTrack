@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PHOTO_ALBUMS_DATA } from "../data/mockData";
+import { PHOTO_ALBUMS_DATA } from "@data/mockData";
 import {
   ArrowLeft,
   Download,

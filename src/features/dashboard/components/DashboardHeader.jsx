@@ -1,4 +1,4 @@
-import { LOCATION_CONFIG } from "../../../constants/location";
+import { LOCATION_CONFIG } from "@constants/location";
 import { WeatherCard } from "./WeatherCard";
 
 export default function DashboardHeader({

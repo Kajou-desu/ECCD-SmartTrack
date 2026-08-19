@@ -1,13 +1,10 @@
-import useDashboardGreeting from "../features/dashboard/hooks/useDashboardGreeting";
-import StatCard from "../components/shared/StatCard";
-import { useAuth } from "../hooks/useAuth";
-import { DASHBOARD_STATS } from "../data/mockData";
-import {
-  STAT_CARDS,
-  MAIN_CARDS,
-} from "../features/dashboard/components/DashboardStats";
-import DashboardHeader from "../features/dashboard/components/DashboardHeader";
-import DashboardContentGrid from "../features/dashboard/components/DashboardContentGrid";
+import { useAuth } from "@hooks/useAuth";
+import { DASHBOARD_STATS } from "@data/mockData";
+import DashboardHeader from "@features/dashboard/components/DashboardHeader";
+import useDashboardGreeting from "@features/dashboard/hooks/useDashboardGreeting";
+import { STAT_CARDS, MAIN_CARDS } from "@features/dashboard/components/DashboardStats";
+import DashboardContentGrid from "@features/dashboard/components/DashboardContentGrid";
+import StatCard from "@components/shared/StatCard";
 
 export default function Dashboard() {
   const { user } = useAuth();

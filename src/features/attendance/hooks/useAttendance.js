@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { apiClient } from "../../../api/client.js";
-import { initialRecords } from "../../../data/mockData.js";
+import { apiClient } from "@api/client.js";
+import { initialRecords } from "@data/mockData.js";
 
 function getLocalDateString() {
   const date = new Date();

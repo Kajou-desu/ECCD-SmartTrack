@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useDebounce } from "../../../hooks/useDebounce";
-import { usePagination } from "../../../hooks/usePagination";
-import { apiClient } from "../../../api/client.js";
-import { getAllStudentsData } from "../../../data/mockData.js";
+import { useDebounce } from "@hooks/useDebounce";
+import { usePagination } from "@hooks/usePagination";
+import { apiClient } from "@api/client.js";
+import { getAllStudentsData } from "@data/mockData.js";
 
 const ITEMS_PER_PAGE = 10;
 

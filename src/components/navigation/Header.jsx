@@ -1,6 +1,6 @@
 import { useState } from "react";
-import ReminderBanner from "../../components/shared/ReminderBanner";
-import Logo from "../../assets/ECCDST_Logo.png";
+import ReminderBanner from "@components/shared/ReminderBanner";
+import Logo from "@assets/ECCDST_Logo.png";
 import { CalendarDays, Bell, Play, Pause, Menu } from "lucide-react";
 
 export default function Header({
