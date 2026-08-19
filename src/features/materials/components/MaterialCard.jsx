@@ -1,6 +1,6 @@
 import { Pencil, Trash2, MoreVertical, Upload, FileText } from "lucide-react";
 
-export function LearningMaterialCard({
+export default function LearningMaterialCard({
   material,
   menuRef,
   isMenuOpen,

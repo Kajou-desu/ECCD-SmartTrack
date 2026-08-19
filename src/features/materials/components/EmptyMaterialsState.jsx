@@ -1,6 +1,6 @@
 import { Plus, FileText } from "lucide-react";
 
-export function EmptyMaterialsState({ onAddMaterial }) {
+export default function EmptyMaterialsState({ onAddMaterial }) {
   return (
     <section className="flex min-h-96 w-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
       <div

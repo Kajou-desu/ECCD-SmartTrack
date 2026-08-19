@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Trash2, X } from "lucide-react";
 import { PrimaryButton, SecondaryButton } from "../../../components/ui/Button";
 
-export function DeleteMaterial({ material, onCancel, onConfirm }) {
+export default function DeleteMaterial({ material, onCancel, onConfirm }) {
   // Close the modal with the Escape key.
   useEffect(() => {
     const handleKeyDown = (event) => {

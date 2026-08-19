@@ -2,7 +2,7 @@ import { useState } from "react";
 import { getAllStudentsData } from "../../../data/mockData";
 import { X, Upload } from "lucide-react";
 
-export function UploadStudentWork({ material, onClose, onSuccess }) {
+export default function UploadStudentWork({ material, onClose, onSuccess }) {
   const [studentQuery, setStudentQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);

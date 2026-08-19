@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Search } from "lucide-react";
-import { LearningMaterialCard } from "../features/materials/components/MaterialCard";
-import { EmptyMaterialsState } from "../features/materials/components/EmptyMaterialsState";
-import { EditMaterial } from "../features/materials/components/EditMaterial";
-import { DeleteMaterial } from "../features/materials/components/DeleteMaterial";
-import { UploadStudentWork } from "../features/materials/components/UploadStudentWork";
-import { NotificationModal, Toast } from "../components/ui/NotificationModal";
-import { PrimaryButton } from "../components/ui/Button";
+import LearningMaterialCard from "../features/materials/components/MaterialCard";
+import EmptyMaterialsState from "../features/materials/components/EmptyMaterialsState";
+import AddMaterial from "../features/materials/components/AddMaterial";
+import EditMaterial from "../features/materials/components/EditMaterial";
+import DeleteMaterial from "../features/materials/components/DeleteMaterial";
+import UploadStudentWork from "../features/materials/components/UploadStudentWork";
 import SearchInput from "../components/ui/SearchInput";
+import { PrimaryButton } from "../components/ui/Button";
+import { NotificationModal, Toast } from "../components/ui/NotificationModal";
 import { MATERIALS_DATA } from "../data/mockData";
 
 export default function Materials() {
@@ -15,6 +16,7 @@ export default function Materials() {
 
   const [materials, setMaterials] = useState(MATERIALS_DATA);
   const [openMenu, setOpenMenu] = useState(null);
+  const [addMaterial, setAddMaterial] = useState(null);
   const [editMaterial, setEditMaterial] = useState(null);
   const [deleteMaterial, setDeleteMaterial] = useState(null);
   const [uploadMaterial, setUploadMaterial] = useState(null);
@@ -54,6 +56,7 @@ export default function Materials() {
       if (event.key !== "Escape") return;
 
       setOpenMenu(null);
+      setAddMaterial(null);
       setEditMaterial(null);
       setDeleteMaterial(null);
       setUploadMaterial(null);
@@ -92,6 +95,20 @@ export default function Materials() {
     }
   };
 
+  const handleConfirmAdd = (newMaterial) => {
+    const createdMaterial = {
+      ...newMaterial,
+      id: crypto.randomUUID(),
+      fileName: newMaterial.file.name,
+      createdAt: new Date().toISOString(),
+    };
+
+    setMaterials((currentMaterials) => [createdMaterial, ...currentMaterials]);
+
+    setAddMaterial(null);
+    showToast("success", `"${createdMaterial.title}" was added successfully.`);
+  };
+
   const handleConfirmEdit = (updatedMaterial) => {
     setMaterials((current) =>
       current.map((material) =>
@@ -125,10 +142,7 @@ export default function Materials() {
   };
 
   const handleAddMaterial = () => {
-    setNotification({
-      title: "Add Material",
-      message: "The Add Material form will be connected here.",
-    });
+    setAddMaterial({});
   };
 
   return (
@@ -213,6 +227,14 @@ export default function Materials() {
           </section>
         )}
       </div>
+
+      {addMaterial && (
+        <AddMaterial
+          material={addMaterial}
+          onCancel={() => setAddMaterial(null)}
+          onConfirm={handleConfirmAdd}
+        />
+      )}
 
       {editMaterial && (
         <EditMaterial

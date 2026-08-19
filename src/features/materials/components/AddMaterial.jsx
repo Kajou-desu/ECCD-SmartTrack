@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { FileText, Upload, X } from "lucide-react";
 import { PrimaryButton, SecondaryButton } from "../../../components/ui/Button";
 
-export default function EditMaterial({ material, onCancel, onConfirm }) {
+export default function AddMaterial({ material, onCancel, onConfirm }) {
   const fileInputRef = useRef(null);
 
-  const [title, setTitle] = useState(material.title || "");
-  const [description, setDescription] = useState(material.description || "");
+  const [title, setTitle] = useState(material.title ?? "");
+  const [description, setDescription] = useState(material.description ?? "");
   const [file, setFile] = useState(null);
 
   useEffect(() => {
@@ -16,24 +16,35 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
 
     document.addEventListener("keydown", handleKeyDown);
 
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [onCancel]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+
+    if (!trimmedTitle || !file) return;
+
     onConfirm({
-      ...material,
-      title: title.trim(),
-      description: description.trim(),
-      file: file || material.file,
+      title: trimmedTitle,
+      description: trimmedDescription,
+      file,
+      fileName: file.name,
     });
   };
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files?.[0];
 
-    if (selectedFile) setFile(selectedFile);
+    if (selectedFile) {
+      setFile(selectedFile);
+    }
+
+    event.target.value = "";
   };
 
   return (
@@ -45,7 +56,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
       <form
         role="dialog"
         aria-modal="true"
-        aria-labelledby="edit-material-title"
+        aria-labelledby="add-material-title"
         onSubmit={handleSubmit}
         onClick={(event) => event.stopPropagation()}
         className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl"
@@ -53,14 +64,14 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
         <div className="flex items-center justify-between border-b border-slate-200 p-5">
           <div>
             <h2
-              id="edit-material-title"
+              id="add-material-title"
               className="text-lg font-bold text-slate-900"
             >
-              Edit Material
+              Add Material
             </h2>
 
             <p className="mt-1 text-sm text-slate-600">
-              Update the learning material details.
+              Add new learning materials.
             </p>
           </div>
 
@@ -110,9 +121,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
                   {file?.name || material.fileName || "Current PDF file"}
                 </p>
 
-                <p className="text-xs text-slate-500">
-                  Click to replace the file
-                </p>
+                <p className="text-xs text-slate-500">Click to add file</p>
               </div>
             </button>
           </div>
@@ -158,7 +167,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
         <div className="flex justify-end gap-2 border-t border-slate-200 p-4">
           <SecondaryButton label="Cancel" type="button" onClick={onCancel} />
 
-          <PrimaryButton label="Save Changes" type="submit" />
+          <PrimaryButton label="Add Material" type="submit" />
         </div>
       </form>
     </div>
