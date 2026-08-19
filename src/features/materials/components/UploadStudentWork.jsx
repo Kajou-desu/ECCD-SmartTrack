@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Upload, X } from "lucide-react";
 import { getAllStudentsData } from "../../../data/mockData";
-import { X, Upload } from "lucide-react";
 
 export default function UploadStudentWork({ material, onClose, onSuccess }) {
   const [studentQuery, setStudentQuery] = useState("");
@@ -8,20 +8,32 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const students = getAllStudentsData();
+  const students = useMemo(() => getAllStudentsData(), []);
 
-  const suggestions = students
-    .filter((record) => {
-      const query = studentQuery.trim().toLowerCase();
+  const suggestions = useMemo(() => {
+    const query = studentQuery.trim().toLowerCase();
 
-      if (!query || selectedStudent) return false;
+    if (!query || selectedStudent) return [];
 
-      const studentName = record.student?.name?.toLowerCase() || "";
-      const studentId = record.student?.id?.toLowerCase() || "";
+    return students
+      .filter((record) => {
+        const studentName = record.student?.name?.toLowerCase() || "";
+        const studentId = record.student?.id?.toLowerCase() || "";
 
-      return studentName.includes(query) || studentId.includes(query);
-    })
-    .slice(0, 5);
+        return studentName.includes(query) || studentId.includes(query);
+      })
+      .slice(0, 5);
+  }, [studentQuery, selectedStudent, students]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   const handleStudentChange = (event) => {
     setStudentQuery(event.target.value);
@@ -38,7 +50,28 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
   };
 
   const handleFileChange = (event) => {
-    setSelectedFile(event.target.files?.[0] || null);
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
+
+    const allowedTypes = ["application/pdf", "image/png", "image/jpeg"];
+
+    const allowedExtensions = [".pdf", ".png", ".jpg", ".jpeg"];
+    const extension = `.${file.name.split(".").pop()?.toLowerCase()}`;
+
+    if (
+      !allowedTypes.includes(file.type) &&
+      !allowedExtensions.includes(extension)
+    ) {
+      event.target.value = "";
+      setSelectedFile(null);
+      return;
+    }
+
+    setSelectedFile(file);
   };
 
   const handleSubmit = (event) => {
@@ -46,7 +79,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
 
     if (!selectedStudent || !selectedFile) return;
 
-    console.log({
+    onSuccess({
       materialId: material.id,
       materialTitle: material.title,
       studentId: selectedStudent.id,
@@ -55,14 +88,13 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
     });
 
     onClose();
-    onSuccess(`Work for "${material.title}" was uploaded successfully.`);
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center sm:p-4"
       role="presentation"
       onClick={onClose}
+      className="fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center sm:p-4"
     >
       <div
         role="dialog"
@@ -100,6 +132,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
               className="block text-sm font-semibold text-slate-800"
             >
               From Student
+              <span className="text-red-600"> *</span>
             </label>
 
             <input
@@ -110,6 +143,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
               onFocus={() => setShowSuggestions(true)}
               placeholder="Search by student name or ID"
               autoComplete="off"
+              required
               aria-autocomplete="list"
               aria-expanded={showSuggestions && suggestions.length > 0}
               aria-controls={`student-suggestions-${material.id}`}
@@ -173,6 +207,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
               className="block text-sm font-semibold text-slate-800"
             >
               Completed Material
+              <span className="text-red-600"> *</span>
             </label>
 
             <input

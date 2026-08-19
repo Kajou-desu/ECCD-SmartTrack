@@ -1,3 +1,4 @@
+import { PrimaryButton } from "../../../components/ui/Button";
 import { Plus, FileText } from "lucide-react";
 
 export default function EmptyMaterialsState({ onAddMaterial }) {
@@ -19,14 +20,11 @@ export default function EmptyMaterialsState({ onAddMaterial }) {
         material.
       </p>
 
-      <button
-        type="button"
+      <PrimaryButton
+        icon={<Plus className="h-5 w-5" aria-hiddent="true" />}
+        label="Add Material"
         onClick={onAddMaterial}
-        className="mt-6 flex cursor-pointer items-center gap-2 rounded-lg bg-[#C2570C] px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
-      >
-        <Plus size={18} aria-hidden="true" />
-        Add Material
-      </button>
+      />
     </section>
   );
 }

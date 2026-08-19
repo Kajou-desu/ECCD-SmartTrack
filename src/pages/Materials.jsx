@@ -8,11 +8,12 @@ import DeleteMaterial from "../features/materials/components/DeleteMaterial";
 import UploadStudentWork from "../features/materials/components/UploadStudentWork";
 import SearchInput from "../components/ui/SearchInput";
 import { PrimaryButton } from "../components/ui/Button";
-import { NotificationModal, Toast } from "../components/ui/NotificationModal";
+import { Toast } from "../components/ui/NotificationModal";
 import { MATERIALS_DATA } from "../data/mockData";
 
 export default function Materials() {
   const menuRef = useRef(null);
+  const objectUrlsRef = useRef(new Set());
 
   const [materials, setMaterials] = useState(MATERIALS_DATA);
   const [openMenu, setOpenMenu] = useState(null);
@@ -21,10 +22,8 @@ export default function Materials() {
   const [deleteMaterial, setDeleteMaterial] = useState(null);
   const [uploadMaterial, setUploadMaterial] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [notification, setNotification] = useState(null);
   const [toast, setToast] = useState(null);
 
-  // Filter materials only when the source data or search query changes.
   const filteredMaterials = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
@@ -37,7 +36,6 @@ export default function Materials() {
     );
   }, [materials, searchQuery]);
 
-  // Close the active action menu when clicking outside it.
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!menuRef.current?.contains(event.target)) {
@@ -47,10 +45,11 @@ export default function Materials() {
 
     document.addEventListener("mousedown", handleClickOutside);
 
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  // Close menus and overlays with the Escape key.
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key !== "Escape") return;
@@ -60,17 +59,47 @@ export default function Materials() {
       setEditMaterial(null);
       setDeleteMaterial(null);
       setUploadMaterial(null);
-      setNotification(null);
       setToast(null);
     };
 
     document.addEventListener("keydown", handleEscape);
 
-    return () => document.removeEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  useEffect(() => {
+    const objectUrls = objectUrlsRef.current;
+
+    return () => {
+      objectUrls.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+
+      objectUrls.clear();
+    };
   }, []);
 
   const showToast = (type, message) => {
     setToast({ type, message });
+  };
+
+  const createFileUrl = (file) => {
+    if (!(file instanceof File)) return null;
+
+    const fileUrl = URL.createObjectURL(file);
+
+    objectUrlsRef.current.add(fileUrl);
+
+    return fileUrl;
+  };
+
+  const revokeFileUrl = (fileUrl) => {
+    if (!fileUrl || !objectUrlsRef.current.has(fileUrl)) return;
+
+    URL.revokeObjectURL(fileUrl);
+    objectUrlsRef.current.delete(fileUrl);
   };
 
   const handleViewMaterial = (material) => {
@@ -87,36 +116,69 @@ export default function Materials() {
 
     if (newWindow) {
       newWindow.opener = null;
-    } else {
-      showToast(
-        "error",
-        "The PDF could not be opened. Please allow pop-ups and try again.",
-      );
+      return;
     }
+
+    showToast(
+      "error",
+      "The PDF could not be opened. Please allow pop-ups and try again.",
+    );
   };
 
   const handleConfirmAdd = (newMaterial) => {
+    const fileUrl = createFileUrl(newMaterial.file);
+
+    if (!fileUrl) {
+      showToast("error", "Please select a valid PDF file.");
+      return;
+    }
+
     const createdMaterial = {
       ...newMaterial,
       id: crypto.randomUUID(),
       fileName: newMaterial.file.name,
+      fileUrl: createFileUrl(newMaterial.file),
       createdAt: new Date().toISOString(),
     };
 
     setMaterials((currentMaterials) => [createdMaterial, ...currentMaterials]);
 
     setAddMaterial(null);
+
     showToast("success", `"${createdMaterial.title}" was added successfully.`);
   };
 
   const handleConfirmEdit = (updatedMaterial) => {
-    setMaterials((current) =>
-      current.map((material) =>
-        material.id === updatedMaterial.id ? updatedMaterial : material,
-      ),
+    setMaterials((currentMaterials) =>
+      currentMaterials.map((material) => {
+        if (material.id !== updatedMaterial.id) {
+          return material;
+        }
+
+        const hasNewFile =
+          updatedMaterial.file instanceof File &&
+          updatedMaterial.file !== material.file;
+
+        if (!hasNewFile) {
+          return updatedMaterial;
+        }
+
+        const newFileUrl = createFileUrl(updatedMaterial.file);
+
+        if (material.fileUrl) {
+          revokeFileUrl(material.fileUrl);
+        }
+
+        return {
+          ...updatedMaterial,
+          fileUrl: newFileUrl,
+          fileName: updatedMaterial.file.name,
+        };
+      }),
     );
 
     setEditMaterial(null);
+
     showToast(
       "success",
       `"${updatedMaterial.title}" was updated successfully.`,
@@ -126,8 +188,12 @@ export default function Materials() {
   const handleConfirmDelete = () => {
     if (!deleteMaterial) return;
 
-    setMaterials((current) =>
-      current.filter((material) => material.id !== deleteMaterial.id),
+    if (deleteMaterial.fileUrl) {
+      revokeFileUrl(deleteMaterial.fileUrl);
+    }
+
+    setMaterials((currentMaterials) =>
+      currentMaterials.filter((material) => material.id !== deleteMaterial.id),
     );
 
     showToast("success", `"${deleteMaterial.title}" was deleted successfully.`);
@@ -142,7 +208,7 @@ export default function Materials() {
   };
 
   const handleAddMaterial = () => {
-    setAddMaterial({});
+    setAddMaterial(true);
   };
 
   return (
@@ -230,7 +296,6 @@ export default function Materials() {
 
       {addMaterial && (
         <AddMaterial
-          material={addMaterial}
           onCancel={() => setAddMaterial(null)}
           onConfirm={handleConfirmAdd}
         />
@@ -257,13 +322,6 @@ export default function Materials() {
           material={uploadMaterial}
           onClose={() => setUploadMaterial(null)}
           onSuccess={(message) => showToast("success", message)}
-        />
-      )}
-
-      {notification && (
-        <NotificationModal
-          {...notification}
-          onClose={() => setNotification(null)}
         />
       )}
 

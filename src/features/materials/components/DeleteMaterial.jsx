@@ -23,7 +23,7 @@ export default function DeleteMaterial({ material, onCancel, onConfirm }) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title"
+        aria-labelledby="delete-material-title"
         onClick={(event) => event.stopPropagation()}
         className="w-full max-w-sm overflow-hidden rounded-xl bg-white shadow-2xl"
       >

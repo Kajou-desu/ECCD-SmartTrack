@@ -6,6 +6,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
   const fileInputRef = useRef(null);
 
   const [title, setTitle] = useState(material.title || "");
+  const [category, setCategory] = useState(material.category || "");
   const [description, setDescription] = useState(material.description || "");
   const [file, setFile] = useState(null);
 
@@ -25,15 +26,26 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
     onConfirm({
       ...material,
       title: title.trim(),
+      category: category.trim(),
       description: description.trim(),
-      file: file || material.file,
+      file,
     });
   };
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files?.[0];
 
-    if (selectedFile) setFile(selectedFile);
+    event.target.value = "";
+
+    if (!selectedFile) return;
+
+    const isPdf =
+      selectedFile.type === "application/pdf" ||
+      selectedFile.name.toLowerCase().endsWith(".pdf");
+
+    if (!isPdf) return;
+
+    setFile(selectedFile);
   };
 
   return (
@@ -77,7 +89,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
         <div className="space-y-5 p-5">
           <div>
             <label
-              htmlFor="material-file"
+              htmlFor="edit-material-file"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
               File
@@ -85,7 +97,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
 
             <input
               ref={fileInputRef}
-              id="material-file"
+              id="edit-material-file"
               type="file"
               accept=".pdf"
               onChange={handleFileChange}
@@ -119,14 +131,14 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
 
           <div>
             <label
-              htmlFor="material-title"
+              htmlFor="edit-material-title"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
               Title
             </label>
 
             <input
-              id="material-title"
+              id="edit-material-title"
               type="text"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -138,14 +150,33 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
 
           <div>
             <label
-              htmlFor="material-description"
+              htmlFor="edit-material-category"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Category
+            </label>
+
+            <input
+              id="edit-material-category"
+              type="text"
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+              placeholder="Enter material category"
+              required
+              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="edit-material-description"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
               Description
             </label>
 
             <textarea
-              id="material-description"
+              id="edit-material-description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Enter material description"
@@ -157,7 +188,6 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
 
         <div className="flex justify-end gap-2 border-t border-slate-200 p-4">
           <SecondaryButton label="Cancel" type="button" onClick={onCancel} />
-
           <PrimaryButton label="Save Changes" type="submit" />
         </div>
       </form>

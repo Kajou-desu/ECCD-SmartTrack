@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { FileText, Upload, X } from "lucide-react";
 import { PrimaryButton, SecondaryButton } from "../../../components/ui/Button";
 
-export default function AddMaterial({ material, onCancel, onConfirm }) {
+export default function AddMaterial({ onCancel, onConfirm }) {
   const fileInputRef = useRef(null);
 
-  const [title, setTitle] = useState(material.title ?? "");
-  const [description, setDescription] = useState(material.description ?? "");
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
 
   useEffect(() => {
@@ -24,27 +25,34 @@ export default function AddMaterial({ material, onCancel, onConfirm }) {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const trimmedTitle = title.trim();
-    const trimmedDescription = description.trim();
-
-    if (!trimmedTitle || !file) return;
+    if (!file) {
+      fileInputRef.current?.click();
+      return;
+    }
 
     onConfirm({
-      title: trimmedTitle,
-      description: trimmedDescription,
+      title: title.trim(),
+      description: description.trim(),
+      category: category.trim(),
       file,
-      fileName: file.name,
     });
   };
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files?.[0];
 
-    if (selectedFile) {
-      setFile(selectedFile);
+    if (!selectedFile) return;
+
+    const isPdf =
+      selectedFile.type === "application/pdf" ||
+      selectedFile.name.toLowerCase().endsWith(".pdf");
+
+    if (!isPdf) {
+      event.target.value = "";
+      return;
     }
 
-    event.target.value = "";
+    setFile(selectedFile);
   };
 
   return (
@@ -92,6 +100,7 @@ export default function AddMaterial({ material, onCancel, onConfirm }) {
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
               File
+              <span className="text-red-600">*</span>
             </label>
 
             <input
@@ -118,10 +127,10 @@ export default function AddMaterial({ material, onCancel, onConfirm }) {
 
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-slate-800">
-                  {file?.name || material.fileName || "Current PDF file"}
+                  {file?.name || "Choose a PDF file"}
                 </p>
 
-                <p className="text-xs text-slate-500">Click to add file</p>
+                <p className="text-xs text-slate-500">PDF files only</p>
               </div>
             </button>
           </div>
@@ -132,6 +141,7 @@ export default function AddMaterial({ material, onCancel, onConfirm }) {
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
               Title
+              <span className="text-red-600">*</span>
             </label>
 
             <input
@@ -147,10 +157,31 @@ export default function AddMaterial({ material, onCancel, onConfirm }) {
 
           <div>
             <label
+              htmlFor="material-category"
+              className="mb-2 block text-sm font-semibold text-slate-700"
+            >
+              Category
+              <span className="text-red-600">*</span>
+            </label>
+
+            <input
+              id="material-category"
+              type="text"
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+              placeholder="Enter material category"
+              required
+              className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+            />
+          </div>
+
+          <div>
+            <label
               htmlFor="material-description"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
               Description
+              <span className="text-red-600">*</span>
             </label>
 
             <textarea
@@ -159,6 +190,7 @@ export default function AddMaterial({ material, onCancel, onConfirm }) {
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Enter material description"
               rows={4}
+              required
               className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
             />
           </div>

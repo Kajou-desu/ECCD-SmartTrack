@@ -1,3 +1,4 @@
+import { PrimaryButton, SecondaryButton } from "../../../components/ui/Button";
 import { Pencil, Trash2, MoreVertical, Upload, FileText } from "lucide-react";
 
 export default function LearningMaterialCard({
@@ -78,25 +79,19 @@ export default function LearningMaterialCard({
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-2">
-          <button
-            type="button"
+          <PrimaryButton
+            icon={<FileText className="h-5 w-5" aria-hidden="true" />}
+            label="View Material"
             onClick={onView}
-            aria-label={`View ${material.title} PDF`}
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#C2570C] px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
-          >
-            <FileText size={16} aria-hidden="true" />
-            View PDF
-          </button>
-
-          <button
-            type="button"
+            ariaLabel={`View ${material.title} PDF`}
+          />
+          
+          <SecondaryButton
+            icon={<Upload className="h-5 w-5" aria-hidden="true" />}
+            label="Upload Works"
             onClick={onUpload}
-            aria-label={`Upload completed student work for ${material.title}`}
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2.5 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-400"
-          >
-            <Upload size={16} aria-hidden="true" />
-            Upload Works
-          </button>
+            ariaLabel={`Upload completed student work for ${material.title}`}
+          />
         </div>
       </div>
     </article>
