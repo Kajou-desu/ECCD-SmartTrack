@@ -67,8 +67,8 @@ async function fetchWithTimeout(url, options = {}) {
       options.signal.addEventListener("abort", () => {
         try {
           controller.abort();
-        } catch (e) {
-          /* ignore */
+        } catch {
+          /* Ignore abort errors from an already-aborted controller. */
         }
       });
   }

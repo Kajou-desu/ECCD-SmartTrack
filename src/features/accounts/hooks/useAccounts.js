@@ -45,51 +45,61 @@ async function request(endpoint, options = {}) {
 
 export default function useAccounts() {
     const [accounts, setAccounts] = useState([]);
-    const [loading, setLoading] = useState(true);   // initial/full load only
-    const [mutating, setMutating] = useState(false); // create/update/delete in flight
+    const [loading, setLoading] = useState(true);
+    const [mutating, setMutating] = useState(false);
     const [error, setError] = useState("");
 
-    // Guards against setState after unmount and against a stale fetch
-    // resolving after a newer one has already started.
     const isMountedRef = useRef(true);
     const fetchIdRef = useRef(0);
 
     useEffect(() => {
-        isMountedRef.current = true;
         return () => {
             isMountedRef.current = false;
         };
     }, []);
 
-    // silent=true skips toggling `loading`, used after mutations so the
-    // list refreshes in the background without flashing a full loading state.
     const fetchAccounts = useCallback(async ({ silent = false } = {}) => {
         const fetchId = ++fetchIdRef.current;
-
-        if (!silent) setLoading(true);
-        setError("");
 
         try {
             const data = await request("/api/users/all");
 
-            // Bail out if a newer fetch started or the component unmounted
-            // while this request was in flight.
-            if (!isMountedRef.current || fetchId !== fetchIdRef.current) return;
+            if (
+                !isMountedRef.current ||
+                fetchId !== fetchIdRef.current
+            ) {
+                return;
+            }
 
             setAccounts(Array.isArray(data) ? data : []);
+            setError("");
         } catch (err) {
-            if (!isMountedRef.current || fetchId !== fetchIdRef.current) return;
+            if (
+                !isMountedRef.current ||
+                fetchId !== fetchIdRef.current
+            ) {
+                return;
+            }
 
             setError(err.message || "Failed to fetch account directory.");
         } finally {
-            if (isMountedRef.current && fetchId === fetchIdRef.current && !silent) {
+            if (
+                isMountedRef.current &&
+                fetchId === fetchIdRef.current &&
+                !silent
+            ) {
                 setLoading(false);
             }
         }
     }, []);
 
     useEffect(() => {
-        fetchAccounts();
+        const startFetch = async () => {
+            await Promise.resolve();
+            await fetchAccounts();
+        };
+
+        void startFetch();
     }, [fetchAccounts]);
 
     const createAccount = useCallback(
@@ -108,9 +118,12 @@ export default function useAccounts() {
                 if (isMountedRef.current) {
                     setError(err.message || "Failed to create account.");
                 }
-                throw err; // let the caller react (e.g. keep a form open) if it wants to
+
+                throw err;
             } finally {
-                if (isMountedRef.current) setMutating(false);
+                if (isMountedRef.current) {
+                    setMutating(false);
+                }
             }
         },
         [fetchAccounts],
@@ -132,9 +145,12 @@ export default function useAccounts() {
                 if (isMountedRef.current) {
                     setError(err.message || "Failed to update account.");
                 }
+
                 throw err;
             } finally {
-                if (isMountedRef.current) setMutating(false);
+                if (isMountedRef.current) {
+                    setMutating(false);
+                }
             }
         },
         [fetchAccounts],
@@ -151,16 +167,21 @@ export default function useAccounts() {
 
             if (isMountedRef.current) {
                 setAccounts((current) =>
-                    current.filter((account) => getAccountId(account) !== accountId),
+                    current.filter(
+                        (account) => getAccountId(account) !== accountId,
+                    ),
                 );
             }
         } catch (err) {
             if (isMountedRef.current) {
                 setError(err.message || "Failed to delete account.");
             }
+
             throw err;
         } finally {
-            if (isMountedRef.current) setMutating(false);
+            if (isMountedRef.current) {
+                setMutating(false);
+            }
         }
     }, []);
 
