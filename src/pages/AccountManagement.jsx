@@ -1,9 +1,9 @@
-import { useAccounts } from "@feature/accounts/hooks/useAccounts";
-import AccountSection from "@feature/accounts/components/AccountSection";
-import AccountViewModal from "@feature/accounts/components/AccountViewModal";
-import AccountForm from "@feature/accounts/components/AccountForm";
-import ConfirmDeleteModal from "@feature/accounts/components/ConfirmDeleteModal";
-import ConfirmUpdateModal from "@feature/accounts/components/ConfirmUpdateModal";
+import useAccounts from "@features/accounts/hooks/useAccounts";
+import AccountSection from "@features/accounts/components/AccountSection";
+import AccountViewModal from "@features/accounts/components/AccountViewModal";
+import AccountForm from "@features/accounts/components/AccountForm";
+import ConfirmDeleteModal from "@features/accounts/components/ConfirmDeleteModal";
+import ConfirmUpdateModal from "@features/accounts/components/ConfirmUpdateModal";
 import {
   AlertTriangle,
   Loader2,

@@ -1,5 +1,4 @@
 import { Eye, Pencil, Trash2 } from "lucide-react";
-
 import { getAccountId } from "../utils/accountUtils.js";
 
 export default function AccountActions({

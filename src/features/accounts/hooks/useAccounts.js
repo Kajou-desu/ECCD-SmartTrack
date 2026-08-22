@@ -43,7 +43,7 @@ async function request(endpoint, options = {}) {
     return data;
 }
 
-export function useAccounts() {
+export default function useAccounts() {
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(true);   // initial/full load only
     const [mutating, setMutating] = useState(false); // create/update/delete in flight

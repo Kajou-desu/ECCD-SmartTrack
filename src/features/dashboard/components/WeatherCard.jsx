@@ -1,5 +1,5 @@
 import { WEATHER_CODES } from "@constants/weather";
-import useWeather from "@hooks/useWeather";
+import useWeather from "../hooks/useWeather";
 import { Cloud, CloudLightning, CloudRain, CloudSun, Sun } from "lucide-react";
 
 const iconMap = {

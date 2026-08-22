@@ -21,6 +21,8 @@ export default defineConfig({
       "@assets": path.resolve(__dirname, "./src/assets"),
       "@context": path.resolve(__dirname, "./src/context"),
       "@auth": path.resolve(__dirname, "./src/auth"),
+      "@constants": path.resolve(__dirname, "./src/constants"),
+      "@config": path.resolve(__dirname, "./src/config"),
     },
   },
 });
