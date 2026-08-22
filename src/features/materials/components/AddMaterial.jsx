@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
+import { isPdfFile } from "@features/materials/utils/fileValidation";
 import { FileText, Upload, X } from "lucide-react";
 
 export default function AddMaterial({ onCancel, onConfirm }) {
@@ -9,23 +11,13 @@ export default function AddMaterial({ onCancel, onConfirm }) {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") onCancel();
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [onCancel]);
+  const [fileError, setFileError] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
     if (!file) {
+      setFileError("Please choose a PDF file.");
       fileInputRef.current?.click();
       return;
     }
@@ -43,33 +35,23 @@ export default function AddMaterial({ onCancel, onConfirm }) {
 
     if (!selectedFile) return;
 
-    const isPdf =
-      selectedFile.type === "application/pdf" ||
-      selectedFile.name.toLowerCase().endsWith(".pdf");
-
-    if (!isPdf) {
+    if (!isPdfFile(selectedFile)) {
       event.target.value = "";
+      setFileError("Only PDF files are supported.");
       return;
     }
 
+    setFileError("");
     setFile(selectedFile);
   };
 
   return (
-    <div
-      role="presentation"
-      onClick={onCancel}
-      className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 p-4"
-    >
+    <Modal onClose={onCancel} labelledBy="add-material-title">
       <form
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="add-material-title"
         onSubmit={handleSubmit}
-        onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl"
+        className="flex flex-1 flex-col overflow-hidden"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 p-5">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 p-5">
           <div>
             <h2
               id="add-material-title"
@@ -93,7 +75,7 @@ export default function AddMaterial({ onCancel, onConfirm }) {
           </button>
         </div>
 
-        <div className="space-y-5 p-5">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5">
           <div>
             <label
               htmlFor="material-file"
@@ -133,6 +115,12 @@ export default function AddMaterial({ onCancel, onConfirm }) {
                 <p className="text-xs text-slate-500">PDF files only</p>
               </div>
             </button>
+
+            {fileError && (
+              <p role="alert" className="mt-2 text-xs text-red-600">
+                {fileError}
+              </p>
+            )}
           </div>
 
           <div>
@@ -196,12 +184,11 @@ export default function AddMaterial({ onCancel, onConfirm }) {
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-slate-200 p-4">
+        <div className="flex shrink-0 justify-end gap-2 border-t border-slate-200 p-4">
           <SecondaryButton label="Cancel" type="button" onClick={onCancel} />
-
           <PrimaryButton label="Add Material" type="submit" />
         </div>
       </form>
-    </div>
+    </Modal>
   );
 }

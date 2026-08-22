@@ -21,7 +21,7 @@ export default function EmptyMaterialsState({ onAddMaterial }) {
       </p>
 
       <PrimaryButton
-        icon={<Plus className="h-5 w-5" aria-hiddent="true" />}
+        icon={<Plus className="h-5 w-5" aria-hidden="true" />}
         label="Add Material"
         onClick={onAddMaterial}
       />
