@@ -3,6 +3,7 @@ import { Route } from "react-router-dom";
 import { ROLES } from "@auth/roles.js";
 import ProtectedRoute from "@components/shared/ProtectedRoute.jsx";
 import Layout from "@layouts/Layout.jsx";
+import { EventPhotosProvider } from "@features/eventPhotos/context/EventPhotosProvider";
 
 const Dashboard = lazy(() => import("@pages/Dashboard.jsx"));
 const Attendance = lazy(() => import("@pages/Attendance.jsx"));
@@ -29,8 +30,10 @@ export function TeacherRoutes() {
           <Route path="/student/:studentId/edit" element={<StudentForm />} />
           <Route path="/student/:studentId" element={<StudentDetail />} />
           <Route path="/learning-materials" element={<LearningMaterials />} />
-          <Route path="/event-photos" element={<EventPhotos />} />
-          <Route path="/event-photos/:albumId" element={<PhotoGallery />} />
+          <Route element={<EventPhotosProvider />}>
+            <Route path="/event-photos" element={<EventPhotos />} />
+            <Route path="/event-photos/:albumId" element={<PhotoGallery />} />
+          </Route>
           <Route path="/settings" element={<Settings />} />
           <Route path="/accounts-management" element={<AccountsManagement />} />
         </Route>

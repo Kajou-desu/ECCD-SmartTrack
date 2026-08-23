@@ -1,167 +1,138 @@
-import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
-import DeletePhoto from "@features/photos/components/DeletePhoto.jsx";
-import GalleryGrid from "@features/photos/components/GalleryGrid.jsx";
-import PhotoPreview from "@features/photos/components/PhotoPreview.jsx";
-import UploadPhotos from "@features/photos/components/UploadPhotos.jsx";
-import usePhotoGallery from "@features/photos/hooks/usePhotoGallery.js";
+import { useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useEventPhotos } from "@features/eventPhotos/hooks/useEventPhotos";
+import GalleryHeader from "@features/photoGallery/components/GalleryHeader";
+import PhotoGrid from "@features/photoGallery/components/PhotoGrid";
+import GalleryEmptyState from "@features/photoGallery/components/GalleryEmptyState";
+import GalleryLoadingState from "@features/photoGallery/components/GalleryLoadingState";
+import AlbumNotFound from "@features/photoGallery/components/AlbumNotFound";
+import PhotoPreviewModal from "@features/photoGallery/components/PhotoPreviewModal";
+import DeletePhotoConfirm from "@features/photoGallery/components/DeletePhotoConfirm";
+import { Toast } from "@components/ui/NotificationModal";
+
+const GALLERY_MODAL = {
+  NONE: null,
+  PREVIEW: "preview",
+  DELETE: "delete",
+};
 
 export default function PhotoGallery() {
-  const navigate = useNavigate();
   const { albumId } = useParams();
+  const fileInputRef = useRef(null);
 
-  const {
-    album,
-    photos,
-    loading,
-    error,
-    selectedPhoto,
-    selectedPhotoIndex,
-    openPhoto,
-    closePhoto,
-    showPrevious,
-    showNext,
-    addPhotos,
-    hidePhoto,
-  } = usePhotoGallery(albumId);
+  const { loading, getAlbumById, addPhotos, deletePhoto, toast, dismissToast } =
+    useEventPhotos();
 
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const album = getAlbumById(albumId);
 
-  const handleUploadPhotos = (files) => {
-    addPhotos(files);
-  };
-
-  const handleConfirmDelete = (photoId) => {
-    hidePhoto(photoId);
-    setDeleteTarget(null);
-  };
-
-  const handleDeleteFromPreview = (photo) => {
-    closePhoto();
-    setDeleteTarget(photo);
-  };
+  const [modalType, setModalType] = useState(GALLERY_MODAL.NONE);
+  const [activePhotoId, setActivePhotoId] = useState(null);
 
   if (loading) {
     return (
-      <main className="min-h-0 flex-1 bg-[#f8f9ff] p-4 sm:p-6">
-        <div className="mx-auto w-full max-w-7xl">
-          <div className="space-y-6">
-            <div className="h-10 w-48 animate-pulse rounded-lg bg-gray-200" />
-
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {Array.from({ length: 10 }, (_, index) => (
-                <div
-                  key={index}
-                  className="aspect-square animate-pulse rounded-xl bg-gray-200"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="min-h-0 flex-1 bg-[#f8f9ff] p-4 sm:p-6">
-        <div className="mx-auto w-full max-w-7xl">
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
-            <h1 className="text-lg font-bold text-red-800">
-              Unable to load gallery
-            </h1>
-
-            <p className="mt-2 text-sm text-red-700">{error}</p>
-
-            <button
-              type="button"
-              onClick={() => navigate("/event-photos")}
-              className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
-            >
-              Back to Albums
-            </button>
-          </div>
-        </div>
+      <main className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
+        <GalleryLoadingState />
       </main>
     );
   }
 
   if (!album) {
     return (
-      <main className="min-h-0 flex-1 bg-[#f8f9ff] p-4 sm:p-6">
-        <div className="mx-auto w-full max-w-7xl">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6">
-            <h1 className="text-lg font-bold text-gray-800">Album not found</h1>
-
-            <p className="mt-2 text-sm text-gray-500">
-              The album may have been removed or is no longer available.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => navigate("/event-photos")}
-              className="mt-4 rounded-lg bg-[#C2570C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#a9480a]"
-            >
-              Back to Albums
-            </button>
-          </div>
-        </div>
+      <main className="flex min-h-0 flex-1 flex-col bg-[#f8f9ff] p-4 sm:p-6">
+        <AlbumNotFound />
       </main>
     );
   }
 
+  const activeIndex = album.photos.findIndex(
+    (photo) => String(photo.id) === String(activePhotoId),
+  );
+  const activePhoto = activeIndex >= 0 ? album.photos[activeIndex] : null;
+
+  const closeModal = () => {
+    setModalType(GALLERY_MODAL.NONE);
+    setActivePhotoId(null);
+  };
+
+  const handleAddPhotosClick = () => fileInputRef.current?.click();
+
+  const handleFilesSelected = (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+
+    if (files.length === 0) return;
+
+    addPhotos(album.id, files);
+  };
+
+  const handleViewPhoto = (photo) => {
+    setActivePhotoId(photo.id);
+    setModalType(GALLERY_MODAL.PREVIEW);
+  };
+
+  const handleRequestDelete = (photo) => {
+    setActivePhotoId(photo.id);
+    setModalType(GALLERY_MODAL.DELETE);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!activePhoto) return;
+    deletePhoto(album.id, activePhoto.id);
+    closeModal();
+  };
+
+  const goToOffset = (offset) => {
+    const nextIndex = activeIndex + offset;
+    if (nextIndex < 0 || nextIndex >= album.photos.length) return;
+    setActivePhotoId(album.photos[nextIndex].id);
+  };
+
   return (
-    <main className="min-h-0 flex-1 bg-[#f8f9ff] p-4 sm:p-6">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex min-w-0 items-start gap-3">
-            <button
-              type="button"
-              onClick={() => navigate("/event-photos")}
-              className="mt-1 rounded-lg p-2 text-gray-600 transition hover:bg-white"
-              aria-label="Back to albums"
-            >
-              <ArrowLeft className="h-6 w-6" />
-            </button>
+    <main className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
+      <GalleryHeader album={album} onAddPhotosClick={handleAddPhotosClick} />
 
-            <div className="min-w-0">
-              <h1 className="truncate text-2xl font-bold text-gray-800 sm:text-3xl">
-                {album.name}
-              </h1>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleFilesSelected}
+        className="hidden"
+      />
 
-              <p className="mt-1 text-sm text-gray-500">
-                {photos.length} photo
-                {photos.length === 1 ? "" : "s"}
-              </p>
-            </div>
-          </div>
-
-          <UploadPhotos onUpload={handleUploadPhotos} />
-        </header>
-
-        <GalleryGrid
-          photos={photos}
-          onOpen={openPhoto}
-          onDelete={setDeleteTarget}
+      {album.photos.length === 0 ? (
+        <GalleryEmptyState onAddPhotos={handleAddPhotosClick} />
+      ) : (
+        <PhotoGrid
+          photos={album.photos}
+          albumTitle={album.title}
+          onView={handleViewPhoto}
+          onDelete={handleRequestDelete}
         />
-      </div>
+      )}
 
-      <PhotoPreview
-        photo={selectedPhoto}
-        index={selectedPhotoIndex}
-        total={photos.length}
-        onClose={closePhoto}
-        onPrevious={showPrevious}
-        onNext={showNext}
-        onDelete={handleDeleteFromPreview}
-      />
+      {modalType === GALLERY_MODAL.PREVIEW && activePhoto && (
+        <PhotoPreviewModal
+          photo={activePhoto}
+          albumTitle={album.title}
+          hasPrevious={activeIndex > 0}
+          hasNext={activeIndex < album.photos.length - 1}
+          onPrevious={() => goToOffset(-1)}
+          onNext={() => goToOffset(1)}
+          onClose={closeModal}
+          onDelete={handleRequestDelete}
+        />
+      )}
 
-      <DeletePhoto
-        photo={deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleConfirmDelete}
-      />
+      {modalType === GALLERY_MODAL.DELETE && activePhoto && (
+        <DeletePhotoConfirm
+          photo={activePhoto}
+          onCancel={closeModal}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
+
+      {toast && <Toast {...toast} onClose={dismissToast} />}
     </main>
   );
 }
