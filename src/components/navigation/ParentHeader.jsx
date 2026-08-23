@@ -1,4 +1,5 @@
 import ReminderBanner from "../shared/ReminderBanner";
+import ChildSelectorDropdown from "./ChildSelectorDropdown";
 import Logo from "@assets/ECCDST_Logo.png";
 import { Bell, Menu } from "lucide-react";
 
@@ -55,6 +56,14 @@ export default function ParentHeader({
 
         {/* Right: Actions */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          {/* Child selector - lets a parent with multiple enrolled children switch context */}
+          <ChildSelectorDropdown />
+
+          <div
+            aria-hidden="true"
+            className="mx-1 hidden h-6 w-px bg-slate-200 sm:block"
+          />
+
           {/* Notifications */}
           <button
             type="button"

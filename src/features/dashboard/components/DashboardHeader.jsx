@@ -5,6 +5,7 @@ export default function DashboardHeader({
   greeting,
   firstName,
   currentDateTime,
+  subtitle,
 }) {
   return (
     <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
@@ -14,7 +15,8 @@ export default function DashboardHeader({
         </h1>
 
         <p className="text-sm leading-6 text-gray-600">
-          Here's what's happening at {LOCATION_CONFIG.name} today.
+          {subtitle ??
+            `Here's what's happening at ${LOCATION_CONFIG.name} today.`}
         </p>
       </div>
 
