@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { EventPhotosContext } from "@features/eventPhotos/context/EventPhotosContextObject";
+import { EventPhotosContext } from "@features/eventPhotos/context/eventPhotosContextObject";
 
 export function useEventPhotos() {
     const ctx = useContext(EventPhotosContext);

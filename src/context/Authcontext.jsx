@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useCallback } from "react";
-import { AuthContext } from "./AuthContextObject";
+import { AuthContext } from "./authContextObject";
 import { setUnauthorizedHandler } from "@api/client";
 
 export function AuthProvider({ children }) {

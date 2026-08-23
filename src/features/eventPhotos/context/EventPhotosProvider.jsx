@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { EventPhotosContext } from "./EventPhotosContextObject";
+import { EventPhotosContext } from "./eventPhotosContextObject";
 import { useAlbumsState } from "@features/eventPhotos/hooks/useAlbumsState";
 
 /**

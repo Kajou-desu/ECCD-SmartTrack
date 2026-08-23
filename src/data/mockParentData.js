@@ -1,65 +1,78 @@
-// Mock data for parent's child
-export const CHILD_DATA = {
-  id: "POB2-2026-001",
-  photo: "https://placehold.co/150x150",
-  name: "Leo Miller",
-  session: "Morning (am)",
-  enrollmentDate: "June 2026",
-  teacher: "Mrs. Sarah Johnson",
-};
+// Mock data for parent's children (a parent may have more than one enrolled child)
+export const CHILDREN_DATA = [
+  {
+    id: "POB2-2026-001",
+    photo: "https://placehold.co/150x150",
+    name: "Leo Miller",
+    session: "Morning (am)",
+    enrollmentDate: "June 2026",
+    teacher: "Mrs. Sarah Johnson",
+  },
+  {
+    id: "POB2-2026-014",
+    photo: "https://placehold.co/150x150",
+    name: "Mia Miller",
+    session: "Afternoon (pm)",
+    enrollmentDate: "June 2026",
+    teacher: "Mr. David Reyes",
+  },
+];
 
-// Mock progress data
-export const PROGRESS_DATA = {
-  milestones: 1,
-  attendance: "100%",
-  schoolDays: 60,
-  activityCount: 3,
-  recentActivities: [
-    {
-      id: 1,
-      date: "Today",
-      activity: "Color Mixing Workshop",
-      category: "Art & Creativity",
-      status: "completed",
-      notes: "Leo showed great enthusiasm during the color mixing activity!",
-    },
-    {
-      id: 2,
-      date: "Yesterday",
-      activity: "Shape Recognition Game",
-      category: "Mathematics",
-      status: "completed",
-      notes: "Perfect score on shape identification.",
-    },
-    {
-      id: 3,
-      date: "Dec 15",
-      activity: "Storytelling Session",
-      category: "Language",
-      status: "completed",
-      notes: "Shared an engaging story with great expression.",
-    },
-  ],
-  weeklyGoals: [
-    {
-      id: 1,
-      title: "Master counting to 10",
-      progress: 85,
-      status: "In Progress",
-    },
-    {
-      id: 2,
-      title: "Improve letter tracing",
-      progress: 70,
-      status: "In Progress",
-    },
-    {
-      id: 3,
-      title: "Participate in group activities",
-      progress: 100,
-      status: "Completed",
-    },
-  ],
+// Mock progress data, keyed by child id.
+// "POB2-2026-014" (Mia) has no entry yet — used to demonstrate the empty state.
+export const PROGRESS_DATA_BY_CHILD = {
+  "POB2-2026-001": {
+    milestones: 1,
+    attendance: "100%",
+    schoolDays: 60,
+    activityCount: 3,
+    recentActivities: [
+      {
+        id: 1,
+        date: "Today",
+        activity: "Color Mixing Workshop",
+        category: "Art & Creativity",
+        status: "completed",
+        notes: "Leo showed great enthusiasm during the color mixing activity!",
+      },
+      {
+        id: 2,
+        date: "Yesterday",
+        activity: "Shape Recognition Game",
+        category: "Mathematics",
+        status: "completed",
+        notes: "Perfect score on shape identification.",
+      },
+      {
+        id: 3,
+        date: "Dec 15",
+        activity: "Storytelling Session",
+        category: "Language",
+        status: "completed",
+        notes: "Shared an engaging story with great expression.",
+      },
+    ],
+    weeklyGoals: [
+      {
+        id: 1,
+        title: "Master counting to 10",
+        progress: 85,
+        status: "In Progress",
+      },
+      {
+        id: 2,
+        title: "Improve letter tracing",
+        progress: 70,
+        status: "In Progress",
+      },
+      {
+        id: 3,
+        title: "Participate in group activities",
+        progress: 100,
+        status: "Completed",
+      },
+    ],
+  },
 };
 
 // Mock attendance data
