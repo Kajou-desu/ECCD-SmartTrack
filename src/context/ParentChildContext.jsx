@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ParentChildContext } from "./ParentChildContextObject";
+import { ParentChildContext } from "./parentChildContextObject";
 import { CHILDREN_DATA } from "@data/mockParentData";
 
 export function ParentChildProvider({ children }) {

@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { ParentChildContext } from "@context/ParentChildContextObject.js";
+import { ParentChildContext } from "@context/parentChildContextObject.js";
 
 export function useParentChild() {
     const ctx = useContext(ParentChildContext);
