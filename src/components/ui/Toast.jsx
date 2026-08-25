@@ -23,7 +23,7 @@ const DIALOG_VARIANTS = {
   error: { icon: AlertCircle, iconBg: "bg-red-50", iconColor: "text-red-600" },
 };
 
-export function NotificationModal({
+export function NotificationToast({
   type = "info",
   title = "Notification",
   message,

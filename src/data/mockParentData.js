@@ -76,48 +76,50 @@ export const PROGRESS_DATA_BY_CHILD = {
 };
 
 // Mock attendance data
-export const ATTENDANCE_DATA = {
-  "2026-08": {
-    stats: {
-      presentDays: 3,
-      absentDays: 0,
-      excusedDays: 2,
-      attendanceRate: 100,
-      lateArrivals: 1,
-    },
-    logs: [
-      {
-        date: "Aug 03, 2026",
-        time: "---",
-        status: "No Classes",
+export const ATTENDANCE_DATA_BY_CHILD = {
+  "POB2-2026-001": {
+    "2026-08": {
+      stats: {
+        presentDays: 3,
+        absentDays: 0,
+        excusedDays: 2,
+        attendanceRate: 100,
+        lateArrivals: 1,
       },
-      {
-        date: "Aug 04, 2026",
-        time: "8:15 AM",
-        status: "Late",
+      logs: [
+        {
+          date: "Aug 03, 2026",
+          time: "---",
+          status: "No Classes",
+        },
+        {
+          date: "Aug 04, 2026",
+          time: "8:15 AM",
+          status: "Late",
+        },
+        {
+          date: "Aug 05, 2026",
+          time: "7:55 AM",
+          status: "completed",
+        },
+        {
+          date: "Aug 06, 2026",
+          time: "---",
+          status: "No Classes",
+        },
+        {
+          date: "Aug 07, 2026",
+          time: "7:58 AM",
+          status: "completed",
+        },
+      ],
+      daily: {
+        3: "excused",
+        4: "present",
+        5: "present",
+        6: "excused",
+        7: "present",
       },
-      {
-        date: "Aug 05, 2026",
-        time: "7:55 AM",
-        status: "completed",
-      },
-      {
-        date: "Aug 06, 2026",
-        time: "---",
-        status: "No Classes",
-      },
-      {
-        date: "Aug 07, 2026",
-        time: "7:58 AM",
-        status: "completed",
-      },
-    ],
-    daily: {
-      3: "excused",
-      4: "present",
-      5: "present",
-      6: "excused",
-      7: "present",
     },
   },
 };

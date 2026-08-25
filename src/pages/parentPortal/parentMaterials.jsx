@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { MATERIALS_DATA } from "@data/mockParentData";
-import ParentMediaGallery from "./parentMediaGallery";
+import ParentMediaGallery from "./ParentMediaGallery";
 
 const FILTER_OPTIONS = [
   { id: "art", label: "Art & Creativity" },

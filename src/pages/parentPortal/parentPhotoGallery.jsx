@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PHOTO_ALBUMS_DATA } from "@data/mockParentData";
-import ParentMediaGallery from "./parentMediaGallery";
+import ParentMediaGallery from "./ParentMediaGallery";
 
 const FILTER_OPTIONS = [
   { id: "event", label: "Events" },

@@ -1,3 +1,5 @@
+import { useState } from "react";
+import NotificationModal from "@components/shared/NotificationModal";
 import ReminderBanner from "../shared/ReminderBanner";
 import ChildSelectorDropdown from "./ChildSelectorDropdown";
 import Logo from "@assets/ECCDST_Logo.png";
@@ -9,6 +11,8 @@ export default function ParentHeader({
   onOpenSidebar,
   mobileMenuButtonRef,
 }) {
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
   return (
     <header className="border-b border-slate-200 bg-[#f8f9ff]">
       {/* Reminder Banner */}
@@ -67,44 +71,27 @@ export default function ParentHeader({
           {/* Notifications */}
           <button
             type="button"
+            onClick={() => setIsNotificationOpen(true)}
             aria-label="Notifications"
+            aria-haspopup="dialog"
+            aria-expanded={isNotificationOpen}
             title="Notifications"
-            className="
-              relative
-              flex min-h-11 min-w-11
-              items-center justify-center
-              rounded-lg
-              text-slate-600
-              transition-colors
-              hover:bg-slate-100
-              hover:text-[#C2570C]
-
-              focus-visible:outline-none
-              focus-visible:ring-2
-              focus-visible:ring-[#C2570C]
-              focus-visible:ring-offset-2
-            "
+            className="relative flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#C2570C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
           >
             <Bell aria-hidden="true" className="h-5 w-5" />
 
-            {/* Unread indicator */}
             <span
               aria-hidden="true"
-              className="
-                absolute
-                right-2
-                top-2
-                h-2
-                w-2
-                rounded-full
-                bg-red-500
-                ring-2
-                ring-white
-              "
+              className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
             />
           </button>
         </div>
       </div>
+
+      <NotificationModal
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+      />
     </header>
   );
 }

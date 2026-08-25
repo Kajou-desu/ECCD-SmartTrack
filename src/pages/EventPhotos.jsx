@@ -7,7 +7,7 @@ import AlbumsLoadingState from "@features/eventPhotos/components/AlbumsLoadingSt
 import CreateAlbumModal from "@features/eventPhotos/components/CreateAlbumModal";
 import DeleteAlbumConfirm from "@features/eventPhotos/components/DeleteAlbumConfirm";
 import ErrorMsg from "@components/ui/ErrorMsg";
-import { Toast } from "@components/ui/NotificationModal";
+import { Toast } from "@components/ui/Toast";
 
 const ALBUM_MODAL = {
   NONE: null,

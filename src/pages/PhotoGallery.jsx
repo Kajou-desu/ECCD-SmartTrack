@@ -8,7 +8,7 @@ import GalleryLoadingState from "@features/photoGallery/components/GalleryLoadin
 import AlbumNotFound from "@features/photoGallery/components/AlbumNotFound";
 import PhotoPreviewModal from "@features/photoGallery/components/PhotoPreviewModal";
 import DeletePhotoConfirm from "@features/photoGallery/components/DeletePhotoConfirm";
-import { Toast } from "@components/ui/NotificationModal";
+import { Toast } from "@components/ui/Toast";
 
 const GALLERY_MODAL = {
   NONE: null,

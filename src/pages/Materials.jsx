@@ -10,7 +10,7 @@ import EditMaterial from "@features/materials/components/EditMaterial";
 import DeleteMaterial from "@features/materials/components/DeleteMaterial";
 import UploadStudentWork from "@features/materials/components/UploadStudentWork";
 import ErrorMsg from "@components/ui/ErrorMsg";
-import { Toast } from "@components/ui/NotificationModal";
+import { Toast } from "@components/ui/Toast";
 
 export default function Materials() {
   const {

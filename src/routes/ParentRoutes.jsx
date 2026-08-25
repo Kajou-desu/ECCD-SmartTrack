@@ -5,22 +5,22 @@ import ProtectedRoute from "@components/shared/ProtectedRoute.jsx";
 import ParentLayout from "@layouts/ParentLayout.jsx";
 
 const ParentDashboard = lazy(
-  () => import("@pages/parentPortal/parentDashboard.jsx"),
+  () => import("@pages/parentPortal/ParentDashboard.jsx"),
 );
 const ParentStudentProfile = lazy(
-  () => import("@pages/parentPortal/parentStudentProfile.jsx"),
+  () => import("@pages/parentPortal/ParentStudentProfile.jsx"),
 );
 const ParentAttendance = lazy(
-  () => import("@pages/parentPortal/parentAttendance.jsx"),
+  () => import("@pages/parentPortal/ParentAttendance.jsx"),
 );
 const ParentMaterials = lazy(
-  () => import("@pages/parentPortal/parentMaterials.jsx"),
+  () => import("@pages/parentPortal/ParentMaterials.jsx"),
 );
 const ParentPhotoGallery = lazy(
-  () => import("@pages/parentPortal/parentPhotoGallery.jsx"),
+  () => import("@pages/parentPortal/ParentPhotoGallery.jsx"),
 );
 const ParentSettings = lazy(
-  () => import("@pages/parentPortal/parentSettings.jsx"),
+  () => import("@pages/parentPortal/ParentSettings.jsx"),
 );
 
 export function ParentRoutes() {
