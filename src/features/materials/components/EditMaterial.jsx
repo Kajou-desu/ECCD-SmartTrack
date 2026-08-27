@@ -42,7 +42,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
   };
 
   return (
-    <Modal onClose={onCancel} labelledBy="edit-material-title">
+    <Modal onClose={onCancel} labelledBy="edit-material-heading">
       <form
         onSubmit={handleSubmit}
         className="flex flex-1 flex-col overflow-hidden"
@@ -50,7 +50,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200 p-5">
           <div>
             <h2
-              id="edit-material-title"
+              id="edit-material-heading"
               className="text-lg font-bold text-slate-900"
             >
               Edit Material

@@ -14,14 +14,19 @@ export default function StudentDetail() {
   const navigate = useNavigate();
   const { studentId } = useParams();
 
-  const [loadedStudentId, setLoadedStudentId] = useState(studentId);
-  const [profile, setProfile] = useState(() => getStudentData(studentId));
-  const [activeModal, setActiveModal] = useState(null); // "guardians" | "medical" | "upload" | null
+  const [state, setState] = useState(() => ({
+    loadedStudentId: studentId,
+    profile: getStudentData(studentId),
+    activeModal: null, // "guardians" | "medical" | "upload" | null
+  }));
+  const { profile, activeModal } = state;
 
-  if (studentId !== loadedStudentId) {
-    setLoadedStudentId(studentId);
-    setProfile(getStudentData(studentId));
-    setActiveModal(null);
+  if (studentId !== state.loadedStudentId) {
+    setState({
+      loadedStudentId: studentId,
+      profile: getStudentData(studentId),
+      activeModal: null,
+    });
   }
 
   if (!profile) {
@@ -68,31 +73,31 @@ export default function StudentDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
         <GuardianContactsCard
           guardians={guardians}
-          onEdit={() => setActiveModal("guardians")}
+          onEdit={() => setState((s) => ({ ...s, activeModal: "guardians" }))}
         />
         <MedicalNotesCard
           medical={medical}
-          onEdit={() => setActiveModal("medical")}
+          onEdit={() => setState((s) => ({ ...s, activeModal: "medical" }))}
         />
       </div>
 
       <div className="mt-8">
         <RequiredDocumentsCard
           documents={documents}
-          onUpload={() => setActiveModal("upload")}
+          onUpload={() => setState((s) => ({ ...s, activeModal: "upload" }))}
         />
       </div>
 
       {activeModal === "guardians" && (
         <EditGuardiansModal
           guardians={guardians}
-          onCancel={() => setActiveModal(null)}
+          onCancel={() => setState((s) => ({ ...s, activeModal: null }))}
           onSave={(updatedGuardians) => {
-            setProfile((current) => ({
-              ...current,
-              guardians: updatedGuardians,
+            setState((s) => ({
+              ...s,
+              profile: { ...s.profile, guardians: updatedGuardians },
+              activeModal: null,
             }));
-            setActiveModal(null);
           }}
         />
       )}
@@ -100,23 +105,29 @@ export default function StudentDetail() {
       {activeModal === "medical" && (
         <EditMedicalModal
           medical={medical}
-          onCancel={() => setActiveModal(null)}
+          onCancel={() => setState((s) => ({ ...s, activeModal: null }))}
           onSave={(updatedMedical) => {
-            setProfile((current) => ({ ...current, medical: updatedMedical }));
-            setActiveModal(null);
+            setState((s) => ({
+              ...s,
+              profile: { ...s.profile, medical: updatedMedical },
+              activeModal: null,
+            }));
           }}
         />
       )}
 
       {activeModal === "upload" && (
         <UploadDocumentModal
-          onCancel={() => setActiveModal(null)}
+          onCancel={() => setState((s) => ({ ...s, activeModal: null }))}
           onSave={(newDocument) => {
-            setProfile((current) => ({
-              ...current,
-              documents: [...(current.documents ?? []), newDocument],
+            setState((s) => ({
+              ...s,
+              profile: {
+                ...s.profile,
+                documents: [...(s.profile.documents ?? []), newDocument],
+              },
+              activeModal: null,
             }));
-            setActiveModal(null);
           }}
         />
       )}

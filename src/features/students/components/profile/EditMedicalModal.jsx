@@ -3,7 +3,12 @@ import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { X } from "lucide-react";
 
-export default function EditMedicalModal({ medical, onCancel, onSave }) {
+export default function EditMedicalModal({
+  medical,
+  onCancel,
+  onSave,
+  hideAccommodations = false,
+}) {
   const [form, setForm] = useState({
     allergies: medical.allergies || "",
     allergiesDetail: medical.allergiesDetail || "",
@@ -36,7 +41,9 @@ export default function EditMedicalModal({ medical, onCancel, onSave }) {
               Edit Medical & Special Notes
             </h2>
             <p className="mt-1 text-sm text-slate-600">
-              Keep allergy, dietary, and accommodation details up to date.
+              {hideAccommodations
+                ? "Keep allergy and dietary details up to date."
+                : "Keep allergy, dietary, and accommodation details up to date."}
             </p>
           </div>
           <button
@@ -93,26 +100,32 @@ export default function EditMedicalModal({ medical, onCancel, onSave }) {
             />
           </label>
 
-          <label className="block text-xs font-semibold text-slate-600">
-            Learning Accommodations (summary)
-            <input
-              type="text"
-              value={form.accommodations}
-              onChange={(e) => update("accommodations", e.target.value)}
-              placeholder="e.g. Standard Classroom"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-            />
-          </label>
+          {!hideAccommodations && (
+            <>
+              <label className="block text-xs font-semibold text-slate-600">
+                Learning Accommodations (summary)
+                <input
+                  type="text"
+                  value={form.accommodations}
+                  onChange={(e) => update("accommodations", e.target.value)}
+                  placeholder="e.g. Standard Classroom"
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                />
+              </label>
 
-          <label className="block text-xs font-semibold text-slate-600">
-            Learning Accommodations (details)
-            <textarea
-              value={form.accommodationsDetail}
-              onChange={(e) => update("accommodationsDetail", e.target.value)}
-              rows={2}
-              className="mt-1 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-            />
-          </label>
+              <label className="block text-xs font-semibold text-slate-600">
+                Learning Accommodations (details)
+                <textarea
+                  value={form.accommodationsDetail}
+                  onChange={(e) =>
+                    update("accommodationsDetail", e.target.value)
+                  }
+                  rows={2}
+                  className="mt-1 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                />
+              </label>
+            </>
+          )}
         </div>
 
         <div className="flex shrink-0 justify-end gap-2 border-t border-slate-200 p-4">

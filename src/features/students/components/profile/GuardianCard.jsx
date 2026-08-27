@@ -1,197 +1,42 @@
-import { useState } from "react";
-import Modal from "@components/ui/Modal";
-import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
-import { X, Trash2, Plus } from "lucide-react";
+import { Phone, Mail, MapPin, User } from "lucide-react";
 
-function makeEmptyGuardian() {
-  return {
-    id: `new-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    type: "",
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    isPrimary: false,
-  };
-}
-
-export default function EditGuardiansModal({ guardians, onCancel, onSave }) {
-  const [rows, setRows] = useState(
-    guardians && guardians.length > 0 ? guardians : [makeEmptyGuardian()],
-  );
-
-  const updateRow = (index, field, value) => {
-    setRows((current) =>
-      current.map((row, i) => (i === index ? { ...row, [field]: value } : row)),
-    );
-  };
-
-  const setPrimary = (index) => {
-    setRows((current) =>
-      current.map((row, i) => ({ ...row, isPrimary: i === index })),
-    );
-  };
-
-  const removeRow = (index) => {
-    setRows((current) => current.filter((_, i) => i !== index));
-  };
-
-  const addRow = () => {
-    setRows((current) => [...current, makeEmptyGuardian()]);
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    onSave(
-      rows
-        .filter((row) => row.name.trim())
-        .map((row) => ({ ...row, name: row.name.trim() })),
-    );
-  };
-
+export default function GuardianCard({ guardian }) {
   return (
-    <Modal
-      onClose={onCancel}
-      labelledBy="edit-guardians-title"
-      className="w-full max-w-2xl max-h-[90vh] rounded-xl bg-white shadow-2xl"
-    >
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-1 flex-col overflow-hidden"
-      >
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 p-5">
-          <div>
-            <h2
-              id="edit-guardians-title"
-              className="text-lg font-bold text-slate-900"
-            >
-              Edit Guardian Details
-            </h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Update contact information for this student's guardians.
-            </p>
+    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition-all hover:shadow-md">
+      <div className="flex items-start gap-3">
+        <div className="shrink-0 mt-0.5 flex h-9 w-9 items-center justify-center rounded-full bg-orange-100">
+          <User size={18} className="text-[#C2570C]" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
+            {guardian.type || "Guardian"}
+          </p>
+          <h3 className="mt-1 truncate text-sm font-semibold text-gray-800 sm:text-base">
+            {guardian.name || "No name provided"}
+          </h3>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-2 text-sm text-gray-700">
+        {guardian.phone && (
+          <div className="flex items-center gap-2">
+            <Phone size={14} className="shrink-0 text-gray-400" />
+            <span className="truncate">{guardian.phone}</span>
           </div>
-          <button
-            type="button"
-            onClick={onCancel}
-            aria-label="Close modal"
-            className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-5">
-          {rows.map((row, index) => (
-            <fieldset
-              key={row.id}
-              className="rounded-lg border border-slate-200 p-4"
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <legend className="px-1 text-sm font-semibold text-slate-700">
-                  Guardian {index + 1}
-                </legend>
-                {rows.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeRow(index)}
-                    aria-label={`Remove guardian ${index + 1}`}
-                    className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50"
-                  >
-                    <Trash2 size={14} />
-                    Remove
-                  </button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <label className="text-xs font-semibold text-slate-600">
-                  Relationship
-                  <input
-                    type="text"
-                    value={row.type}
-                    onChange={(e) => updateRow(index, "type", e.target.value)}
-                    placeholder="e.g. Mother"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                  />
-                </label>
-
-                <label className="text-xs font-semibold text-slate-600">
-                  Full Name
-                  <input
-                    type="text"
-                    value={row.name}
-                    onChange={(e) => updateRow(index, "name", e.target.value)}
-                    required
-                    placeholder="Full name"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                  />
-                </label>
-
-                <label className="text-xs font-semibold text-slate-600">
-                  Phone
-                  <input
-                    type="tel"
-                    value={row.phone}
-                    onChange={(e) => updateRow(index, "phone", e.target.value)}
-                    placeholder="09XX-XXX-XXXX"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                  />
-                </label>
-
-                <label className="text-xs font-semibold text-slate-600">
-                  Email
-                  <input
-                    type="email"
-                    value={row.email}
-                    onChange={(e) => updateRow(index, "email", e.target.value)}
-                    placeholder="name@email.com"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                  />
-                </label>
-
-                <label className="text-xs font-semibold text-slate-600 sm:col-span-2">
-                  Address
-                  <input
-                    type="text"
-                    value={row.address}
-                    onChange={(e) =>
-                      updateRow(index, "address", e.target.value)
-                    }
-                    placeholder="Street, Barangay"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                  />
-                </label>
-              </div>
-
-              <label className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-600">
-                <input
-                  type="radio"
-                  name="primary-guardian"
-                  checked={row.isPrimary === true}
-                  onChange={() => setPrimary(index)}
-                  className="h-4 w-4 accent-[#C2570C]"
-                />
-                Primary guardian
-              </label>
-            </fieldset>
-          ))}
-
-          <button
-            type="button"
-            onClick={addRow}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 py-2.5 text-sm font-medium text-slate-600 transition hover:border-orange-400 hover:text-orange-700"
-          >
-            <Plus size={16} />
-            Add another guardian
-          </button>
-        </div>
-
-        <div className="flex shrink-0 justify-end gap-2 border-t border-slate-200 p-4">
-          <SecondaryButton label="Cancel" type="button" onClick={onCancel} />
-          <PrimaryButton label="Save Changes" type="submit" />
-        </div>
-      </form>
-    </Modal>
+        )}
+        {guardian.email && (
+          <div className="flex items-center gap-2">
+            <Mail size={14} className="shrink-0 text-gray-400" />
+            <span className="truncate">{guardian.email}</span>
+          </div>
+        )}
+        {guardian.address && (
+          <div className="flex items-center gap-2">
+            <MapPin size={14} className="shrink-0 text-gray-400" />
+            <span className="truncate">{guardian.address}</span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
