@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SettingToggle from "../ui/SettingToggle";
 import { Bell, CalendarDays, Mail, Shield } from "lucide-react";
 
 export default function NotificationSettings() {
@@ -116,50 +117,5 @@ function SettingsSection({ icon: Icon, title, children }) {
         {children}
       </div>
     </section>
-  );
-}
-
-function SettingToggle({ id, label, description, checked, onChange }) {
-  return (
-    <div
-      className="flex items-center justify-between gap-4 bg-gray-50 px-4 py-4
-        transition hover:bg-gray-100"
-    >
-      <div className="min-w-0">
-        <label
-          htmlFor={id}
-          className="block cursor-pointer font-medium text-gray-800"
-        >
-          {label}
-        </label>
-
-        <p id={`${id}-description`} className="mt-1 text-sm text-gray-500">
-          {description}
-        </p>
-      </div>
-
-      <label htmlFor={id} className="relative shrink-0 cursor-pointer">
-        <input
-          id={id}
-          type="checkbox"
-          role="switch"
-          checked={checked}
-          onChange={onChange}
-          aria-describedby={`${id}-description`}
-          className="peer sr-only"
-        />
-
-        <span
-          className="block h-6 w-12 rounded-full bg-gray-300 transition
-            peer-checked:bg-[#C2570C] peer-focus-visible:ring-2
-            peer-focus-visible:ring-[#C2570C] peer-focus-visible:ring-offset-2"
-        >
-          <span
-            className="block h-5 w-5 translate-x-0.5 translate-y-0.5 rounded-full
-              bg-white shadow-md transition-transform peer-checked:translate-x-6"
-          />
-        </span>
-      </label>
-    </div>
   );
 }

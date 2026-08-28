@@ -75,6 +75,12 @@ export default function ParentStudentProfile() {
         <RequiredDocumentsCard
           documents={documents}
           onUpload={() => setActiveModal("upload")}
+          onRemove={(docId) => {
+            setProfile((current) => ({
+              ...current,
+              documents: current.documents.filter((doc) => doc.id !== docId),
+            }));
+          }}
         />
       </div>
 

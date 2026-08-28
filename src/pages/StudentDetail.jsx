@@ -85,6 +85,17 @@ export default function StudentDetail() {
         <RequiredDocumentsCard
           documents={documents}
           onUpload={() => setState((s) => ({ ...s, activeModal: "upload" }))}
+          onRemove={(docId) => {
+            setState((s) => ({
+              ...s,
+              profile: {
+                ...s.profile,
+                documents: s.profile.documents.filter(
+                  (doc) => doc.id !== docId,
+                ),
+              },
+            }));
+          }}
         />
       </div>
 

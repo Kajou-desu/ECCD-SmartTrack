@@ -1,7 +1,19 @@
 import { useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
-import { X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
+
+function makeId() {
+  return `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function toListField(list) {
+  return (list ?? []).map((value) => ({ id: makeId(), value }));
+}
+
+function fromListField(list) {
+  return list.map((item) => item.value.trim()).filter(Boolean);
+}
 
 export default function EditMedicalModal({
   medical,
@@ -9,21 +21,34 @@ export default function EditMedicalModal({
   onSave,
   hideAccommodations = false,
 }) {
-  const [form, setForm] = useState({
-    allergies: medical.allergies || "",
-    allergiesDetail: medical.allergiesDetail || "",
-    dietary: medical.dietary || "",
-    dietaryDetail: medical.dietaryDetail || "",
-    accommodations: medical.accommodations || "",
-    accommodationsDetail: medical.accommodationsDetail || "",
-  });
+  const [allergies, setAllergies] = useState(() =>
+    toListField(medical.allergies),
+  );
+  const [dietary, setDietary] = useState(() => toListField(medical.dietary));
+  const [accommodations, setAccommodations] = useState(() =>
+    toListField(medical.accommodations),
+  );
 
-  const update = (field, value) =>
-    setForm((current) => ({ ...current, [field]: value }));
+  const updateItem = (setter, id, value) =>
+    setter((current) =>
+      current.map((item) => (item.id === id ? { ...item, value } : item)),
+    );
+
+  const removeItem = (setter, id) =>
+    setter((current) => current.filter((item) => item.id !== id));
+
+  const addItem = (setter) =>
+    setter((current) => [...current, { id: makeId(), value: "" }]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    onSave(form);
+    onSave({
+      allergies: fromListField(allergies),
+      dietary: fromListField(dietary),
+      accommodations: hideAccommodations
+        ? (medical.accommodations ?? [])
+        : fromListField(accommodations),
+    });
   };
 
   return (
@@ -42,8 +67,8 @@ export default function EditMedicalModal({
             </h2>
             <p className="mt-1 text-sm text-slate-600">
               {hideAccommodations
-                ? "Keep allergy and dietary details up to date."
-                : "Keep allergy, dietary, and accommodation details up to date."}
+                ? "Keep allergy and dietary restriction details up to date."
+                : "Keep allergy, dietary restriction, and accommodation details up to date."}
             </p>
           </div>
           <button
@@ -56,75 +81,37 @@ export default function EditMedicalModal({
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="text-xs font-semibold text-slate-600">
-              Allergies (summary)
-              <input
-                type="text"
-                value={form.allergies}
-                onChange={(e) => update("allergies", e.target.value)}
-                placeholder="e.g. None, Peanuts"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-              />
-            </label>
-            <label className="text-xs font-semibold text-slate-600">
-              Dietary Notes (summary)
-              <input
-                type="text"
-                value={form.dietary}
-                onChange={(e) => update("dietary", e.target.value)}
-                placeholder="e.g. Regular Diet"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-              />
-            </label>
-          </div>
+        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-5">
+          <MedicalListSection
+            title="Allergies"
+            items={allergies}
+            placeholder="e.g. Peanuts — severe allergy, avoid all peanut products"
+            onChange={(id, value) => updateItem(setAllergies, id, value)}
+            onRemove={(id) => removeItem(setAllergies, id)}
+            onAdd={() => addItem(setAllergies)}
+            addLabel="Add allergy"
+          />
 
-          <label className="block text-xs font-semibold text-slate-600">
-            Allergies (details)
-            <textarea
-              value={form.allergiesDetail}
-              onChange={(e) => update("allergiesDetail", e.target.value)}
-              rows={2}
-              className="mt-1 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-            />
-          </label>
-
-          <label className="block text-xs font-semibold text-slate-600">
-            Dietary Notes (details)
-            <textarea
-              value={form.dietaryDetail}
-              onChange={(e) => update("dietaryDetail", e.target.value)}
-              rows={2}
-              className="mt-1 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-            />
-          </label>
+          <MedicalListSection
+            title="Dietary Restrictions"
+            items={dietary}
+            placeholder="e.g. Vegetarian diet — no meat products"
+            onChange={(id, value) => updateItem(setDietary, id, value)}
+            onRemove={(id) => removeItem(setDietary, id)}
+            onAdd={() => addItem(setDietary)}
+            addLabel="Add dietary restriction"
+          />
 
           {!hideAccommodations && (
-            <>
-              <label className="block text-xs font-semibold text-slate-600">
-                Learning Accommodations (summary)
-                <input
-                  type="text"
-                  value={form.accommodations}
-                  onChange={(e) => update("accommodations", e.target.value)}
-                  placeholder="e.g. Standard Classroom"
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                />
-              </label>
-
-              <label className="block text-xs font-semibold text-slate-600">
-                Learning Accommodations (details)
-                <textarea
-                  value={form.accommodationsDetail}
-                  onChange={(e) =>
-                    update("accommodationsDetail", e.target.value)
-                  }
-                  rows={2}
-                  className="mt-1 w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                />
-              </label>
-            </>
+            <MedicalListSection
+              title="Learning Accommodations"
+              items={accommodations}
+              placeholder="e.g. Extra time for written activities"
+              onChange={(id, value) => updateItem(setAccommodations, id, value)}
+              onRemove={(id) => removeItem(setAccommodations, id)}
+              onAdd={() => addItem(setAccommodations)}
+              addLabel="Add accommodation"
+            />
           )}
         </div>
 
@@ -134,5 +121,57 @@ export default function EditMedicalModal({
         </div>
       </form>
     </Modal>
+  );
+}
+
+function MedicalListSection({
+  title,
+  items,
+  placeholder,
+  onChange,
+  onRemove,
+  onAdd,
+  addLabel,
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-600">
+        {title}
+      </p>
+
+      {items.length > 0 && (
+        <div className="space-y-2">
+          {items.map((item, index) => (
+            <div key={item.id} className="flex items-start gap-2">
+              <textarea
+                value={item.value}
+                onChange={(e) => onChange(item.id, e.target.value)}
+                placeholder={placeholder}
+                rows={2}
+                aria-label={`${title} entry ${index + 1}`}
+                className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+              />
+              <button
+                type="button"
+                onClick={() => onRemove(item.id)}
+                aria-label={`Remove ${title.toLowerCase()} entry ${index + 1}`}
+                className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={onAdd}
+        className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 py-2 text-sm font-medium text-slate-600 transition hover:border-orange-400 hover:text-orange-700"
+      >
+        <Plus size={16} />
+        {addLabel}
+      </button>
+    </div>
   );
 }

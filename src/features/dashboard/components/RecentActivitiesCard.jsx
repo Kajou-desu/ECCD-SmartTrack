@@ -1,6 +1,6 @@
 export default function RecentActivitiesCard({ activities }) {
   return (
-    <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-200 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <div className=" bg-white rounded-3xl border border-gray-200 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <h3 className="text-xl font-bold text-gray-800 mb-6">
         Recent Activities
       </h3>

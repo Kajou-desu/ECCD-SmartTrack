@@ -6,6 +6,7 @@ import DashboardHeader from "@features/dashboard/components/DashboardHeader";
 import ChildOverviewCard from "@features/dashboard/components/ChildOverviewCard";
 import WeeklyGoalsCard from "@features/dashboard/components/WeeklyGoalsCard";
 import RecentActivitiesCard from "@features/dashboard/components/RecentActivitiesCard";
+import { EventCard } from "@features/dashboard/components/EventCard";
 import {
   ProgressLoadingState,
   ProgressEmptyState,
@@ -101,9 +102,10 @@ export default function ParentDashboard() {
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:h-125 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <WeeklyGoalsCard goals={progress.weeklyGoals} />
             <RecentActivitiesCard activities={progress.recentActivities} />
+            <EventCard />
           </div>
 
           {/* Tips & Resources — derived from this week's top goal so it never

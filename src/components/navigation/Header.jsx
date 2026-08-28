@@ -82,7 +82,7 @@ export default function Header({
             aria-haspopup="dialog"
             aria-expanded={isNotificationOpen}
             title="Notifications"
-            className="relative flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
+            className="cursor-pointer relative flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
           >
             <Bell aria-hidden="true" className="h-5 w-5" />
 

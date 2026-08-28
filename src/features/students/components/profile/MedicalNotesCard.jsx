@@ -24,22 +24,19 @@ export default function MedicalNotesCard({ medical, onEdit }) {
           icon={<AlertCircle size={20} className="text-red-600" />}
           colorClass="border-red-200 bg-red-50"
           title="Allergies"
-          subtitle={medical.allergies}
-          description={medical.allergiesDetail}
+          items={medical.allergies}
         />
         <MedicalCard
           icon={<Utensils size={20} className="text-blue-600" />}
           colorClass="border-blue-200 bg-blue-50"
-          title="Dietary Notes"
-          subtitle={medical.dietary}
-          description={medical.dietaryDetail}
+          title="Dietary Restrictions"
+          items={medical.dietary}
         />
         <MedicalCard
           icon={<Accessibility size={20} className="text-purple-600" />}
           colorClass="border-purple-200 bg-purple-50"
           title="Learning Accommodations"
-          subtitle={medical.accommodations}
-          description={medical.accommodationsDetail}
+          items={medical.accommodations}
         />
       </div>
     </div>

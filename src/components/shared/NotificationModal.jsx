@@ -91,7 +91,7 @@ export default function NotificationModal({ isOpen, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Close notifications"
-            className="flex min-h-10 min-w-10 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
+            className="cursor-pointer flex min-h-10 min-w-10 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
           >
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
@@ -105,7 +105,7 @@ export default function NotificationModal({ isOpen, onClose }) {
           {unreadCount > 0 && (
             <button
               type="button"
-              className="flex items-center gap-1.5 text-xs font-semibold text-[#C2570C] transition-colors hover:text-orange-800 focus-visible:outline-none focus-visible:underline"
+              className="cursor-pointer flex items-center gap-1.5 text-xs font-semibold text-[#C2570C] transition-colors hover:text-orange-800 focus-visible:outline-none focus-visible:underline"
             >
               <CheckCheck aria-hidden="true" className="h-4 w-4" />
               Mark all as read
