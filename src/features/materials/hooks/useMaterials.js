@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { apiClient } from "@api/client.js";
 import { MATERIALS_DATA } from "@data/mockData";
-
-// Simulates the latency of a real materials API so the loading state is
-// exercised consistently with other data-driven pages (see useStudents,
-// useAttendance). Swapping this for a real request later only touches this
-// hook - pages and components stay the same.
-function fetchMaterials() {
-  return new Promise((resolve) => {
-    window.setTimeout(() => resolve(MATERIALS_DATA), 300);
-  });
-}
 
 export const MATERIAL_MODAL = {
   NONE: null,
@@ -41,12 +32,21 @@ export function useMaterials() {
       setError("");
 
       try {
-        const data = await fetchMaterials();
+        const data = await apiClient.getMaterials();
         if (!isMounted) return;
-        setMaterials(data);
-      } catch {
+
+        if (Array.isArray(data)) {
+          setMaterials(data);
+        } else if (Array.isArray(data?.materials)) {
+          setMaterials(data.materials);
+        } else {
+          setMaterials(MATERIALS_DATA);
+        }
+      } catch (err) {
+        console.error("useMaterials failed to fetch:", err);
         if (!isMounted) return;
-        setError("Unable to load learning materials. Please try again.");
+        setMaterials(MATERIALS_DATA);
+        setError("Unable to load live materials. Displaying cached materials instead.");
       } finally {
         if (isMounted) setLoading(false);
       }

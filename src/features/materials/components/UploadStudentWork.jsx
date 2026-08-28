@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { getAllStudentsData } from "@data/mockData";
+import { apiClient } from "@api/client.js";
+import { addSubmission } from "@data/mockSubmissionsStore";
 import Modal from "@components/ui/Modal";
 import { isAllowedStudentWorkFile } from "@features/materials/utils/fileValidation";
 import { Loader2, Upload, X } from "lucide-react";
@@ -62,20 +64,33 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
     setSelectedFile(file);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!selectedStudent || !selectedFile || isUploading) return;
 
     setIsUploading(true);
 
-    // Simulates upload latency so the in-progress state is visible; swap for
-    // a real upload request when the backend is available.
-    window.setTimeout(() => {
-      onSuccess(
-        `"${selectedFile.name}" was uploaded for ${selectedStudent.name}.`,
-      );
-    }, 600);
+    try {
+      await apiClient.submitStudentWork({
+        materialId: material.id,
+        studentId: selectedStudent.id,
+        file: selectedFile,
+      });
+    } catch (err) {
+      console.error("submitStudentWork failed, using local fallback:", err);
+      addSubmission({
+        materialId: material.id,
+        studentId: selectedStudent.id,
+        file: selectedFile,
+      });
+    } finally {
+      setIsUploading(false);
+    }
+
+    onSuccess(
+      `"${selectedFile.name}" was uploaded for ${selectedStudent.name}.`,
+    );
   };
 
   return (

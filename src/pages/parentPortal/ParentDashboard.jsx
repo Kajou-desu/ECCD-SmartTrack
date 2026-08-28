@@ -107,37 +107,6 @@ export default function ParentDashboard() {
             <RecentActivitiesCard activities={progress.recentActivities} />
             <EventCard />
           </div>
-
-          {/* Tips & Resources — derived from this week's top goal so it never
-              goes stale or references the wrong child. */}
-          <div className="bg-linear-to-r from-blue-50 to-blue-100 rounded-3xl border border-blue-200 p-6">
-            <h3 className="text-lg font-bold text-blue-900 mb-4">
-              💡 Tips for Supporting Learning at Home
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white rounded-lg p-4">
-                <p className="text-sm font-medium text-gray-800">
-                  This Week's Focus
-                </p>
-                <p className="text-sm text-gray-600 mt-2">
-                  {progress.weeklyGoals?.[0]
-                    ? `Help ${selectedChild.name.split(" ")[0]} with "${
-                        progress.weeklyGoals[0].title
-                      }" through everyday activities at home.`
-                    : `Check in with ${selectedChild.name.split(" ")[0]}'s teacher for this week's learning focus.`}
-                </p>
-              </div>
-              <div className="bg-white rounded-lg p-4">
-                <p className="text-sm font-medium text-gray-800">
-                  Recommended Activity
-                </p>
-                <p className="text-sm text-gray-600 mt-2">
-                  Try the "Color Hunt" game at home. Look for objects of
-                  different colors and practice naming them.
-                </p>
-              </div>
-            </div>
-          </div>
         </>
       )}
     </div>

@@ -37,7 +37,7 @@ export default function ChildSelectorDropdown() {
         aria-expanded={isMenuOpen}
         aria-haspopup="menu"
         aria-label={`Viewing ${selectedChild.name}. Switch child`}
-        className="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#C2570C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
+        className="cursor-pointer flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#C2570C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
       >
         <User className="h-4 w-4 text-[#C2570C]" aria-hidden="true" />
         <span className="max-w-32 truncate sm:max-w-none">
@@ -65,7 +65,7 @@ export default function ChildSelectorDropdown() {
                 setSelectedChildId(child.id);
                 closeMenu();
               }}
-              className={`flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-sm font-medium transition hover:bg-slate-50 ${
+              className={`cursor-pointer flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-sm font-medium transition hover:bg-slate-50 ${
                 child.id === selectedChild.id
                   ? "text-[#C2570C]"
                   : "text-slate-700"

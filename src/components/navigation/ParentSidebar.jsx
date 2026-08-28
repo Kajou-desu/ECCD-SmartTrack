@@ -14,7 +14,6 @@ import {
   BookOpen,
   Settings,
   LogOut,
-  X,
 } from "lucide-react";
 
 const PARENT_NAV_ITEMS = [
@@ -112,9 +111,17 @@ export default function ParentSidebar({
   /*
    * Close mobile sidebar whenever route changes.
    */
+  const previousPathnameRef = useRef(location.pathname);
+
   useEffect(() => {
+    if (previousPathnameRef.current === location.pathname) {
+      return;
+    }
+
+    previousPathnameRef.current = location.pathname;
     onCloseMobile?.();
-  }, [location.pathname, onCloseMobile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   /*
    * Focus close button when mobile sidebar opens.
@@ -189,11 +196,7 @@ export default function ParentSidebar({
           type="button"
           aria-label="Close navigation"
           onClick={onCloseMobile}
-          className="
-            fixed inset-0 z-40
-            bg-black/50
-            lg:hidden
-          "
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
         />
       )}
 
@@ -201,39 +204,16 @@ export default function ParentSidebar({
       <aside
         id="parent-sidebar"
         aria-label="Parent navigation"
-        className={`
-          fixed inset-y-0 left-0 z-50
-          h-dvh
-          bg-[#f8f9ff]
-          shadow-md
-          border-r border-slate-200
-
-          transition-[width,transform]
-          duration-300
-          ease-in-out
-
-          ${
-            isCollapsed
-              ? "lg:static lg:w-20"
-              : "lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:w-72"
-          }
-
-          ${isMobileOpen ? "translate-x-0 w-72" : "-translate-x-full"}
-
-          lg:translate-x-0
-        `}
+        role={isMobileOpen ? "dialog" : undefined}
+        aria-modal={isMobileOpen ? "true" : undefined}
+        className={`fixed inset-y-0 left-0 z-50 h-dvh border-r border-slate-200 bg-[#f8f9ff] shadow-md transition-[width,transform] duration-300 ease-in-out
+          ${isCollapsed ? "lg:static lg:w-20" : "lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:w-72"}
+          ${isMobileOpen ? "translate-x-0 w-72" : "-translate-x-full"} lg:translate-x-0`}
       >
         <div className="flex h-full flex-col p-4">
           {/* Header */}
           <div
-            className={`
-              flex items-center
-              ${
-                isMobileOpen || !isCollapsed
-                  ? "justify-between"
-                  : "justify-center"
-              }
-            `}
+            className={`flex items-center ${isMobileOpen || !isCollapsed ? "justify-between" : "justify-center"}`}
           >
             {/* Logo */}
             {(isMobileOpen || !isCollapsed) && (
@@ -241,12 +221,7 @@ export default function ParentSidebar({
                 <img
                   src={logo}
                   alt="ECCD SmartTrack"
-                  className="
-                    h-12 w-12
-                    rounded-full
-                    object-cover
-                    drop-shadow-xl
-                  "
+                  className="h-12 w-12 rounded-full object-cover drop-shadow-xl"
                 />
 
                 <div>
@@ -267,22 +242,8 @@ export default function ParentSidebar({
               onClick={toggleSidebar}
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
               aria-expanded={!isCollapsed}
-              className="
-                hidden
-                min-h-11 min-w-11
-                items-center justify-center
-                rounded-lg
-                text-[#C2570C]
-                transition
-                hover:bg-orange-50
-
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-[#C2570C]
-                focus-visible:ring-offset-2
-
-                lg:flex
-              "
+              className="hidden min-h-11 min-w-11 items-center justify-center rounded-lg text-[#C2570C] transition hover:bg-orange-50
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2 lg:flex"
             >
               {isCollapsed ? (
                 <PanelLeftOpen aria-hidden="true" className="h-5 w-5" />
@@ -297,24 +258,10 @@ export default function ParentSidebar({
               type="button"
               onClick={onCloseMobile}
               aria-label="Close navigation"
-              className="
-                flex
-                min-h-11 min-w-11
-                items-center justify-center
-                rounded-lg
-                text-[#C2570C]
-                transition
-                hover:bg-orange-50
-
-                focus-visible:outline-none
-                focus-visible:ring-2
-                focus-visible:ring-[#C2570C]
-                focus-visible:ring-offset-2
-
-                lg:hidden
-              "
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-[#C2570C] transition hover:bg-orange-50
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2 lg:hidden"
             >
-              <X aria-hidden="true" className="h-5 w-5" />
+              <PanelLeftClose aria-hidden="true" className="h-5 w-5" />
             </button>
           </div>
 
@@ -354,20 +301,8 @@ export default function ParentSidebar({
               <div
                 role="menu"
                 aria-label="Profile menu"
-                className={`
-                  absolute z-60
-                  rounded-3xl
-                  border border-slate-200
-                  bg-white
-                  p-4
-                  shadow-xl
-
-                  ${
-                    isCollapsed && !isMobileOpen
-                      ? "bottom-0 left-full ml-3 w-72"
-                      : "bottom-20 left-0 right-0"
-                  }
-                `}
+                className={`absolute z-60 rounded-3xl border border-slate-200 bg-white p-4 shadow-xl
+                  ${isCollapsed && !isMobileOpen ? "bottom-0 left-full ml-3 w-72" : "bottom-20 left-0 right-0"}`}
               >
                 {/* User information */}
                 <ProfileBox
@@ -375,11 +310,7 @@ export default function ParentSidebar({
                   role="Parent/Guardian"
                   avatarUrl={user?.avatarUrl}
                   onClick={() => {}}
-                  className="
-    mb-4 cursor-default
-    border-0 bg-slate-50 shadow-none
-    hover:border-0 hover:bg-slate-50
-  "
+                  className="mb-4 cursor-default border-0 bg-slate-50 shadow-none hover:border-0 hover:bg-slate-50"
                   aria-hidden="true"
                   tabIndex={-1}
                 />
@@ -389,25 +320,8 @@ export default function ParentSidebar({
                   type="button"
                   role="menuitem"
                   onClick={handleSettings}
-                  className="
-                    flex min-h-11 w-full
-                    items-center gap-3
-                    rounded-2xl
-                    border border-slate-200
-                    bg-slate-50
-                    px-4 py-3
-                    text-left
-                    text-sm font-semibold
-                    text-slate-800
-                    transition
-                    hover:border-orange-300
-                    hover:bg-orange-50
-
-                    focus-visible:outline-none
-                    focus-visible:ring-2
-                    focus-visible:ring-[#C2570C]
-                    focus-visible:ring-offset-2
-                  "
+                  className="flex min-h-11 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-800 transition hover:border-orange-300 hover:bg-orange-50
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
                 >
                   <Settings aria-hidden="true" size={18} />
                   Settings
@@ -418,26 +332,8 @@ export default function ParentSidebar({
                   type="button"
                   role="menuitem"
                   onClick={handleLogout}
-                  className="
-                    mt-3
-                    flex min-h-11 w-full
-                    items-center gap-3
-                    rounded-2xl
-                    border border-slate-200
-                    bg-white
-                    px-4 py-3
-                    text-left
-                    text-sm font-semibold
-                    text-slate-800
-                    transition
-                    hover:border-red-300
-                    hover:bg-red-50
-
-                    focus-visible:outline-none
-                    focus-visible:ring-2
-                    focus-visible:ring-red-500
-                    focus-visible:ring-offset-2
-                  "
+                  className="mt-3 flex min-h-11 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-800 transition hover:border-red-300 hover:bg-red-50
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                 >
                   <LogOut aria-hidden="true" size={18} />
                   Logout
@@ -473,27 +369,8 @@ function SidebarLink({
       aria-current={isActive ? "page" : undefined}
       aria-label={collapsed ? label : undefined}
       title={collapsed ? label : undefined}
-      className={`
-        group
-        flex min-h-11 w-full
-        items-center
-        rounded-lg
-        p-3
-        transition-colors duration-200
-
-        focus-visible:outline-none
-        focus-visible:ring-2
-        focus-visible:ring-[#C2570C]
-        focus-visible:ring-offset-2
-
-        ${
-          isActive
-            ? "bg-[#C2570C] text-white shadow-md"
-            : "text-gray-700 hover:bg-orange-800 hover:text-white"
-        }
-
-        ${collapsed ? "justify-center" : "gap-3"}
-      `}
+      className={`group flex min-h-11 w-full items-center rounded-lg p-3 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2
+        ${isActive ? "bg-[#C2570C] text-white shadow-md" : "text-gray-700 hover:bg-orange-800 hover:text-white"} ${collapsed ? "justify-center" : "gap-3"}`}
     >
       <span className="shrink-0">{icon}</span>
 

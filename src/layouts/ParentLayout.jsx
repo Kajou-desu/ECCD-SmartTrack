@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import ParentHeader from "@components/navigation/ParentHeader";
 import ParentSidebar from "@components/navigation/ParentSidebar";
@@ -11,21 +11,32 @@ export default function ParentLayout() {
 
   const mobileMenuButtonRef = useRef(null);
 
-  const openMobileSidebar = () => {
+  const openMobileSidebar = useCallback(() => {
     setIsMobileSidebarOpen(true);
-  };
+  }, []);
 
-  const closeMobileSidebar = () => {
+  const closeMobileSidebar = useCallback(() => {
     setIsMobileSidebarOpen(false);
 
     requestAnimationFrame(() => {
       mobileMenuButtonRef.current?.focus();
     });
-  };
+  }, []);
 
-  const toggleSidebarCollapse = () => {
+  const toggleSidebarCollapse = useCallback(() => {
     setIsSidebarCollapsed((prev) => !prev);
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileSidebarOpen) return;
+
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [isMobileSidebarOpen]);
 
   return (
     <ParentChildProvider>

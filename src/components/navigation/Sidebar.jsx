@@ -16,7 +16,6 @@ import {
   Settings,
   Users2,
   LogOut,
-  X,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -161,15 +160,10 @@ export default function Sidebar({
         id="app-sidebar"
         ref={sidebarRef}
         aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 z-50 h-dvh border-r border-slate-200 bg-[#f8f9ff] shadow-md
-          transition-[width,transform] duration-300 ease-in-out
-
-          ${isMobileOpen ? "translate-x-0 w-72" : "-translate-x-full w-72"}
-
-          lg:translate-x-0
-
-          ${collapsed ? "lg:static lg:w-20" : "lg:fixed lg:w-72"}
-        `}
+        role={isMobileOpen ? "dialog" : undefined}
+        aria-modal={isMobileOpen ? "true" : undefined}
+        className={`fixed inset-y-0 left-0 z-50 h-dvh border-r border-slate-200 bg-[#f8f9ff] shadow-md transition-[width,transform] duration-300 ease-in-out
+          ${isMobileOpen ? "translate-x-0 w-72" : "-translate-x-full w-72"} lg:translate-x-0 ${collapsed ? "lg:static lg:w-20" : "lg:fixed lg:w-72"}`}
       >
         <div className="flex h-full flex-col p-4">
           {/* Sidebar header */}
@@ -227,7 +221,7 @@ export default function Sidebar({
               aria-label="Close navigation"
               className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-[#C2570C] transition hover:bg-orange-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2 lg:hidden"
             >
-              <X aria-hidden="true" className="h-5 w-5" />
+              <PanelLeftClose aria-hidden="true" className="h-5 w-5" />
             </button>
           </div>
 

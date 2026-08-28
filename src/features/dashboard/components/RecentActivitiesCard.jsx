@@ -4,7 +4,7 @@ export default function RecentActivitiesCard({ activities }) {
       <h3 className="text-xl font-bold text-gray-800 mb-6">
         Recent Activities
       </h3>
-      <div className="space-y-4">
+      <div className="space-y-4 overflow-y-auto">
         {activities.map((activity) => (
           <div
             key={activity.id}
@@ -31,8 +31,6 @@ export default function RecentActivitiesCard({ activities }) {
         ))}
       </div>
 
-      {/* No activity-history page exists yet; disabled with an explanation
-            instead of a dead link (see instructions §2.2, §12.1). */}
       <button
         type="button"
         disabled

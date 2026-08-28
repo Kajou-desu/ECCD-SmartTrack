@@ -294,4 +294,85 @@ export const apiClient = {
       body: JSON.stringify(attendanceData),
     });
   },
+
+  /**
+   * Fetch all learning materials (teacher + parent views share this list).
+   * @returns {Promise<Array>} Array of material records
+   */
+  async getMaterials() {
+    return fetchWithRetry(`${API_BASE_URL}/api/materials`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Create a new learning material.
+   * @param {Object} materialData - { title, category, description, file }
+   */
+  async createMaterial(materialData) {
+    const { file, ...fields } = materialData;
+    const formData = new FormData();
+    Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
+    if (file instanceof File) formData.append("file", file);
+
+    return fetchWithRetry(`${API_BASE_URL}/api/materials`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Update an existing material.
+   * @param {number|string} id
+   * @param {Object} materialData
+   */
+  async updateMaterial(id, materialData) {
+    const { file, ...fields } = materialData;
+    const formData = new FormData();
+    Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
+    if (file instanceof File) formData.append("file", file);
+
+    return fetchWithRetry(`${API_BASE_URL}/api/materials/${id}`, {
+      method: "PUT",
+      body: formData,
+    });
+  },
+
+  /**
+   * Delete a material.
+   * @param {number|string} id
+   */
+  async deleteMaterial(id) {
+    return fetchWithRetry(`${API_BASE_URL}/api/materials/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Fetch a child's submitted/completed work for materials.
+   * @param {number|string} childId
+   * @returns {Promise<Array>} Array of { materialId, fileUrl, submittedAt }
+   */
+  async getSubmissions(childId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${childId}/submissions`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Upload a child's completed work for a material.
+   * @param {Object} params - { materialId, studentId, file }
+   * @returns {Promise<Object>} Created submission record
+   */
+  async submitStudentWork({ materialId, studentId, file }) {
+    const formData = new FormData();
+    formData.append("materialId", materialId);
+    formData.append("studentId", studentId);
+    formData.append("file", file);
+
+    return fetchWithRetry(`${API_BASE_URL}/api/submissions`, {
+      method: "POST",
+      body: formData,
+    });
+  },
 };

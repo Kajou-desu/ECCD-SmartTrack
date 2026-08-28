@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { MATERIALS_DATA } from "@data/mockParentData";
+import useParentMaterials from "@features/materials/hooks/useParentMaterials";
+import LoadingScreen from "@components/shared/LoadingScreen";
 import ParentMediaGallery from "./ParentMediaGallery";
 
 const FILTER_OPTIONS = [
@@ -9,29 +9,9 @@ const FILTER_OPTIONS = [
 ];
 
 export default function ParentMaterials() {
-  const [materials, setMaterials] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { materials, loading } = useParentMaterials();
 
-  useEffect(() => {
-    // Simulate loading materials
-    const timer = window.setTimeout(() => {
-      setMaterials(MATERIALS_DATA);
-      setLoading(false);
-    }, 250);
-
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-[calc(100vh-70px)] flex items-center justify-center bg-[#f8f9ff] p-6 text-gray-600">
-        <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-600 border-t-transparent" />
-          <p>Loading materials...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingScreen message="Loading materials..." />;
 
   return (
     <ParentMediaGallery

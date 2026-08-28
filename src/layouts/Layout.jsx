@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "@components/navigation/Header";
 import Sidebar from "@components/navigation/Sidebar";
@@ -16,6 +16,17 @@ export default function Layout() {
   const openMobileSidebar = () => {
     setIsMobileSidebarOpen(true);
   };
+
+  useEffect(() => {
+    if (!isMobileSidebarOpen) return;
+
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [isMobileSidebarOpen]);
 
   return (
     <div className="fixed inset-0 flex w-full overflow-hidden">

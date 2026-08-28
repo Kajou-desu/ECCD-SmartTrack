@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Download, ChevronRight } from "lucide-react";
+import { Download, ChevronRight, CheckCircle2, Clock } from "lucide-react";
 
 export default function ParentMediaGallery({
   type = "materials", // "materials" | "eventPhotos"
@@ -141,7 +141,7 @@ export default function ParentMediaGallery({
                 )}
 
                 {/* Metadata */}
-                <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
+                <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                   {item.createdBy && (
                     <>
                       <span>By {item.createdBy}</span>
@@ -151,10 +151,44 @@ export default function ParentMediaGallery({
                   <span>{item.date}</span>
                 </div>
 
+                {/* Completion status (materials only) */}
+                {type === "materials" && item.completion && (
+                  <div className="mb-4">
+                    {item.completion.status === "completed" ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 px-3 py-1 rounded-full">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Completed
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                        <Clock className="h-3.5 w-3.5" />
+                        Not completed yet
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Action Button */}
                 <button
-                  onClick={() => onActionClick(item)}
-                  className="w-full py-2 text-center text-sm font-medium bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-lg transition flex items-center justify-center gap-2 cursor-pointer"
+                  onClick={() => {
+                    if (
+                      type === "materials" &&
+                      item.completion?.status === "completed"
+                    ) {
+                      window.open(
+                        item.completion.fileUrl,
+                        "_blank",
+                        "noopener",
+                      );
+                      return;
+                    }
+                    onActionClick(item);
+                  }}
+                  disabled={
+                    type === "materials" &&
+                    item.completion?.status !== "completed"
+                  }
+                  className="w-full py-2 text-center text-sm font-medium bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-orange-50"
                 >
                   {actionLabel}
                   <ChevronRight className="h-4 w-4" />

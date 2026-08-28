@@ -1,5 +1,6 @@
 import { useState } from "react";
 import StatCard from "@components/shared/StatCard";
+import PageHeader from "@components/shared/PageHeader";
 import { useParentChild } from "@hooks/useParentChild";
 import useParentAttendance from "@features/attendance/hooks/useParentAttendance";
 import ParentAttendanceCalendar from "@features/attendance/components/ParentAttendanceCalendar";
@@ -39,7 +40,10 @@ export default function ParentAttendance() {
   if (!selectedChild) {
     return (
       <div className="min-h-[calc(100vh-70px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
-        <PageHeader />
+        <PageHeader
+          title="Attendance Record"
+          subtitle="Monitor your child's attendance throughout the month"
+        />
         <div className="flex min-h-96 w-full flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
           <div
             className="flex h-16 w-16 items-center justify-center rounded-lg bg-orange-50"
@@ -61,7 +65,10 @@ export default function ParentAttendance() {
 
   return (
     <div className="min-h-[calc(100vh-70px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
-      <PageHeader childName={selectedChild.name} />
+      <PageHeader
+        title="Attendance Record"
+        subtitle={`Monitor ${selectedChild.name}'s attendance throughout the month`}
+      />
 
       {status === "loading" && <AttendanceLoadingState />}
       {status === "error" && <AttendanceErrorState onRetry={retry} />}
@@ -149,19 +156,6 @@ export default function ParentAttendance() {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-function PageHeader({ childName }) {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold text-gray-800">Attendance Record</h1>
-      <p className="mt-2 text-sm text-gray-600">
-        {childName
-          ? `Monitor ${childName}'s attendance throughout the month`
-          : "Monitor your child's attendance throughout the month"}
-      </p>
     </div>
   );
 }
