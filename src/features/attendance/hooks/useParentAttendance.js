@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { apiClient } from "@api/client.js";
+import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { ATTENDANCE_DATA_BY_CHILD } from "@data/mockParentData";
 
 function fetchAttendance(childId, monthKey) {
-    return new Promise((resolve, reject) => {
-        window.setTimeout(() => {
-            if (!childId) {
-                reject(new Error("No child selected"));
-                return;
-            }
-            resolve(ATTENDANCE_DATA_BY_CHILD[childId]?.[monthKey] ?? null);
-        }, 300);
-    });
+    if (!childId) return Promise.reject(new Error("No child selected"));
+
+    return withMockFallback(
+        () => apiClient.getChildAttendance(childId, monthKey),
+        ATTENDANCE_DATA_BY_CHILD[childId]?.[monthKey] ?? null,
+        { label: "useParentAttendance" },
+    ).then(({ data }) => data);
 }
 
 // Returns { status: "loading" | "empty" | "error" | "success", data, retry }

@@ -385,4 +385,49 @@ export const apiClient = {
       body: formData,
     });
   },
+
+  // --- Speculative endpoints (MOCK_FALLBACK callers) ---
+  // Names/shapes not yet confirmed with backend; adjust once real contract exists.
+
+  /** @param {number|string} childId @param {string} monthKey e.g. "2026-08" */
+  async getChildAttendance(childId, monthKey) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${childId}/attendance?month=${monthKey}`, {
+      method: "GET",
+    });
+  },
+
+  /** @param {number|string} childId */
+  async getChildProgress(childId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${childId}/progress`, {
+      method: "GET",
+    });
+  },
+
+  /** List children linked to the logged-in parent account. */
+  async getChildren() {
+    return fetchWithRetry(`${API_BASE_URL}/api/parent/children`, {
+      method: "GET",
+    });
+  },
+
+  /** @param {string} monthKey e.g. "2026-08" */
+  async getEvents(monthKey) {
+    return fetchWithRetry(`${API_BASE_URL}/api/events?month=${monthKey}`, {
+      method: "GET",
+    });
+  },
+
+  /** Aggregate counts for the teacher dashboard stat cards. */
+  async getDashboardStats() {
+    return fetchWithRetry(`${API_BASE_URL}/api/dashboard/stats`, {
+      method: "GET",
+    });
+  },
+
+  /** Today's lesson theme shown on the teacher dashboard. */
+  async getDailyTheme() {
+    return fetchWithRetry(`${API_BASE_URL}/api/dashboard/daily-theme`, {
+      method: "GET",
+    });
+  },
 };

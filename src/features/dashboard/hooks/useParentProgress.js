@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { apiClient } from "@api/client.js";
+import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { PROGRESS_DATA_BY_CHILD } from "@data/mockParentData";
 
 function fetchProgressData(childId) {
-    return new Promise((resolve, reject) => {
-        window.setTimeout(() => {
-            if (!childId) {
-                reject(new Error("No child selected"));
-                return;
-            }
-            resolve(PROGRESS_DATA_BY_CHILD[childId] ?? null);
-        }, 300);
-    });
+    if (!childId) return Promise.reject(new Error("No child selected"));
+
+    return withMockFallback(
+        () => apiClient.getChildProgress(childId),
+        PROGRESS_DATA_BY_CHILD[childId] ?? null,
+        { label: "useParentProgress" },
+    ).then(({ data }) => data);
 }
 
 // Returns { status: "loading" | "empty" | "error" | "success", data, retry }

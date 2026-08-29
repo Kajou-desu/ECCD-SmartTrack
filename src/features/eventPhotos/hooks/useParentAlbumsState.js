@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiClient } from "@api/client.js";
+import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { PHOTO_ALBUMS_DATA } from "@data/mockParentData";
 import { useParentChild } from "@hooks/useParentChild";
 
@@ -28,25 +29,26 @@ export function useParentAlbumsState() {
             setLoading(true);
             setError("");
 
-            try {
-                const data = await apiClient.getAlbums();
-                if (!isMounted) return;
+            const { data, usedMock } = await withMockFallback(
+                () => apiClient.getAlbums(),
+                PHOTO_ALBUMS_DATA,
+                { label: "useParentAlbumsState" },
+            );
 
-                if (Array.isArray(data)) {
-                    setAlbums(data);
-                } else if (Array.isArray(data?.albums)) {
-                    setAlbums(data.albums);
-                } else {
-                    setAlbums(PHOTO_ALBUMS_DATA);
-                }
-            } catch (err) {
-                console.error("useParentAlbumsState failed to fetch albums:", err);
-                if (!isMounted) return;
-                setAlbums(PHOTO_ALBUMS_DATA);
+            if (!isMounted) return;
+
+            if (usedMock) {
+                setAlbums(data);
                 setError("Unable to load live photos. Displaying cached photos instead.");
-            } finally {
-                if (isMounted) setLoading(false);
+            } else if (Array.isArray(data)) {
+                setAlbums(data);
+            } else if (Array.isArray(data?.albums)) {
+                setAlbums(data.albums);
+            } else {
+                setAlbums(PHOTO_ALBUMS_DATA);
             }
+
+            if (isMounted) setLoading(false);
         };
 
         loadAlbums();

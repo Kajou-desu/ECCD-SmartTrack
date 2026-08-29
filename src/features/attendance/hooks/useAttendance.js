@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiClient } from "@api/client.js";
+import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { initialRecords } from "@data/mockData.js";
-
-function getLocalDateString() {
-  const date = new Date();
-  const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - offset * 60 * 1000);
-  return localDate.toISOString().split("T")[0];
-}
+import { toDayKey } from "@utils/dateKeys.js";
 
 export function useAttendance(initialDate) {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
@@ -16,7 +11,7 @@ export function useAttendance(initialDate) {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedDate, setSelectedDate] = useState(initialDate || getLocalDateString());
+  const [selectedDate, setSelectedDate] = useState(initialDate || toDayKey());
   const [savingIds, setSavingIds] = useState(() => new Set());
 
   const mountedRef = useRef(true);
@@ -38,28 +33,26 @@ export function useAttendance(initialDate) {
 
       const mockRecords = initialRecords.filter((record) => record.date === selectedDate);
 
-      try {
-        const data = await apiClient.getAttendance(selectedDate, { signal: controller.signal });
+      const { data, usedMock } = await withMockFallback(
+        () => apiClient.getAttendance(selectedDate, { signal: controller.signal }),
+        mockRecords,
+        { label: "useAttendance" },
+      );
 
-        if (!isMounted) return;
+      if (!isMounted) return;
 
-        if (Array.isArray(data)) {
-          setAttendanceRecords(data);
-        } else if (Array.isArray(data?.records)) {
-          setAttendanceRecords(data.records);
-        } else {
-          setAttendanceRecords(mockRecords);
-        }
-      } catch (err) {
-        // Ignore abort errors on unmount
-        if (err?.name === "AbortError") return;
-        console.error("Failed to fetch attendance:", err);
-        if (!isMounted) return;
-        setAttendanceRecords(mockRecords);
+      if (usedMock) {
+        setAttendanceRecords(data);
         setError("Unable to sync with server. Showing cached data.");
-      } finally {
-        if (isMounted) setLoading(false);
+      } else if (Array.isArray(data)) {
+        setAttendanceRecords(data);
+      } else if (Array.isArray(data?.records)) {
+        setAttendanceRecords(data.records);
+      } else {
+        setAttendanceRecords(mockRecords);
       }
+
+      if (isMounted) setLoading(false);
     };
 
     fetchAttendance();
@@ -138,7 +131,7 @@ export function useAttendance(initialDate) {
 
   const handleExport = useCallback(() => {
     try {
-      const escapeCsvValue = (v) => `"${String(v ?? "").replace(/"/g, '""') }"`;
+      const escapeCsvValue = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
       const rows = filteredRecords.map((record) => [record.name, record.status, record.time].map(escapeCsvValue).join(","));
       const csv = ["name,status,time", ...rows].join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

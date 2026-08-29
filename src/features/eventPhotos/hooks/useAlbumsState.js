@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { apiClient } from "@api/client.js";
+import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { PHOTO_ALBUMS_DATA } from "@data/mockData";
 import { isBlobUrl, isImageFile } from "@features/eventPhotos/utils/photoValidation";
 
-// Simulates the latency of a real albums API, matching the pattern used by
-// useMaterials/useStudents/useAttendance so this hook can later be pointed at
-// a real endpoint without touching any component.
 function fetchAlbums() {
-    return new Promise((resolve) => {
-        window.setTimeout(() => resolve(PHOTO_ALBUMS_DATA), 300);
-    });
+    return withMockFallback(
+        () => apiClient.getAlbums(),
+        PHOTO_ALBUMS_DATA,
+        { label: "useAlbumsState" },
+    ).then(({ data }) => data);
 }
 
 /**
