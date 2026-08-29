@@ -1,9 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
+const IS_API_CONFIGURED = Boolean(API_BASE_URL);
 
-if (!API_BASE_URL) {
-    throw new Error(
-        "VITE_API_URL is not configured. Please define it in your environment."
-    );
-}
-
-export { API_BASE_URL };
+export { API_BASE_URL, IS_API_CONFIGURED };
