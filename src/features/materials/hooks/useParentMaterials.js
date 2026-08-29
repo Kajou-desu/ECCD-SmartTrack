@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "@api/client.js";
-import { MATERIALS_DATA } from "@data/mockParentData";
 import { getSubmissionsForChild } from "@data/mockSubmissionsStore";
 import { useParentChild } from "@hooks/useParentChild";
+import { useMaterialsQuery } from "./useMaterialsQuery.js";
 
 // Merges a material with this child's submission (if any) into a single
 // `completion` field the UI can render directly.
@@ -27,31 +27,24 @@ function withCompletion(material, submissions) {
 export function useParentMaterials() {
     const { selectedChildId } = useParentChild();
 
-    const [materials, setMaterials] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { data: materialsQueryData, isLoading: materialsLoading } = useMaterialsQuery();
+
+    const [submissions, setSubmissions] = useState([]);
+    const [submissionsLoading, setSubmissionsLoading] = useState(true);
     const [error, setError] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
+    const [syncedUsedMock, setSyncedUsedMock] = useState(false);
+
+    if (materialsQueryData?.usedMock && !syncedUsedMock) {
+        setSyncedUsedMock(true);
+        setError("Unable to load live materials. Displaying cached materials instead.");
+    }
 
     useEffect(() => {
         let isMounted = true;
 
-        const load = async () => {
-            setLoading(true);
-            setError("");
-
-            let materialsData;
-            try {
-                const data = await apiClient.getMaterials();
-                materialsData = Array.isArray(data)
-                    ? data
-                    : Array.isArray(data?.materials)
-                        ? data.materials
-                        : MATERIALS_DATA;
-            } catch (err) {
-                console.error("useParentMaterials failed to fetch materials:", err);
-                materialsData = MATERIALS_DATA;
-                setError("Unable to load live materials. Displaying cached materials instead.");
-            }
+        const loadSubmissions = async () => {
+            setSubmissionsLoading(true);
 
             let submissionsData = [];
             if (selectedChildId) {
@@ -60,21 +53,27 @@ export function useParentMaterials() {
                     submissionsData = Array.isArray(data) ? data : [];
                 } catch (err) {
                     console.error("useParentMaterials failed to fetch submissions:", err);
-                    submissionsData = getSubmissionsForChild(selectedChildId);
+                    submissionsData = getSubmissionsForChild(selectedChildId); // MOCK_FALLBACK
                 }
             }
 
             if (!isMounted) return;
-            setMaterials(materialsData.map((m) => withCompletion(m, submissionsData)));
-            setLoading(false);
+            setSubmissions(submissionsData);
+            setSubmissionsLoading(false);
         };
 
-        load();
+        loadSubmissions();
 
         return () => {
             isMounted = false;
         };
     }, [selectedChildId]);
+
+    const loading = materialsLoading || submissionsLoading;
+    const materials = useMemo(
+        () => (materialsQueryData?.materials ?? []).map((m) => withCompletion(m, submissions)),
+        [materialsQueryData, submissions],
+    );
 
     const filteredMaterials = useMemo(() => {
         const query = searchQuery.trim().toLowerCase();

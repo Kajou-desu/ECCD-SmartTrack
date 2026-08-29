@@ -11,6 +11,7 @@ import {
 } from "@features/dashboard/components/DashboardStats";
 import DashboardContentGrid from "@features/dashboard/components/DashboardContentGrid";
 import StatCard from "@components/shared/StatCard";
+import ErrorMsg from "@components/ui/ErrorMsg";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -19,15 +20,18 @@ export default function Dashboard() {
   );
 
   const [stats, setStats] = useState(DASHBOARD_STATS);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
 
     withMockFallback(() => apiClient.getDashboardStats(), DASHBOARD_STATS, {
       label: "Dashboard",
-    }).then(({ data }) => {
+    }).then(({ data, usedMock }) => {
       if (!isMounted) return;
       setStats(data ?? DASHBOARD_STATS);
+      if (usedMock)
+        setError("Unable to sync with server. Showing cached data.");
     });
 
     return () => {
@@ -42,6 +46,8 @@ export default function Dashboard() {
         firstName={firstName}
         currentDateTime={currentDateTime}
       />
+
+      {error && <ErrorMsg message={error} onClose={() => setError("")} />}
 
       <DashboardContentGrid
         stats={

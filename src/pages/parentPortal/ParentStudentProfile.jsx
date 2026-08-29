@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
-import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { getStudentData } from "@data/mockData";
+import { useState } from "react";
+import { useStudentProfileQuery } from "@features/students/hooks/useStudentProfileQuery.js";
 import { useParentChild } from "@hooks/useParentChild";
 import StudentProfileHeader from "@features/students/components/profile/StudentProfileHeader";
 import GuardianContactsCard from "@features/students/components/profile/GuardianContactsCard";
@@ -9,6 +7,8 @@ import MedicalNotesCard from "@features/students/components/profile/MedicalNotes
 import RequiredDocumentsCard from "@features/students/components/profile/RequiredDocumentsCard";
 import EditMedicalModal from "@features/students/components/profile/EditMedicalModal";
 import UploadDocumentModal from "@features/students/components/profile/UploadDocumentModal";
+import LoadingState from "@components/shared/LoadingState";
+import ErrorMsg from "@components/ui/ErrorMsg";
 import { Users, FileQuestion } from "lucide-react";
 
 export default function ParentStudentProfile() {
@@ -37,34 +37,27 @@ export default function ParentStudentProfile() {
 }
 
 function ParentStudentProfileView({ selectedChild }) {
+  const { data: queryData, isLoading } = useStudentProfileQuery(
+    selectedChild.id,
+  );
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
+  const [error, setError] = useState("");
   const [activeModal, setActiveModal] = useState(null); // "medical" | "upload" | null
 
-  useEffect(() => {
-    let isMounted = true;
+  if (queryData && !initialized) {
+    setInitialized(true);
+    setProfile(queryData.profile);
+    if (queryData.usedMock)
+      setError("Unable to sync with server. Showing cached data.");
+  }
 
-    withMockFallback(
-      () => apiClient.getStudent(selectedChild.id),
-      getStudentData(selectedChild.id),
-      { label: "ParentStudentProfile" },
-    ).then(({ data }) => {
-      if (!isMounted) return;
-      setProfile(data ?? null);
-      setLoading(false);
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedChild.id]);
+  const loading = isLoading;
 
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-70px)] bg-[#f8f9ff] p-4 sm:p-6 lg:p-8">
-        <div className="bg-white rounded-3xl p-8 border border-gray-200 text-center">
-          <p className="text-gray-600">Loading profile...</p>
-        </div>
+        <LoadingState message="Loading profile..." />
       </div>
     );
   }
@@ -94,6 +87,8 @@ function ParentStudentProfileView({ selectedChild }) {
           uploaded documents. All information is kept secure and confidential.
         </p>
       </div>
+
+      {error && <ErrorMsg message={error} onClose={() => setError("")} />}
 
       <StudentProfileHeader student={student} />
 

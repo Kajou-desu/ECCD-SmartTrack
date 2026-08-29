@@ -47,8 +47,6 @@ export const MATERIALS_DATA = [
         category: "Art & Creativity",
         description:
             "Guided exercises for learning primary and secondary colors through painting.",
-        bgColor: "bg-gradient-to-r from-orange-400 to-purple-500",
-        icon: "🎨",
         pdfUrl: Material1,
         createdAt: "2026-06-02T00:00:00.000Z",
     },
@@ -58,8 +56,6 @@ export const MATERIALS_DATA = [
         category: "Mathematics",
         description:
             "Interactive patterns for geometry recognition and spatial awareness training.",
-        bgColor: "bg-orange-300",
-        icon: "🟢🟨🔺",
         createdAt: "2026-06-10T00:00:00.000Z",
     },
     {
@@ -68,8 +64,6 @@ export const MATERIALS_DATA = [
         category: "Language",
         description:
             "20 Creative prompt cards to encourage verbal expression and narrative skills.",
-        bgColor: "bg-blue-200",
-        icon: "📚",
         createdAt: "2026-06-15T00:00:00.000Z",
     },
     {
@@ -78,8 +72,6 @@ export const MATERIALS_DATA = [
         category: "Language",
         description:
             "Printable flashcards focusing on vowel sounds and high-frequency sight words.",
-        bgColor: "bg-blue-100",
-        icon: "📖",
         createdAt: "2026-06-20T00:00:00.000Z",
     },
     {
@@ -88,8 +80,6 @@ export const MATERIALS_DATA = [
         category: "Mathematics",
         description:
             "Activity sheets for children aged 3-5 to master basic numerals and cardinality.",
-        bgColor: "bg-rose-100",
-        icon: "🔢",
         createdAt: "2026-06-28T00:00:00.000Z",
     },
 ];
@@ -208,9 +198,9 @@ export const studentDataAll = {
             accommodations: ["Standard Classroom — Leo is comfortable in standard classroom settings."],
         },
         documents: [
-            { id: 1, name: "Birth_Certificate.pdf",  },
-            { id: 2, name: "Immunization_Records.pdf",  },
-            { id: 3, name: "Enrollment_Form.pdf",  },
+            { id: 1, name: "Birth_Certificate.pdf", },
+            { id: 2, name: "Immunization_Records.pdf", },
+            { id: 3, name: "Enrollment_Form.pdf", },
         ],
     },
 
@@ -250,9 +240,9 @@ export const studentDataAll = {
             accommodations: ["Dietary Accommodation — Lunch must be dairy-free. Alternative milk available."],
         },
         documents: [
-            { id: 1, name: "Birth_Certificate.pdf",  },
-            { id: 2, name: "Immunization_Records.pdf",  },
-            { id: 3, name: "Medical_Report.pdf",  },
+            { id: 1, name: "Birth_Certificate.pdf", },
+            { id: 2, name: "Immunization_Records.pdf", },
+            { id: 3, name: "Medical_Report.pdf", },
         ],
     },
 
@@ -284,9 +274,9 @@ export const studentDataAll = {
             accommodations: ["Standard Classroom — Lucas adapts well to classroom environment."],
         },
         documents: [
-            { id: 1, name: "Birth_Certificate.pdf",  },
-            { id: 2, name: "Immunization_Records.pdf",  },
-            { id: 3, name: "Enrollment_Form.pdf",  },
+            { id: 1, name: "Birth_Certificate.pdf", },
+            { id: 2, name: "Immunization_Records.pdf", },
+            { id: 3, name: "Enrollment_Form.pdf", },
         ],
     },
 
@@ -326,9 +316,9 @@ export const studentDataAll = {
             accommodations: ["Allergy Management — Antihistamine available in classroom. Parent contacted immediately if exposure occurs."],
         },
         documents: [
-            { id: 1, name: "Birth_Certificate.pdf",  },
-            { id: 2, name: "Immunization_Records.pdf",  },
-            { id: 3, name: "Allergy_Test_Results.pdf",  },
+            { id: 1, name: "Birth_Certificate.pdf", },
+            { id: 2, name: "Immunization_Records.pdf", },
+            { id: 3, name: "Allergy_Test_Results.pdf", },
         ],
     },
 
@@ -360,9 +350,9 @@ export const studentDataAll = {
             accommodations: ["Dietary Preference — Vegetarian options provided during lunch."],
         },
         documents: [
-            { id: 1, name: "Birth_Certificate.pdf",  },
-            { id: 2, name: "Immunization_Records.pdf",  },
-            { id: 3, name: "Enrollment_Form.pdf",  },
+            { id: 1, name: "Birth_Certificate.pdf", },
+            { id: 2, name: "Immunization_Records.pdf", },
+            { id: 3, name: "Enrollment_Form.pdf", },
         ],
     },
 
@@ -402,9 +392,9 @@ export const studentDataAll = {
             accommodations: ["Dietary Management — Egg alternatives provided for breakfast and snacks."],
         },
         documents: [
-            { id: 1, name: "Birth_Certificate.pdf",  },
-            { id: 2, name: "Immunization_Records.pdf",  },
-            { id: 3, name: "Enrollment_Form.pdf",  },
+            { id: 1, name: "Birth_Certificate.pdf", },
+            { id: 2, name: "Immunization_Records.pdf", },
+            { id: 3, name: "Enrollment_Form.pdf", },
         ],
     },
 
@@ -436,9 +426,9 @@ export const studentDataAll = {
             accommodations: ["Hearing Support — Mild hearing sensitivity. Prefers quieter environments during transitions."],
         },
         documents: [
-            { id: 1, name: "Birth_Certificate.pdf",  },
-            { id: 2, name: "Immunization_Records.pdf",  },
-            { id: 3, name: "Audiological_Assessment.pdf",  },
+            { id: 1, name: "Birth_Certificate.pdf", },
+            { id: 2, name: "Immunization_Records.pdf", },
+            { id: 3, name: "Audiological_Assessment.pdf", },
         ],
     },
 
@@ -478,9 +468,9 @@ export const studentDataAll = {
             accommodations: ["Standard Classroom — Ave is an active learner and engages well with peers."],
         },
         documents: [
-            { id: 1, name: "Birth_Certificate.pdf",  },
-            { id: 2, name: "Immunization_Records.pdf",  },
-            { id: 3, name: "Enrollment_Form.pdf",  },
+            { id: 1, name: "Birth_Certificate.pdf", },
+            { id: 2, name: "Immunization_Records.pdf", },
+            { id: 3, name: "Enrollment_Form.pdf", },
         ],
     },
 
@@ -512,9 +502,9 @@ export const studentDataAll = {
             accommodations: ["Allergy Management — Separate lunch area. All snacks checked for nut content."],
         },
         documents: [
-            { id: 1, name: "Birth_Certificate.pdf",  },
-            { id: 2, name: "Immunization_Records.pdf",  },
-            { id: 3, name: "Allergy_Management_Plan.pdf",  },
+            { id: 1, name: "Birth_Certificate.pdf", },
+            { id: 2, name: "Immunization_Records.pdf", },
+            { id: 3, name: "Allergy_Management_Plan.pdf", },
         ],
     },
 
@@ -554,9 +544,9 @@ export const studentDataAll = {
             accommodations: ["Standard Classroom — Lucas is social and enjoys group activities."],
         },
         documents: [
-            { id: 1, name: "Birth_Certificate.pdf",  },
-            { id: 2, name: "Immunization_Records.pdf",  },
-            { id: 3, name: "Enrollment_Form.pdf",  },
+            { id: 1, name: "Birth_Certificate.pdf", },
+            { id: 2, name: "Immunization_Records.pdf", },
+            { id: 3, name: "Enrollment_Form.pdf", },
         ],
     },
 };

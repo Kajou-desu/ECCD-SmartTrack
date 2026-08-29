@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { getAllStudentsData } from "@data/mockData";
+import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { apiClient } from "@api/client.js";
 import { addSubmission } from "@data/mockSubmissionsStore";
 import Modal from "@components/ui/Modal";
@@ -14,7 +14,8 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
   const [fileError, setFileError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
-  const students = useMemo(() => getAllStudentsData(), []);
+  const { data } = useStudentsQuery();
+  const students = useMemo(() => data?.students ?? [], [data]);
 
   const suggestions = useMemo(() => {
     const query = studentQuery.trim().toLowerCase();
@@ -22,9 +23,9 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
     if (!query || selectedStudent) return [];
 
     return students
-      .filter((record) => {
-        const studentName = record.student?.name?.toLowerCase() || "";
-        const studentId = record.student?.id?.toLowerCase() || "";
+      .filter((student) => {
+        const studentName = student.name?.toLowerCase() || "";
+        const studentId = student.id?.toLowerCase() || "";
 
         return studentName.includes(query) || studentId.includes(query);
       })
@@ -37,9 +38,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
     setShowSuggestions(true);
   };
 
-  const handleSelectStudent = (record) => {
-    const student = record.student;
-
+  const handleSelectStudent = (student) => {
     setSelectedStudent(student);
     setStudentQuery(`${student.name} (${student.id})`);
     setShowSuggestions(false);
@@ -80,6 +79,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
     } catch (err) {
       console.error("submitStudentWork failed, using local fallback:", err);
       addSubmission({
+        // MOCK_FALLBACK
         materialId: material.id,
         studentId: selectedStudent.id,
         file: selectedFile,
@@ -159,28 +159,24 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
               role="listbox"
               className="absolute z-30 mt-2 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
             >
-              {suggestions.map((record) => {
-                const student = record.student;
+              {suggestions.map((student) => (
+                <button
+                  key={student.id}
+                  type="button"
+                  role="option"
+                  aria-selected={selectedStudent?.id === student.id}
+                  onClick={() => handleSelectStudent(student)}
+                  className="flex w-full cursor-pointer flex-col px-4 py-3 text-left transition hover:bg-orange-50 focus:bg-orange-50 focus:outline-none"
+                >
+                  <span className="text-sm font-semibold text-slate-800">
+                    {student.name}
+                  </span>
 
-                return (
-                  <button
-                    key={student.id}
-                    type="button"
-                    role="option"
-                    aria-selected={selectedStudent?.id === student.id}
-                    onClick={() => handleSelectStudent(record)}
-                    className="flex w-full cursor-pointer flex-col px-4 py-3 text-left transition hover:bg-orange-50 focus:bg-orange-50 focus:outline-none"
-                  >
-                    <span className="text-sm font-semibold text-slate-800">
-                      {student.name}
-                    </span>
-
-                    <span className="mt-0.5 text-xs text-slate-500">
-                      Student ID: {student.id}
-                    </span>
-                  </button>
-                );
-              })}
+                  <span className="mt-0.5 text-xs text-slate-500">
+                    Student ID: {student.id}
+                  </span>
+                </button>
+              ))}
             </div>
           ) : null}
 

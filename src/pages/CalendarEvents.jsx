@@ -2,12 +2,14 @@ import { useState, useEffect, useMemo } from "react";
 import { apiClient } from "@api/client.js";
 import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { EVENTS_DATA } from "@data/mockData";
+import ErrorMsg from "@components/ui/ErrorMsg";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function CalendarEvents() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 7));
   const [attendanceData, setAttendanceData] = useState(null);
   const [loadedMonthKey, setLoadedMonthKey] = useState(null);
+  const [error, setError] = useState("");
 
   const monthKey = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -24,9 +26,12 @@ export default function CalendarEvents() {
 
     withMockFallback(() => apiClient.getEvents(monthKey), mockValue, {
       label: "CalendarEvents",
-    }).then(({ data }) => {
+    }).then(({ data, usedMock }) => {
       if (!isMounted) return;
       setAttendanceData(data ?? mockValue);
+      setError(
+        usedMock ? "Unable to sync with server. Showing cached data." : "",
+      );
       setLoadedMonthKey(monthKey);
     });
 
@@ -157,6 +162,8 @@ export default function CalendarEvents() {
           throughout the month
         </p>
       </div>
+
+      {error && <ErrorMsg message={error} onClose={() => setError("")} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}

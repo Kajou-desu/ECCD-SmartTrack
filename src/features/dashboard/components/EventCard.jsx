@@ -1,48 +1,23 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CalendarFold, Cake } from "lucide-react";
-import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { getAllStudentsData } from "@data/mockData.js";
+import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { HOLIDAYS } from "@constants/holidays.js";
 
 export function EventCard() {
   const [selectedEvent, setSelectedEvent] = useState("birthdays");
-  const [students, setStudents] = useState([]);
-
-  useEffect(() => {
-    let isMounted = true;
-    const mockValue = getAllStudentsData();
-
-    withMockFallback(() => apiClient.getStudents(), mockValue, {
-      label: "EventCard",
-    }).then(({ data }) => {
-      if (!isMounted) return;
-      const list = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.students)
-          ? data.students
-          : mockValue;
-      setStudents(list);
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const { data } = useStudentsQuery();
+  const students = data?.students ?? [];
 
   const currentMonth = new Date().getMonth();
 
   // Get data for student
   const birthdays = students
-    .map((entry) => {
-      const student = entry.student ?? entry;
-      return {
-        id: student.id,
-        name: student.name,
-        date: student.birthday,
-        photo: student.photo,
-      };
-    })
+    .map((student) => ({
+      id: student.id,
+      name: student.name,
+      date: student.birthday,
+      photo: student.photo,
+    }))
     .filter((b) => b.date)
     .sort((a, b) => {
       const monthA = new Date(a.date).getMonth();

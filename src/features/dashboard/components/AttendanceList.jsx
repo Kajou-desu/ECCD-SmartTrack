@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { initialRecords } from "@data/mockData.js";
 import { toDayKey } from "@utils/dateKeys.js";
+import { useAttendanceQuery } from "@features/attendance/hooks/useAttendanceQuery.js";
 import { Check, ArrowRight } from "lucide-react";
 
 // Helpers
@@ -27,29 +25,9 @@ function timeToMinutes(time) {
 export function AttendanceList() {
   const navigate = useNavigate();
 
-  const [records, setRecords] = useState([]);
-
-  useEffect(() => {
-    let isMounted = true;
-    const today = toDayKey();
-    const mockValue = initialRecords;
-
-    withMockFallback(() => apiClient.getAttendance(today), mockValue, {
-      label: "AttendanceList",
-    }).then(({ data }) => {
-      if (!isMounted) return;
-      const list = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.records)
-          ? data.records
-          : mockValue;
-      setRecords(list);
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const today = useMemo(() => toDayKey(), []);
+  const { data } = useAttendanceQuery(today);
+  const records = useMemo(() => data?.records ?? [], [data]);
 
   // Filter attendance morning to afternoon
   const [selectedPeriod, setSelectedPeriod] = useState("am");

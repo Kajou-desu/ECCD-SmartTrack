@@ -1,91 +1,28 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "@hooks/useDebounce";
 import { usePagination } from "@hooks/usePagination";
-import { apiClient } from "@api/client.js";
-import { getAllStudentsData } from "@data/mockData.js";
+import { useStudentsQuery } from "./useStudentsQuery.js";
 
 const ITEMS_PER_PAGE = 10;
 
-function calculateAge(birthday) {
-    if (!birthday) return "N/A";
-    const birthDate = new Date(birthday);
-    if (Number.isNaN(birthDate.getTime())) return "N/A";
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age -= 1;
-    }
-    return age;
-}
-
-function normalizeStatus(status) {
-    const normalized = String(status ?? "").trim().toLowerCase();
-    return normalized === "active" ? "active" : "inactive";
-}
-
-function normalizeSession(session) {
-    const normalized = String(session ?? "").trim().toLowerCase();
-    return normalized === "afternoon" ? "afternoon" : "morning";
-}
-
-function normalizeStudent(student, guardians = []) {
-    const guardian = guardians?.[0];
-    return {
-        ...student,
-        age: student.age ?? calculateAge(student.birthday),
-        status: normalizeStatus(student.status),
-        session: normalizeSession(student.session),
-        guardianName: student.guardianName ?? guardian?.name ?? "N/A",
-        guardianPhone: student.guardianPhone ?? guardian?.phone ?? "N/A",
-    };
-}
-
 export function useStudents({ itemsPerPage = ITEMS_PER_PAGE } = {}) {
-    const [students, setStudents] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { data, isLoading } = useStudentsQuery();
+    const students = useMemo(() => data?.students ?? [], [data]);
+    const loading = isLoading;
+
     const [notice, setNotice] = useState("");
+    const [syncedUsedMock, setSyncedUsedMock] = useState(false);
+
+    if (data?.usedMock && !syncedUsedMock) {
+        setSyncedUsedMock(true);
+        setNotice("Unable to load live student data. Displaying cached records instead.");
+    }
 
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
     const [filterSession, setFilterSession] = useState("all");
 
     const debouncedSearchTerm = useDebounce(searchTerm, 350);
-
-    useEffect(() => {
-        let isMounted = true;
-
-        const fetchStudents = async () => {
-            setLoading(true);
-            setNotice("");
-
-            try {
-                const data = await apiClient.getStudents();
-                if (!isMounted) return;
-
-                if (Array.isArray(data)) {
-                    setStudents(data.map((s) => normalizeStudent(s)));
-                } else if (Array.isArray(data?.students)) {
-                    setStudents(data.students.map((s) => normalizeStudent(s)));
-                } else {
-                    setStudents(getAllStudentsData().map(({ student, guardians }) => normalizeStudent(student, guardians)));
-                }
-            } catch (err) {
-                console.error("useStudents failed to fetch:", err);
-                if (!isMounted) return;
-                setStudents(getAllStudentsData().map(({ student, guardians }) => normalizeStudent(student, guardians)));
-                setNotice("Unable to load live student data. Displaying cached records instead.");
-            } finally {
-                if (isMounted) setLoading(false);
-            }
-        };
-
-        fetchStudents();
-
-        return () => {
-            isMounted = false;
-        };
-    }, []);
 
     const filteredStudents = useMemo(() => {
         const query = debouncedSearchTerm.trim().toLowerCase();

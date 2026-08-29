@@ -1,44 +1,31 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { ATTENDANCE_DATA_BY_CHILD } from "@data/mockParentData";
 
-function fetchAttendance(childId, monthKey) {
-    if (!childId) return Promise.reject(new Error("No child selected"));
-
-    return withMockFallback(
+async function fetchAttendance(childId, monthKey) {
+    const { data } = await withMockFallback(
         () => apiClient.getChildAttendance(childId, monthKey),
         ATTENDANCE_DATA_BY_CHILD[childId]?.[monthKey] ?? null,
         { label: "useParentAttendance" },
-    ).then(({ data }) => data);
+    );
+    return data;
 }
 
 // Returns { status: "loading" | "empty" | "error" | "success", data, retry }
 // Re-fetches whenever childId or monthKey changes (e.g. child switch, month nav).
 export default function useParentAttendance(childId, monthKey) {
-    const [status, setStatus] = useState("loading");
-    const [data, setData] = useState(null);
-    const isMountedRef = useRef(true);
+    const query = useQuery({
+        queryKey: ["parentAttendance", childId, monthKey],
+        queryFn: () => fetchAttendance(childId, monthKey),
+        enabled: Boolean(childId),
+    });
 
-    const load = useCallback(async () => {
-        setStatus("loading");
-        try {
-            const result = await fetchAttendance(childId, monthKey);
-            if (!isMountedRef.current) return;
-            setData(result);
-            setStatus(result ? "success" : "empty");
-        } catch {
-            if (isMountedRef.current) setStatus("error");
-        }
-    }, [childId, monthKey]);
+    let status;
+    if (!childId) status = "error";
+    else if (query.isPending) status = "loading";
+    else if (query.isError) status = "error";
+    else status = query.data ? "success" : "empty";
 
-    useEffect(() => {
-        isMountedRef.current = true;
-        Promise.resolve().then(load);
-        return () => {
-            isMountedRef.current = false;
-        };
-    }, [load]);
-
-    return { status, data, retry: load };
+    return { status, data: query.data ?? null, retry: query.refetch };
 }

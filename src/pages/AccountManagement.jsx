@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import useAccounts from "@features/accounts/hooks/useAccounts";
 import AccountSection from "@features/accounts/components/AccountSection";
 import AccountViewModal from "@features/accounts/components/AccountViewModal";
@@ -5,6 +7,7 @@ import AccountForm from "@features/accounts/components/AccountForm";
 import ConfirmDeleteModal from "@features/accounts/components/ConfirmDeleteModal";
 import ConfirmUpdateModal from "@features/accounts/components/ConfirmUpdateModal";
 import PageHeader from "@components/shared/PageHeader";
+
 import {
   AlertTriangle,
   Loader2,
@@ -13,6 +16,13 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
+
+import {
+  INITIAL_FORM,
+  INITIAL_EDIT_FORM,
+  getAccountId,
+  getAccountName,
+} from "@features/accounts/utils/accountUtils.js";
 
 function EmptyAccounts({ onCreate }) {
   return (
@@ -46,13 +56,154 @@ export default function AccountsManagement() {
     accounts,
     groupedAccounts,
     loading,
+    mutating,
     error,
     retry,
-    create,
-    edit,
-    view,
-    remove,
+    createAccount,
+    updateAccount,
+    deleteAccount,
   } = useAccounts();
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createForm, setCreateForm] = useState(INITIAL_FORM);
+  const [createMessage, setCreateMessage] = useState(null);
+
+  const [viewAccount, setViewAccount] = useState(null);
+
+  const [editAccount, setEditAccount] = useState(null);
+  const [editForm, setEditForm] = useState(INITIAL_EDIT_FORM);
+  const [editMessage, setEditMessage] = useState(null);
+  const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false);
+
+  const [deleteAccountData, setDeleteAccountData] = useState(null);
+
+  const handleCreateChange = (event) => {
+    const { name, value } = event.target;
+
+    setCreateForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+
+    setCreateMessage(null);
+  };
+
+  const handleEditChange = (event) => {
+    const { name, value } = event.target;
+
+    setEditForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+
+    setEditMessage(null);
+  };
+
+  const openCreate = () => {
+    setCreateForm(INITIAL_FORM);
+    setCreateMessage(null);
+    setCreateOpen(true);
+  };
+
+  const closeCreate = () => {
+    if (mutating) return;
+
+    setCreateOpen(false);
+    setCreateMessage(null);
+  };
+
+  const handleCreateSubmit = async (event) => {
+    event.preventDefault();
+    setCreateMessage(null);
+
+    try {
+      await createAccount(createForm);
+
+      setCreateMessage({
+        text: "Account created successfully.",
+        isError: false,
+      });
+
+      setCreateForm(INITIAL_FORM);
+      setCreateOpen(false);
+    } catch (err) {
+      setCreateMessage({
+        text: err.message || "Failed to create account.",
+        isError: true,
+      });
+    }
+  };
+
+  const openEdit = (account) => {
+    setEditAccount(account);
+    setEditForm({
+      ...INITIAL_EDIT_FORM,
+      accountId: getAccountId(account),
+      firstName: account.firstName || account.firstname || "",
+      middleName: account.middleName || account.middlename || "",
+      lastName: account.lastName || account.lastname || "",
+      email: account.email || "",
+      phone: account.phone || "",
+      address: account.address || "",
+      role: account.role || "Parent",
+    });
+    setEditMessage(null);
+    setUpdateConfirmOpen(false);
+  };
+
+  const closeEdit = () => {
+    if (mutating) return;
+
+    setEditAccount(null);
+    setEditMessage(null);
+    setUpdateConfirmOpen(false);
+  };
+
+  const handleEditSubmit = (event) => {
+    event.preventDefault();
+    setEditMessage(null);
+    setUpdateConfirmOpen(true);
+  };
+
+  const handleUpdateConfirm = async () => {
+    try {
+      await updateAccount(editForm);
+
+      setUpdateConfirmOpen(false);
+      setEditAccount(null);
+      setEditMessage(null);
+    } catch (err) {
+      setUpdateConfirmOpen(false);
+      setEditMessage({
+        text: err.message || "Failed to update account.",
+        isError: true,
+      });
+    }
+  };
+
+  const openDelete = (account) => {
+    setDeleteAccountData({
+      accountId: getAccountId(account),
+      accountName: getAccountName(account),
+    });
+  };
+
+  const closeDelete = () => {
+    if (mutating) return;
+
+    setDeleteAccountData(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteAccountData?.accountId) return;
+
+    try {
+      await deleteAccount(deleteAccountData.accountId);
+      setDeleteAccountData(null);
+    } catch {
+      // The hook exposes the request error through its error state.
+    }
+  };
 
   if (loading) {
     return (
@@ -65,7 +216,7 @@ export default function AccountsManagement() {
     );
   }
 
-  if (error) {
+  if (error && !accounts.length) {
     return (
       <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-8 text-center">
         <AlertTriangle size={20} className="mx-auto text-red-500" />
@@ -99,7 +250,7 @@ export default function AccountsManagement() {
 
         <button
           type="button"
-          onClick={create.open}
+          onClick={openCreate}
           className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-blue-700 sm:w-auto"
         >
           <Plus size={15} />
@@ -107,81 +258,97 @@ export default function AccountsManagement() {
         </button>
       </header>
 
+      {error && accounts.length > 0 && (
+        <div className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">
+          {error}
+        </div>
+      )}
+
       {!accounts.length ? (
-        <EmptyAccounts onCreate={create.open} />
+        <EmptyAccounts onCreate={openCreate} />
       ) : (
         <div className="space-y-5">
           <AccountSection
             title="System Administrators"
             icon={Shield}
+            badgeClass="bg-blue-50 text-blue-600"
             data={groupedAccounts.admins}
-            onView={view.open}
-            onEdit={edit.open}
-            onDelete={remove.open}
+            onView={setViewAccount}
+            onEdit={openEdit}
+            onDelete={openDelete}
+            disabled={mutating}
           />
 
           <AccountSection
             title="Enrolled Teachers"
             icon={UserRound}
+            badgeClass="bg-amber-50 text-amber-600"
             data={groupedAccounts.teachers}
-            onView={view.open}
-            onEdit={edit.open}
-            onDelete={remove.open}
+            onView={setViewAccount}
+            onEdit={openEdit}
+            onDelete={openDelete}
+            disabled={mutating}
           />
 
           <AccountSection
             title="Enrolled Parents"
             icon={Users}
+            badgeClass="bg-emerald-50 text-emerald-600"
             data={groupedAccounts.parents}
-            onView={view.open}
-            onEdit={edit.open}
-            onDelete={remove.open}
+            onView={setViewAccount}
+            onEdit={openEdit}
+            onDelete={openDelete}
+            disabled={mutating}
           />
         </div>
       )}
 
-      {create.isOpen && (
+      {createOpen && (
         <AccountForm
-          mode="create"
-          form={create.form}
-          message={create.message}
-          loading={create.loading}
-          onChange={create.change}
-          onSubmit={create.submit}
-          onCancel={create.close}
+          formData={createForm}
+          message={createMessage}
+          loading={mutating}
+          onChange={handleCreateChange}
+          onSubmit={handleCreateSubmit}
+          onCancel={closeCreate}
+          submitLabel="Create Account"
         />
       )}
 
-      {view.account && (
-        <AccountViewModal account={view.account} onClose={view.close} />
-      )}
-
-      {edit.account && (
-        <AccountForm
-          mode="edit"
-          form={edit.form}
-          message={edit.message}
-          loading={edit.loading}
-          onChange={edit.change}
-          onSubmit={edit.precheck}
-          onCancel={edit.close}
+      {viewAccount && (
+        <AccountViewModal
+          account={viewAccount}
+          onClose={() => setViewAccount(null)}
         />
       )}
 
-      {edit.confirmOpen && (
+      {editAccount && (
+        <AccountForm
+          formData={editForm}
+          message={editMessage}
+          loading={mutating}
+          onChange={handleEditChange}
+          onSubmit={handleEditSubmit}
+          onCancel={closeEdit}
+          submitLabel="Review Update"
+          isEdit
+        />
+      )}
+
+      {updateConfirmOpen && (
         <ConfirmUpdateModal
-          loading={edit.loading}
-          onConfirm={edit.confirm}
-          onClose={edit.cancelConfirm}
+          loading={mutating}
+          onConfirm={handleUpdateConfirm}
+          onClose={() => setUpdateConfirmOpen(false)}
         />
       )}
 
-      {remove.confirmation.isOpen && (
+      {deleteAccountData && (
         <ConfirmDeleteModal
-          accountName={remove.confirmation.accountName}
-          loading={remove.loading}
-          onConfirm={remove.confirm}
-          onClose={remove.close}
+          accountName={deleteAccountData.accountName}
+          loading={mutating}
+          onConfirm={handleDeleteConfirm}
+          onClose={closeDelete}
         />
       )}
     </div>

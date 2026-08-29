@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { initialRecords } from "@data/mockData.js";
 import { toDayKey } from "@utils/dateKeys.js";
+import { useAttendanceQuery } from "./useAttendanceQuery.js";
 
 export function useAttendance(initialDate) {
+  const [selectedDate, setSelectedDate] = useState(initialDate || toDayKey());
+
+  const { data: queryData, isLoading } = useAttendanceQuery(selectedDate);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [loadedDate, setLoadedDate] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterTime, setFilterTime] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedDate, setSelectedDate] = useState(initialDate || toDayKey());
   const [savingIds, setSavingIds] = useState(() => new Set());
 
   const mountedRef = useRef(true);
@@ -23,45 +24,13 @@ export function useAttendance(initialDate) {
     };
   }, []);
 
-  useEffect(() => {
-    let isMounted = true;
-    const controller = new AbortController();
+  if (queryData && loadedDate !== selectedDate) {
+    setLoadedDate(selectedDate);
+    setAttendanceRecords(queryData.records);
+    setError(queryData.usedMock ? "Unable to sync with server. Showing cached data." : "");
+  }
 
-    const fetchAttendance = async () => {
-      setLoading(true);
-      setError("");
-
-      const mockRecords = initialRecords.filter((record) => record.date === selectedDate);
-
-      const { data, usedMock } = await withMockFallback(
-        () => apiClient.getAttendance(selectedDate, { signal: controller.signal }),
-        mockRecords,
-        { label: "useAttendance" },
-      );
-
-      if (!isMounted) return;
-
-      if (usedMock) {
-        setAttendanceRecords(data);
-        setError("Unable to sync with server. Showing cached data.");
-      } else if (Array.isArray(data)) {
-        setAttendanceRecords(data);
-      } else if (Array.isArray(data?.records)) {
-        setAttendanceRecords(data.records);
-      } else {
-        setAttendanceRecords(mockRecords);
-      }
-
-      if (isMounted) setLoading(false);
-    };
-
-    fetchAttendance();
-
-    return () => {
-      isMounted = false;
-      controller.abort();
-    };
-  }, [selectedDate]);
+  const loading = isLoading || loadedDate !== selectedDate;
 
   const filteredRecords = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();

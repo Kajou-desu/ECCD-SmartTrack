@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { apiClient } from "@api/client.js";
-import { MATERIALS_DATA } from "@data/mockData";
+import { useMaterialsQuery } from "./useMaterialsQuery.js";
 
 export const MATERIAL_MODAL = {
   NONE: null,
@@ -13,9 +12,19 @@ export const MATERIAL_MODAL = {
 export function useMaterials() {
   const objectUrlsRef = useRef(new Set());
 
+  const { data: queryData, isLoading } = useMaterialsQuery();
   const [materials, setMaterials] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
+  const loading = isLoading;
   const [error, setError] = useState("");
+
+  if (queryData && !initialized) {
+    setInitialized(true);
+    setMaterials(queryData.materials);
+    if (queryData.usedMock) {
+      setError("Unable to load live materials. Displaying cached materials instead.");
+    }
+  }
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -23,41 +32,6 @@ export function useMaterials() {
   const [selectedMaterial, setSelectedMaterial] = useState(null);
 
   const [toast, setToast] = useState(null);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadMaterials = async () => {
-      setLoading(true);
-      setError("");
-
-      try {
-        const data = await apiClient.getMaterials();
-        if (!isMounted) return;
-
-        if (Array.isArray(data)) {
-          setMaterials(data);
-        } else if (Array.isArray(data?.materials)) {
-          setMaterials(data.materials);
-        } else {
-          setMaterials(MATERIALS_DATA);
-        }
-      } catch (err) {
-        console.error("useMaterials failed to fetch:", err);
-        if (!isMounted) return;
-        setMaterials(MATERIALS_DATA);
-        setError("Unable to load live materials. Displaying cached materials instead.");
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    loadMaterials();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   // Revoke every object URL created for uploaded files when the page unmounts.
   useEffect(() => {

@@ -40,10 +40,10 @@ export default function LearningMaterialCard({
       {/* Material cover and quick actions. */}
       <div className="relative h-75 sm:h-85 w-full overflow-hidden bg-linear-to-br from-slate-100 to-slate-200">
         <div
-          className={`absolute inset-0 flex items-center justify-center text-6xl opacity-80 ${material.bgColor}`}
+          className="absolute inset-0 flex items-center justify-center text-6xl opacity-80 bg-slate-200"
           aria-hidden="true"
         >
-          {material.icon}
+          <FileText size={50} />
         </div>
 
         {/* Mobile-first priority: category is the first identifying badge
