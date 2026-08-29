@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { apiClient } from "@api/client.js";
+import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { getStudentData } from "@data/mockData";
 import { useParentChild } from "@hooks/useParentChild";
 import StudentProfileHeader from "@features/students/components/profile/StudentProfileHeader";
@@ -11,17 +13,6 @@ import { Users, FileQuestion } from "lucide-react";
 
 export default function ParentStudentProfile() {
   const { selectedChild } = useParentChild();
-  const [loadedChildId, setLoadedChildId] = useState(selectedChild?.id);
-  const [profile, setProfile] = useState(() =>
-    selectedChild ? getStudentData(selectedChild.id) : null,
-  );
-  const [activeModal, setActiveModal] = useState(null); // "medical" | "upload" | null
-
-  if (selectedChild?.id !== loadedChildId) {
-    setLoadedChildId(selectedChild?.id);
-    setProfile(selectedChild ? getStudentData(selectedChild.id) : null);
-    setActiveModal(null);
-  }
 
   if (!selectedChild) {
     return (
@@ -31,6 +22,49 @@ export default function ParentStudentProfile() {
           title="No child linked to your account"
           description="Contact your child's school to link their enrollment to this parent account."
         />
+      </div>
+    );
+  }
+
+  // key forces a clean remount per child, so profile/activeModal reset
+  // naturally instead of needing manual reset logic in an effect.
+  return (
+    <ParentStudentProfileView
+      key={selectedChild.id}
+      selectedChild={selectedChild}
+    />
+  );
+}
+
+function ParentStudentProfileView({ selectedChild }) {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeModal, setActiveModal] = useState(null); // "medical" | "upload" | null
+
+  useEffect(() => {
+    let isMounted = true;
+
+    withMockFallback(
+      () => apiClient.getStudent(selectedChild.id),
+      getStudentData(selectedChild.id),
+      { label: "ParentStudentProfile" },
+    ).then(({ data }) => {
+      if (!isMounted) return;
+      setProfile(data ?? null);
+      setLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedChild.id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-[calc(100vh-70px)] bg-[#f8f9ff] p-4 sm:p-6 lg:p-8">
+        <div className="bg-white rounded-3xl p-8 border border-gray-200 text-center">
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
       </div>
     );
   }

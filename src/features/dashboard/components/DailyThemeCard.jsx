@@ -1,8 +1,26 @@
+import { useEffect, useState } from "react";
+import { apiClient } from "@api/client.js";
+import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { DAILY_THEME } from "@data/mockData";
 import { ArrowRight, CircleCheck } from "lucide-react";
 
 export function DailyThemeCard() {
-  const theme = DAILY_THEME;
+  const [theme, setTheme] = useState(DAILY_THEME);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    withMockFallback(() => apiClient.getDailyTheme(), DAILY_THEME, {
+      label: "DailyThemeCard",
+    }).then(({ data }) => {
+      if (!isMounted) return;
+      setTheme(data ?? DAILY_THEME);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">

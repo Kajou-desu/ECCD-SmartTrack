@@ -1,6 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiClient } from "@api/client.js";
+import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { initialRecords } from "@data/mockData.js";
+import { toDayKey } from "@utils/dateKeys.js";
 import { Check, ArrowRight } from "lucide-react";
 
 // Helpers
@@ -24,10 +27,34 @@ function timeToMinutes(time) {
 export function AttendanceList() {
   const navigate = useNavigate();
 
+  const [records, setRecords] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const today = toDayKey();
+    const mockValue = initialRecords;
+
+    withMockFallback(() => apiClient.getAttendance(today), mockValue, {
+      label: "AttendanceList",
+    }).then(({ data }) => {
+      if (!isMounted) return;
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.records)
+          ? data.records
+          : mockValue;
+      setRecords(list);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Filter attendance morning to afternoon
   const [selectedPeriod, setSelectedPeriod] = useState("am");
   const filteredData = useMemo(() => {
-    return initialRecords
+    return records
       .filter((attendance) => {
         // Only show present records
         if (attendance.status !== "present") {
@@ -43,7 +70,7 @@ export function AttendanceList() {
         return true;
       })
       .sort((a, b) => timeToMinutes(b.time) - timeToMinutes(a.time));
-  }, [selectedPeriod]);
+  }, [records, selectedPeriod]);
 
   return (
     <div className="flex min-h-0 h-full overflow-hidden flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">

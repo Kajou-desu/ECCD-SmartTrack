@@ -1,16 +1,39 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { apiClient } from "@api/client.js";
+import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { EVENTS_DATA } from "@data/mockData";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function CalendarEvents() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 7));
-  const attendanceData = useMemo(() => {
+  const [attendanceData, setAttendanceData] = useState(null);
+  const [loadedMonthKey, setLoadedMonthKey] = useState(null);
+
+  const monthKey = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-    const monthKey = `${year}-${month}`;
-
-    return EVENTS_DATA[monthKey] || EVENTS_DATA["2026-08"];
+    return `${year}-${month}`;
   }, [currentDate]);
+
+  const loading = loadedMonthKey !== monthKey;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const mockValue = EVENTS_DATA[monthKey] || EVENTS_DATA["2026-08"];
+
+    withMockFallback(() => apiClient.getEvents(monthKey), mockValue, {
+      label: "CalendarEvents",
+    }).then(({ data }) => {
+      if (!isMounted) return;
+      setAttendanceData(data ?? mockValue);
+      setLoadedMonthKey(monthKey);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [monthKey]);
 
   const monthName = currentDate.toLocaleString("en-US", {
     month: "long",
@@ -57,7 +80,7 @@ export default function CalendarEvents() {
   };
 
   const getDayColor = (day) => {
-    const status = attendanceData.daily[day];
+    const status = attendanceData?.daily?.[day];
     if (!status) return "bg-gray-50 text-gray-400";
     if (status === "Today")
       return "bg-orange-100 text-orange-700 border border-orange-300";
@@ -102,17 +125,20 @@ export default function CalendarEvents() {
     }
   };
 
-  const eventLogs = attendanceData.logs.reduce((acc, log) => {
-    const legend = normalizeEventLegend(log.status);
-    if (!acc.some((item) => item.legend === legend)) {
-      acc.push({
-        date: log.date,
-        time: log.time,
-        legend,
-      });
-    }
-    return acc;
-  }, []);
+  const eventLogs = useMemo(() => {
+    if (!attendanceData) return [];
+    return attendanceData.logs.reduce((acc, log) => {
+      const legend = normalizeEventLegend(log.status);
+      if (!acc.some((item) => item.legend === legend)) {
+        acc.push({
+          date: log.date,
+          time: log.time,
+          legend,
+        });
+      }
+      return acc;
+    }, []);
+  }, [attendanceData]);
 
   const days = [];
   for (let i = 0; i < firstDay; i++) {
@@ -137,7 +163,14 @@ export default function CalendarEvents() {
         <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">{monthName}</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {monthName}
+              {loading && (
+                <span className="ml-2 text-sm font-normal text-gray-400">
+                  Loading...
+                </span>
+              )}
+            </h2>
             <div className="flex gap-2">
               <button
                 onClick={prevMonth}
