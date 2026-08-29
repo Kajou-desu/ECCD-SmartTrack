@@ -4,6 +4,7 @@ import AccountViewModal from "@features/accounts/components/AccountViewModal";
 import AccountForm from "@features/accounts/components/AccountForm";
 import ConfirmDeleteModal from "@features/accounts/components/ConfirmDeleteModal";
 import ConfirmUpdateModal from "@features/accounts/components/ConfirmUpdateModal";
+import PageHeader from "@components/shared/PageHeader";
 import {
   AlertTriangle,
   Loader2,
@@ -90,13 +91,10 @@ export default function AccountsManagement() {
             Others
           </span>
 
-          <h1 className="mt-0.5 text-xl font-black tracking-tight text-slate-800">
-            Account Management
-          </h1>
-
-          <p className="mt-1 text-xs font-medium text-slate-400">
-            Manage registered system profiles and their access roles.
-          </p>
+          <PageHeader
+            title="Account Management"
+            subtitle="Manage registered system accounts and their access roles"
+          />
         </div>
 
         <button

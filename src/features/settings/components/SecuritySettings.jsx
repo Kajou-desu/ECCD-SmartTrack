@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Lock, ShieldQuestionMark, EyeOff, Eye, Save } from "lucide-react";
 
-export default function SecuritySettings() {
+export default function SecuritySettings({ onNotify }) {
   const [password, setPassword] = useState({
     current: "",
     new: "",
@@ -45,12 +45,15 @@ export default function SecuritySettings() {
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
     if (password.new !== password.confirm) {
+      onNotify?.("error", "Passwords do not match.");
       return;
     }
     if (password.new.length < 8) {
+      onNotify?.("error", "Password must be at least 8 characters.");
       return;
     }
     setPassword({ current: "", new: "", confirm: "" });
+    onNotify?.("success", "Password updated successfully.");
   };
 
   const passwordChecks = {

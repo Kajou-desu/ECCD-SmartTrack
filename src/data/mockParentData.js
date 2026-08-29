@@ -172,7 +172,9 @@ export const MATERIALS_DATA = [
   },
 ];
 
-// Mock photo albums data
+// Mock photo albums data. Shape matches the admin `useAlbumsState` albums
+// (id, title, category, description, createdAt, photos[]) plus `childIds` so
+// the parent portal can filter albums to only the children enrolled.
 export const PHOTO_ALBUMS_DATA = [
   {
     id: 1,
@@ -180,9 +182,13 @@ export const PHOTO_ALBUMS_DATA = [
     description: "Great day at the playground!",
     category: "Field Trip",
     createdBy: "Mrs. Sarah Johnson",
-    date: "Dec 10, 2024",
-    thumbnail: "https://placehold.co/300x200",
-    url: "/parent/photo-gallery/1",
+    createdAt: "2024-12-10",
+    childIds: ["POB2-2026-001", "POB2-2026-014"],
+    photos: [
+      { id: 101, url: "https://placehold.co/600x400?text=Field+Day+1", caption: "Relay race" },
+      { id: 102, url: "https://placehold.co/600x400?text=Field+Day+2", caption: "Tug of war" },
+      { id: 103, url: "https://placehold.co/600x400?text=Field+Day+3", caption: "Group photo" },
+    ],
   },
   {
     id: 2,
@@ -190,9 +196,12 @@ export const PHOTO_ALBUMS_DATA = [
     description: "Creative masterpieces from our painting workshop.",
     category: "Art",
     createdBy: "Mrs. Sarah Johnson",
-    date: "Dec 8, 2024",
-    thumbnail: "https://placehold.co/300x200",
-    url: "/parent/photo-gallery/2",
+    createdAt: "2024-12-08",
+    childIds: ["POB2-2026-014"],
+    photos: [
+      { id: 201, url: "https://placehold.co/600x400?text=Art+1", caption: "Finger painting" },
+      { id: 202, url: "https://placehold.co/600x400?text=Art+2", caption: "Drying wall" },
+    ],
   },
   {
     id: 3,
@@ -200,18 +209,23 @@ export const PHOTO_ALBUMS_DATA = [
     description: "Fun times on the playground during outdoor activities.",
     category: "Activities",
     createdBy: "Mrs. Sarah Johnson",
-    date: "Dec 5, 2024",
-    thumbnail: "https://placehold.co/300x200",
-    url: "/parent/photo-gallery/3",
+    createdAt: "2024-12-05",
+    childIds: ["POB2-2026-001"],
+    photos: [
+      { id: 301, url: "https://placehold.co/600x400?text=Play+Day+1", caption: "Slide time" },
+      { id: 302, url: "https://placehold.co/600x400?text=Play+Day+2", caption: "Sandbox fun" },
+    ],
   },
   {
     id: 4,
     title: "Music & Movement Class",
     description: "Our children exploring rhythm and movement.",
     category: "Music",
-    createdBy: "Mrs. Sarah Johnson",
-    date: "Dec 1, 2024",
-    thumbnail: "https://placehold.co/300x200",
-    url: "/parent/photo-gallery/4",
+    createdBy: "Mr. David Reyes",
+    createdAt: "2024-12-01",
+    childIds: ["POB2-2026-014"],
+    photos: [
+      { id: 401, url: "https://placehold.co/600x400?text=Music+1", caption: "Drum circle" },
+    ],
   },
 ];

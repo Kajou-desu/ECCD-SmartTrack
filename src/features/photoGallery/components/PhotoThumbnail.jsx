@@ -47,14 +47,16 @@ export default function PhotoThumbnail({
         }`}
       />
 
-      <button
-        type="button"
-        onClick={handleDeleteClick}
-        aria-label={`Delete photo: ${altText}`}
-        className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white/80 text-slate-700 opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400 group-hover:opacity-100"
-      >
-        <Trash2 size={14} aria-hidden="true" />
-      </button>
+      {onDelete && (
+        <button
+          type="button"
+          onClick={handleDeleteClick}
+          aria-label={`Delete photo: ${altText}`}
+          className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white/80 text-slate-700 opacity-0 shadow-sm transition hover:bg-red-50 hover:text-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400 group-hover:opacity-100"
+        >
+          <Trash2 size={14} aria-hidden="true" />
+        </button>
+      )}
     </div>
   );
 }

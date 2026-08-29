@@ -10,16 +10,20 @@ export default function GalleryEmptyState({ onAddPhotos }) {
       </h2>
 
       <p className="mt-2 max-w-sm text-sm text-slate-600">
-        Add photos from this event to start building the album.
+        {onAddPhotos
+          ? "Add photos from this event to start building the album."
+          : "Photos from this event will appear here once shared."}
       </p>
 
-      <button
-        type="button"
-        onClick={onAddPhotos}
-        className="mt-5 cursor-pointer rounded-lg bg-[#C2570C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a94709]"
-      >
-        Add Photos
-      </button>
+      {onAddPhotos && (
+        <button
+          type="button"
+          onClick={onAddPhotos}
+          className="mt-5 cursor-pointer rounded-lg bg-[#C2570C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a94709]"
+        >
+          Add Photos
+        </button>
+      )}
     </div>
   );
 }

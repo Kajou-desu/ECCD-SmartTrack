@@ -1,13 +1,17 @@
 import { useState } from "react";
-import ProfileSettings from "@components/settings/ProfileSettings.jsx";
-import SecuritySettings from "@components/settings/SecuritySettings.jsx";
-import NotificationSettings from "@components/settings/NotificationSettings.jsx";
-import AccountSettings from "@components/settings/AccountSettings.jsx";
-import { UserRound, Bell, Lock, CheckCircle, AlertCircle } from "lucide-react";
+import ProfileSettings from "@features/settings/components/ProfileSettings.jsx";
+import SecuritySettings from "@features/settings/components/SecuritySettings.jsx";
+import NotificationSettings from "@features/settings/components/NotificationSettings.jsx";
+import AccountSettings from "@features/settings/components/AccountSettings.jsx";
+import { Toast } from "@components/ui/Toast.jsx";
+import PageHeader from "@components/shared/PageHeader";
+import { UserRound, Bell, Lock, Settings as SettingsIcon } from "lucide-react";
 
 export default function AdminSettings() {
-  const [message] = useState({ type: "", text: "" });
+  const [message, setMessage] = useState({ type: "", text: "" });
   const [activeTab, setActiveTab] = useState("profile");
+  const notify = (type, text) => setMessage({ type, text });
+  const clearMessage = () => setMessage({ type: "", text: "" });
 
   const tabs = [
     {
@@ -28,21 +32,21 @@ export default function AdminSettings() {
     {
       id: "account",
       label: "Account",
-      icon: UserRound,
+      icon: SettingsIcon,
     },
   ];
 
   return (
     <div className="flex min-h-full flex-col gap-6 bg-[#f8f9ff] p-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Manage your admin profile, preferences and security
-        </p>
-      </div>
+      <header>
+        <PageHeader
+          title="Settings"
+          subtitle="Manage your admin profile, preferences and security"
+        />
+      </header>
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-sm">
+      <main className="bg-white rounded-2xl border border-gray-200 p-2 shadow-sm">
         <div className="flex flex-wrap justify-center items-center gap-2">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
@@ -61,37 +65,27 @@ export default function AdminSettings() {
             </button>
           ))}
         </div>
-      </div>
+      </main>
 
-      {/* Message Toast */}
       {message.text && (
-        <div
-          className={`rounded-xl border px-4 py-3 text-sm flex items-center gap-2 ${
-            message.type === "success"
-              ? "border-green-200 bg-green-50 text-green-700"
-              : "border-red-200 bg-red-50 text-red-700"
-          }`}
-        >
-          {message.type === "success" ? (
-            <CheckCircle className="h-4 w-4" />
-          ) : (
-            <AlertCircle className="h-4 w-4" />
-          )}
-          {message.text}
-        </div>
+        <Toast
+          type={message.type}
+          message={message.text}
+          onClose={clearMessage}
+        />
       )}
 
       {activeTab === "profile" && (
         <div className="w-full">
           {/* Profile Card */}
-          <ProfileSettings />
+          <ProfileSettings onNotify={notify} />
         </div>
       )}
 
       {activeTab === "security" && (
         <div className="w-full sm:max-w-3xl sm:mx-auto">
           {/* Change Password */}
-          <SecuritySettings />
+          <SecuritySettings onNotify={notify} />
         </div>
       )}
 
@@ -105,7 +99,7 @@ export default function AdminSettings() {
       {activeTab === "account" && (
         <div className="w-full sm:max-w-3xl sm:mx-auto">
           {/* Account Information */}
-          <AccountSettings />
+          <AccountSettings accountType="Admin" onNotify={notify} />
         </div>
       )}
     </div>

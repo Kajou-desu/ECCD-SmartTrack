@@ -54,14 +54,16 @@ export default function AlbumCard({ album, onOpen, onDelete }) {
           {album.category}
         </span>
 
-        <button
-          type="button"
-          onClick={handleDeleteClick}
-          aria-label={`Delete ${album.title} album`}
-          className="absolute right-2 top-2 flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg bg-white/80 text-slate-700 shadow-sm transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-        >
-          <Trash2 size={16} aria-hidden="true" />
-        </button>
+        {onDelete && (
+          <button
+            type="button"
+            onClick={handleDeleteClick}
+            aria-label={`Delete ${album.title} album`}
+            className="absolute right-2 top-2 flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg bg-white/80 text-slate-700 shadow-sm transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+          >
+            <Trash2 size={16} aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col gap-1 p-4">

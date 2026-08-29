@@ -1,4 +1,5 @@
 import { LOCATION_CONFIG } from "@constants/location";
+import PageHeader from "@components/shared/PageHeader";
 import { WeatherCard } from "./WeatherCard";
 
 export default function DashboardHeader({
@@ -10,14 +11,13 @@ export default function DashboardHeader({
   return (
     <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800 sm:text-3xl">
-          {greeting}, {firstName}!
-        </h1>
-
-        <p className="text-sm leading-6 text-gray-600">
-          {subtitle ??
-            `Here's what's happening at ${LOCATION_CONFIG.name} today.`}
-        </p>
+        <PageHeader
+          title={`${greeting}, ${firstName}!`}
+          subtitle={
+            subtitle ??
+            `Here's what's happening at ${LOCATION_CONFIG.name} today.`
+          }
+        />
       </div>
 
       <div className="flex shrink-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-sm sm:gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">

@@ -3,6 +3,7 @@ import { Route } from "react-router-dom";
 import { ROLES } from "@auth/roles.js";
 import ProtectedRoute from "@components/shared/ProtectedRoute.jsx";
 import ParentLayout from "@layouts/ParentLayout.jsx";
+import { ParentEventPhotosProvider } from "@features/eventPhotos/context/ParentEventPhotosProvider";
 
 const ParentDashboard = lazy(
   () => import("@pages/parentPortal/ParentDashboard.jsx"),
@@ -15,6 +16,9 @@ const ParentAttendance = lazy(
 );
 const ParentMaterials = lazy(
   () => import("@pages/parentPortal/ParentMaterials.jsx"),
+);
+const ParentEventPhotos = lazy(
+  () => import("@pages/parentPortal/ParentEventPhotos.jsx"),
 );
 const ParentPhotoGallery = lazy(
   () => import("@pages/parentPortal/ParentPhotoGallery.jsx"),
@@ -39,10 +43,16 @@ export function ParentRoutes() {
           />
           <Route path="/parent/attendance" element={<ParentAttendance />} />
           <Route path="/parent/materials" element={<ParentMaterials />} />
-          <Route
-            path="/parent/photo-gallery"
-            element={<ParentPhotoGallery />}
-          />
+          <Route element={<ParentEventPhotosProvider />}>
+            <Route
+              path="/parent/photo-gallery"
+              element={<ParentEventPhotos />}
+            />
+            <Route
+              path="/parent/photo-gallery/:albumId"
+              element={<ParentPhotoGallery />}
+            />
+          </Route>
           <Route path="/parent/settings" element={<ParentSettings />} />
         </Route>
       </Route>

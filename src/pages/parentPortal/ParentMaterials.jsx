@@ -1,28 +1,38 @@
 import useParentMaterials from "@features/materials/hooks/useParentMaterials";
-import LoadingScreen from "@components/shared/LoadingScreen";
-import ParentMediaGallery from "./ParentMediaGallery";
-
-const FILTER_OPTIONS = [
-  { id: "art", label: "Art & Creativity" },
-  { id: "math", label: "Mathematics" },
-  { id: "language", label: "Language" },
-];
+import ParentMaterialsToolbar from "@features/materials/components/ParentMaterialsToolbar";
+import ParentMaterialsList from "@features/materials/components/ParentMaterialsList";
+import MaterialsLoadingState from "@features/materials/components/MaterialsLoadingState";
 
 export default function ParentMaterials() {
-  const { materials, loading } = useParentMaterials();
+  const { materials, filteredMaterials, searchQuery, setSearchQuery, loading } =
+    useParentMaterials();
 
-  if (loading) return <LoadingScreen message="Loading materials..." />;
+  const handleView = (material) => {
+    const fileUrl = material.pdfUrl || material.fileUrl || material.url;
+    if (!fileUrl) return;
+    window.open(fileUrl, "_blank", "noopener");
+  };
 
   return (
-    <ParentMediaGallery
-      type="materials"
-      title="Learning Materials"
-      subtitle="Educational resources shared by your child's teacher"
-      items={materials}
-      actionLabel="See Work"
-      showFilters={true}
-      filterOptions={FILTER_OPTIONS}
-      showChildFilter={false}
-    />
+    <main className="flex min-h-0 flex-1 flex-col bg-[#f8f9ff] p-4 sm:p-6">
+      <div className="flex flex-col gap-6">
+        <ParentMaterialsToolbar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
+
+        {loading ? (
+          <MaterialsLoadingState />
+        ) : (
+          <ParentMaterialsList
+            materials={materials}
+            filteredMaterials={filteredMaterials}
+            searchQuery={searchQuery}
+            onClearSearch={() => setSearchQuery("")}
+            onView={handleView}
+          />
+        )}
+      </div>
+    </main>
   );
 }

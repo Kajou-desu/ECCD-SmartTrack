@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "@api/client.js";
 import { MATERIALS_DATA } from "@data/mockParentData";
 import { getSubmissionsForChild } from "@data/mockSubmissionsStore";
@@ -30,6 +30,7 @@ export function useParentMaterials() {
     const [materials, setMaterials] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         let isMounted = true;
@@ -75,7 +76,26 @@ export function useParentMaterials() {
         };
     }, [selectedChildId]);
 
-    return { materials, loading, error };
+    const filteredMaterials = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+
+        if (!query) return materials;
+
+        return materials.filter((material) =>
+            [material.title, material.category, material.description].some(
+                (value) => value?.toLowerCase().includes(query),
+            ),
+        );
+    }, [materials, searchQuery]);
+
+    return {
+        materials,
+        filteredMaterials,
+        searchQuery,
+        setSearchQuery,
+        loading,
+        error,
+    };
 }
 
 export default useParentMaterials;

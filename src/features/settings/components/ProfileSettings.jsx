@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
-import { useAuth } from "../../hooks/useAuth.js";
+import { useAuth } from "../../../hooks/useAuth.js";
 import { UserRound, Camera, Mail, Phone } from "lucide-react";
 
-export default function ProfileSettings() {
+export default function ProfileSettings({ onNotify }) {
   const fileInputRef = useRef(null);
   const { user } = useAuth();
 
@@ -37,6 +37,7 @@ export default function ProfileSettings() {
 
   const handleProfileSave = () => {
     setProfileEditMode(false);
+    onNotify?.("success", "Profile updated successfully.");
   };
 
   return (

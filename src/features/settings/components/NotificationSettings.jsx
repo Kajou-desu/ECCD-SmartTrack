@@ -1,5 +1,5 @@
 import { useState } from "react";
-import SettingToggle from "../ui/SettingToggle";
+import SettingToggle from "../../../components/ui/SettingToggle";
 import { Bell, CalendarDays, Mail, Shield } from "lucide-react";
 
 export default function NotificationSettings() {

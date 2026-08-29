@@ -3,15 +3,20 @@ import formatDate from "@utils/formatDate";
 import { PrimaryButton } from "@components/ui/Button";
 import { ArrowLeft, Upload } from "lucide-react";
 
-export default function GalleryHeader({ album, onAddPhotosClick }) {
+export default function GalleryHeader({
+  album,
+  onAddPhotosClick,
+  backTo = "/event-photos",
+  backLabel = "Back to Event Photos",
+}) {
   return (
     <header className="flex flex-col gap-4">
       <Link
-        to="/event-photos"
+        to={backTo}
         className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-orange-600"
       >
         <ArrowLeft size={16} aria-hidden="true" />
-        Back to Event Photos
+        {backLabel}
       </Link>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -32,12 +37,14 @@ export default function GalleryHeader({ album, onAddPhotosClick }) {
           </p>
         </div>
 
-        <PrimaryButton
-          label="Add Photos"
-          icon={<Upload className="h-5 w-5" aria-hidden="true" />}
-          onClick={onAddPhotosClick}
-          ariaLabel="Add photos to this album"
-        />
+        {onAddPhotosClick && (
+          <PrimaryButton
+            label="Add Photos"
+            icon={<Upload className="h-5 w-5" aria-hidden="true" />}
+            onClick={onAddPhotosClick}
+            ariaLabel="Add photos to this album"
+          />
+        )}
       </div>
     </header>
   );

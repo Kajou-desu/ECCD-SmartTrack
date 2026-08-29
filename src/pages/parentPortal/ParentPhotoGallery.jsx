@@ -1,55 +1,81 @@
-import { useEffect, useState } from "react";
-import { PHOTO_ALBUMS_DATA } from "@data/mockParentData";
-import ParentMediaGallery from "./ParentMediaGallery";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useParentEventPhotos } from "@features/eventPhotos/hooks/useParentEventPhotos";
+import GalleryHeader from "@features/photoGallery/components/GalleryHeader";
+import PhotoGrid from "@features/photoGallery/components/PhotoGrid";
+import GalleryEmptyState from "@features/photoGallery/components/GalleryEmptyState";
+import GalleryLoadingState from "@features/photoGallery/components/GalleryLoadingState";
+import AlbumNotFound from "@features/photoGallery/components/AlbumNotFound";
+import PhotoPreviewModal from "@features/photoGallery/components/PhotoPreviewModal";
 
-const FILTER_OPTIONS = [
-  { id: "event", label: "Events" },
-  { id: "trip", label: "Field Trips" },
-  { id: "activity", label: "Activities" },
-  { id: "music", label: "Music & Movement" },
-  { id: "art", label: "Art & Crafts" },
-];
+const BACK_TO = "/parent/photo-gallery";
+const BACK_LABEL = "Back to Photo Gallery";
 
 export default function ParentPhotoGallery() {
-  const [albums, setAlbums] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { albumId } = useParams();
 
-  useEffect(() => {
-    // Simulate loading albums
-    const timer = window.setTimeout(() => {
-      setAlbums(PHOTO_ALBUMS_DATA);
-      setLoading(false);
-    }, 250);
+  const { loading, getAlbumById } = useParentEventPhotos();
 
-    return () => window.clearTimeout(timer);
-  }, []);
+  const album = getAlbumById(albumId);
 
-  const handleViewPhotos = (album) => {
-    console.log("View photos:", album);
-  };
+  const [activePhotoId, setActivePhotoId] = useState(null);
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-70px)] flex items-center justify-center bg-[#f8f9ff] p-6 text-gray-600">
-        <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-600 border-t-transparent" />
-          <p>Loading photo gallery...</p>
-        </div>
-      </div>
+      <main className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
+        <GalleryLoadingState />
+      </main>
     );
   }
 
+  if (!album) {
+    return (
+      <main className="flex min-h-0 flex-1 flex-col bg-[#f8f9ff] p-4 sm:p-6">
+        <AlbumNotFound backTo={BACK_TO} backLabel={BACK_LABEL} />
+      </main>
+    );
+  }
+
+  const activeIndex = album.photos.findIndex(
+    (photo) => String(photo.id) === String(activePhotoId),
+  );
+  const activePhoto = activeIndex >= 0 ? album.photos[activeIndex] : null;
+
+  const closeModal = () => setActivePhotoId(null);
+
+  const handleViewPhoto = (photo) => setActivePhotoId(photo.id);
+
+  const goToOffset = (offset) => {
+    const nextIndex = activeIndex + offset;
+    if (nextIndex < 0 || nextIndex >= album.photos.length) return;
+    setActivePhotoId(album.photos[nextIndex].id);
+  };
+
   return (
-    <ParentMediaGallery
-      type="eventPhotos"
-      title="Photo Gallery"
-      subtitle="View photos and memories from school events and activities"
-      items={albums}
-      actionLabel="View Photos"
-      onActionClick={handleViewPhotos}
-      showFilters={true}
-      filterOptions={FILTER_OPTIONS}
-      showChildFilter={false}
-    />
+    <main className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
+      <GalleryHeader album={album} backTo={BACK_TO} backLabel={BACK_LABEL} />
+
+      {album.photos.length === 0 ? (
+        <GalleryEmptyState />
+      ) : (
+        <PhotoGrid
+          photos={album.photos}
+          albumTitle={album.title}
+          onView={handleViewPhoto}
+        />
+      )}
+
+      {activePhoto && (
+        <PhotoPreviewModal
+          photo={activePhoto}
+          albumTitle={album.title}
+          hasPrevious={activeIndex > 0}
+          hasNext={activeIndex < album.photos.length - 1}
+          onPrevious={() => goToOffset(-1)}
+          onNext={() => goToOffset(1)}
+          onClose={closeModal}
+        />
+      )}
+    </main>
   );
 }

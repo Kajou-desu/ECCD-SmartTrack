@@ -1,50 +1,49 @@
-import ParentMediaGallery from "./ParentMediaGallery";
-
-const EVENT_PHOTOS_DATA = [
-  {
-    id: 1,
-    title: "Field Day 2024",
-    description: "Great day at the playground!",
-    category: "Field Trip",
-    createdBy: "Mrs. Sarah Johnson",
-    date: "Dec 10, 2024",
-    thumbnail: "https://placehold.co/300x200",
-    childIds: ["leo-miller"], // Only show to parents of Leo
-    url: "/events/1",
-  },
-  // ... more events
-];
-
-const FILTER_OPTIONS = [
-  { id: "event", label: "Events" },
-  { id: "trip", label: "Field Trips" },
-  { id: "activity", label: "Activities" },
-];
+import { useNavigate } from "react-router-dom";
+import { useParentEventPhotos } from "@features/eventPhotos/hooks/useParentEventPhotos";
+import AlbumsToolbar from "@features/eventPhotos/components/AlbumsToolbar";
+import AlbumsList from "@features/eventPhotos/components/AlbumsList";
+import AlbumsLoadingState from "@features/eventPhotos/components/AlbumsLoadingState";
+import ErrorMsg from "@components/ui/ErrorMsg";
 
 export default function ParentEventPhotos() {
-  const childId = "leo-miller"; // From auth/context
+  const navigate = useNavigate();
 
-  const handlePhotoClick = (event) => {
-    console.log("View photos:", event);
-    // Navigate to photo gallery detail view
+  const {
+    albums,
+    loading,
+    error,
+    dismissError,
+    searchQuery,
+    setSearchQuery,
+    filteredAlbums,
+  } = useParentEventPhotos();
+
+  const handleOpenAlbum = (album) => {
+    navigate(`/parent/photo-gallery/${album.id}`);
   };
 
-  // Pre-filter to only show events where child is present
-  const visibleEvents = EVENT_PHOTOS_DATA.filter((event) =>
-    event.childIds?.includes(childId),
-  );
-
   return (
-    <ParentMediaGallery
-      type="eventPhotos"
-      title="Event Photos"
-      subtitle="Photos and memories from school events and activities"
-      items={visibleEvents}
-      actionLabel="View Photos"
-      onActionClick={handlePhotoClick}
-      showFilters={true}
-      filterOptions={FILTER_OPTIONS}
-      showChildFilter={false} // Pre-filtered already
-    />
+    <main className="flex min-h-0 flex-1 flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
+      <AlbumsToolbar
+        title="Photo Gallery"
+        subtitle="Photos and memories from school events and activities"
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+
+      {error && <ErrorMsg message={error} onClose={dismissError} />}
+
+      {loading ? (
+        <AlbumsLoadingState />
+      ) : (
+        <AlbumsList
+          albums={albums}
+          filteredAlbums={filteredAlbums}
+          searchQuery={searchQuery}
+          onClearSearch={() => setSearchQuery("")}
+          onOpenAlbum={handleOpenAlbum}
+        />
+      )}
+    </main>
   );
 }

@@ -8,18 +8,21 @@ export default function AlbumsEmptyState({ onCreateAlbum }) {
       <h2 className="mt-4 text-lg font-bold text-slate-900">No albums yet</h2>
 
       <p className="mt-2 max-w-sm text-sm text-slate-600">
-        Create your first album to start organizing photos from center
-        activities and events.
+        {onCreateAlbum
+          ? "Create your first album to start organizing photos from center activities and events."
+          : "Photos will appear here once your child's teacher shares them."}
       </p>
 
-      <button
-        type="button"
-        onClick={onCreateAlbum}
-        className="mt-5 flex cursor-pointer items-center gap-2 rounded-lg bg-[#C2570C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a94709]"
-      >
-        <Plus size={18} aria-hidden="true" />
-        New Album
-      </button>
+      {onCreateAlbum && (
+        <button
+          type="button"
+          onClick={onCreateAlbum}
+          className="mt-5 flex cursor-pointer items-center gap-2 rounded-lg bg-[#C2570C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a94709]"
+        >
+          <Plus size={18} aria-hidden="true" />
+          New Album
+        </button>
+      )}
     </div>
   );
 }

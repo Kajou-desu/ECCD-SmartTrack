@@ -8,6 +8,7 @@ import RequiredDocumentsCard from "@features/students/components/profile/Require
 import EditGuardiansModal from "@features/students/components/profile/EditGuardiansModal";
 import EditMedicalModal from "@features/students/components/profile/EditMedicalModal";
 import UploadDocumentModal from "@features/students/components/profile/UploadDocumentModal";
+import PageHeader from "@components/shared/PageHeader";
 import { ArrowLeft } from "lucide-react";
 
 export default function StudentDetail() {
@@ -59,13 +60,11 @@ export default function StudentDetail() {
           <ArrowLeft size={20} />
           <span>Back</span>
         </button>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-          {student.name}'s Information
-        </h1>
-        <p className="mt-2 text-sm text-gray-600 max-w-2xl leading-relaxed">
-          View your child's profile, guardian contacts, medical records, and
-          uploaded documents. All information is kept secure and confidential.
-        </p>
+        <PageHeader
+          title={`${student.name}'s Information`}
+          subtitle="View your child's profile, guardian contacts, medical records, and
+          uploaded documents."
+        />
       </div>
 
       <StudentProfileHeader student={student} />

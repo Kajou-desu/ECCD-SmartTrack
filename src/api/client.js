@@ -296,6 +296,16 @@ export const apiClient = {
   },
 
   /**
+   * Fetch all photo albums (teacher + parent views share this list).
+   * @returns {Promise<Array>} Array of album records
+   */
+  async getAlbums() {
+    return fetchWithRetry(`${API_BASE_URL}/api/albums`, {
+      method: "GET",
+    });
+  },
+
+  /**
    * Fetch all learning materials (teacher + parent views share this list).
    * @returns {Promise<Array>} Array of material records
    */

@@ -13,7 +13,7 @@ export function isParent(role) {
 }
 
 export function canManageAccounts(role) {
-  return isAdmin(role);
+  return [ROLES.ADMIN, ROLES.TEACHER].includes(role);
 }
 
 export function canAccessStaffPortal(role) {

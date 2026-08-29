@@ -29,14 +29,16 @@ export default function PhotoPreviewModal({
         </h2>
 
         <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onDelete(photo)}
-            aria-label="Delete this photo"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-white/60"
-          >
-            <Trash2 size={18} aria-hidden="true" />
-          </button>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(photo)}
+              aria-label="Delete this photo"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-white/60"
+            >
+              <Trash2 size={18} aria-hidden="true" />
+            </button>
+          )}
 
           <button
             type="button"
