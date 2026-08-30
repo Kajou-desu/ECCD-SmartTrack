@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ReminderBanner from "../shared/ReminderBanner";
 import NotificationModal from "../shared/NotificationModal";
 import Logo from "@assets/ECCDST_Logo.png";
@@ -11,6 +12,7 @@ export default function Header({
   onToggleAttendance,
   mobileMenuButtonRef,
 }) {
+  const navigate = useNavigate();
   const [isRecording, setIsRecording] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
@@ -67,6 +69,7 @@ export default function Header({
           {/* Calendar button */}
           <button
             type="button"
+            onClick={() => navigate("/calendar")}
             aria-label="Calendar"
             title="Calendar"
             className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2 cursor-pointer"

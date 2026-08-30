@@ -1,44 +1,35 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ParentChildContext } from "./parentChildContextObject";
 import { apiClient } from "@api/client.js";
 import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { CHILDREN_DATA } from "@data/mockParentData";
 
+async function fetchChildren() {
+  const { data } = await withMockFallback(
+    () => apiClient.getChildren(),
+    CHILDREN_DATA,
+    { label: "ParentChildContext" },
+  );
+  return Array.isArray(data)
+    ? data
+    : Array.isArray(data?.children)
+      ? data.children
+      : CHILDREN_DATA;
+}
+
 export function ParentChildProvider({ children }) {
-  const [availableChildren, setAvailableChildren] = useState([]);
-  const [childrenLoading, setChildrenLoading] = useState(true);
-  const [selectedChildId, setSelectedChildId] = useState(null);
+  const { data, isLoading } = useQuery({
+    queryKey: ["children"],
+    queryFn: fetchChildren,
+  });
 
-  useEffect(() => {
-    let isMounted = true;
+  const availableChildren = useMemo(() => data ?? [], [data]);
+  const childrenLoading = isLoading;
 
-    const loadChildren = async () => {
-      setChildrenLoading(true);
-
-      const { data } = await withMockFallback(
-        () => apiClient.getChildren(),
-        CHILDREN_DATA,
-        { label: "ParentChildContext" },
-      );
-
-      if (!isMounted) return;
-
-      const list = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.children)
-          ? data.children
-          : CHILDREN_DATA;
-      setAvailableChildren(list);
-      setSelectedChildId((current) => current ?? list[0]?.id ?? null);
-      setChildrenLoading(false);
-    };
-
-    loadChildren();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const [manualSelectedChildId, setSelectedChildId] = useState(null);
+  const selectedChildId =
+    manualSelectedChildId ?? availableChildren[0]?.id ?? null;
 
   const selectedChild = useMemo(
     () =>

@@ -1,15 +1,23 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { EVENTS_DATA } from "@data/mockData";
 import ErrorMsg from "@components/ui/ErrorMsg";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+async function fetchEvents(monthKey) {
+  const mockValue = EVENTS_DATA[monthKey] || EVENTS_DATA["2026-08"];
+  const { data, usedMock } = await withMockFallback(
+    () => apiClient.getEvents(monthKey),
+    mockValue,
+    { label: "CalendarEvents" },
+  );
+  return { attendanceData: data ?? mockValue, usedMock };
+}
+
 export default function CalendarEvents() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 7));
-  const [attendanceData, setAttendanceData] = useState(null);
-  const [loadedMonthKey, setLoadedMonthKey] = useState(null);
-  const [error, setError] = useState("");
 
   const monthKey = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -17,28 +25,18 @@ export default function CalendarEvents() {
     return `${year}-${month}`;
   }, [currentDate]);
 
-  const loading = loadedMonthKey !== monthKey;
+  const { data: queryData, isLoading } = useQuery({
+    queryKey: ["events", monthKey],
+    queryFn: () => fetchEvents(monthKey),
+  });
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const mockValue = EVENTS_DATA[monthKey] || EVENTS_DATA["2026-08"];
-
-    withMockFallback(() => apiClient.getEvents(monthKey), mockValue, {
-      label: "CalendarEvents",
-    }).then(({ data, usedMock }) => {
-      if (!isMounted) return;
-      setAttendanceData(data ?? mockValue);
-      setError(
-        usedMock ? "Unable to sync with server. Showing cached data." : "",
-      );
-      setLoadedMonthKey(monthKey);
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [monthKey]);
+  const loading = isLoading;
+  const attendanceData = queryData?.attendanceData ?? null;
+  const error = queryData?.usedMock
+    ? "Unable to sync with server. Showing cached data."
+    : "";
+  const [dismissedMonth, setDismissedMonth] = useState(null);
+  const showError = Boolean(error) && dismissedMonth !== monthKey;
 
   const monthName = currentDate.toLocaleString("en-US", {
     month: "long",
@@ -163,7 +161,9 @@ export default function CalendarEvents() {
         </p>
       </div>
 
-      {error && <ErrorMsg message={error} onClose={() => setError("")} />}
+      {showError && (
+        <ErrorMsg message={error} onClose={() => setDismissedMonth(monthKey)} />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}

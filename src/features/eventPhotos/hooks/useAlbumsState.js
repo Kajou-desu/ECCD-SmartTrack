@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { PHOTO_ALBUMS_DATA } from "@data/mockData";
 import { isBlobUrl, isImageFile } from "@features/eventPhotos/utils/photoValidation";
 
-function fetchAlbums() {
-    return withMockFallback(
+async function fetchAlbums() {
+    const { data } = await withMockFallback(
         () => apiClient.getAlbums(),
         PHOTO_ALBUMS_DATA,
         { label: "useAlbumsState" },
-    ).then(({ data }) => data);
+    );
+    return data;
 }
 
 /**
@@ -21,9 +23,24 @@ function fetchAlbums() {
 export function useAlbumsState() {
     const objectUrlsRef = useRef(new Set());
 
+    const { data: queryData, isLoading, isError } = useQuery({
+        queryKey: ["albums", "teacher"],
+        queryFn: fetchAlbums,
+    });
+
     const [albums, setAlbums] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [initialized, setInitialized] = useState(false);
     const [error, setError] = useState("");
+
+    if (queryData && !initialized) {
+        setInitialized(true);
+        setAlbums(queryData);
+    }
+    if (isError && !initialized && !error) {
+        setError("Unable to load photo albums. Please try again.");
+    }
+
+    const loading = isLoading;
 
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -32,32 +49,6 @@ export function useAlbumsState() {
     const dismissToast = useCallback(() => setToast(null), []);
 
     const dismissError = useCallback(() => setError(""), []);
-
-    useEffect(() => {
-        let isMounted = true;
-
-        const loadAlbums = async () => {
-            setLoading(true);
-            setError("");
-
-            try {
-                const data = await fetchAlbums();
-                if (!isMounted) return;
-                setAlbums(data);
-            } catch {
-                if (!isMounted) return;
-                setError("Unable to load photo albums. Please try again.");
-            } finally {
-                if (isMounted) setLoading(false);
-            }
-        };
-
-        loadAlbums();
-
-        return () => {
-            isMounted = false;
-        };
-    }, []);
 
     // Revoke every object URL created for uploaded photos when the provider
     // unmounts (i.e. when the person navigates away from event photos).

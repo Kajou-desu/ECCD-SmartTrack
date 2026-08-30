@@ -11,6 +11,7 @@ const StudentInfo = lazy(() => import("@pages/StudentInfo.jsx"));
 const StudentForm = lazy(() => import("@pages/StudentForm.jsx"));
 const StudentDetail = lazy(() => import("@pages/StudentDetail.jsx"));
 const LearningMaterials = lazy(() => import("@pages/Materials.jsx"));
+const CalendarEvents = lazy(() => import("@pages/CalendarEvents.jsx"));
 const EventPhotos = lazy(() => import("@pages/EventPhotos.jsx"));
 const PhotoGallery = lazy(() => import("@pages/PhotoGallery.jsx"));
 const AccountsManagement = lazy(() => import("@pages/AccountManagement.jsx"));
@@ -30,6 +31,7 @@ export function TeacherRoutes() {
           <Route path="/student/:studentId/edit" element={<StudentForm />} />
           <Route path="/student/:studentId" element={<StudentDetail />} />
           <Route path="/learning-materials" element={<LearningMaterials />} />
+          <Route path="/calendar" element={<CalendarEvents />} />
           <Route element={<EventPhotosProvider />}>
             <Route path="/event-photos" element={<EventPhotos />} />
             <Route path="/event-photos/:albumId" element={<PhotoGallery />} />

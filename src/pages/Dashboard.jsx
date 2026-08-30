@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@hooks/useAuth";
 import { apiClient } from "@api/client.js";
 import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
@@ -13,31 +14,32 @@ import DashboardContentGrid from "@features/dashboard/components/DashboardConten
 import StatCard from "@components/shared/StatCard";
 import ErrorMsg from "@components/ui/ErrorMsg";
 
+async function fetchDashboardStats() {
+  const { data, usedMock } = await withMockFallback(
+    () => apiClient.getDashboardStats(),
+    DASHBOARD_STATS,
+    { label: "Dashboard" },
+  );
+  return { stats: data ?? DASHBOARD_STATS, usedMock };
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const { greeting, firstName, currentDateTime } = useDashboardGreeting(
     user?.name,
   );
 
-  const [stats, setStats] = useState(DASHBOARD_STATS);
-  const [error, setError] = useState("");
+  const { data: queryData } = useQuery({
+    queryKey: ["dashboardStats"],
+    queryFn: fetchDashboardStats,
+  });
 
-  useEffect(() => {
-    let isMounted = true;
-
-    withMockFallback(() => apiClient.getDashboardStats(), DASHBOARD_STATS, {
-      label: "Dashboard",
-    }).then(({ data, usedMock }) => {
-      if (!isMounted) return;
-      setStats(data ?? DASHBOARD_STATS);
-      if (usedMock)
-        setError("Unable to sync with server. Showing cached data.");
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const stats = queryData?.stats ?? DASHBOARD_STATS;
+  const error = queryData?.usedMock
+    ? "Unable to sync with server. Showing cached data."
+    : "";
+  const [dismissed, setDismissed] = useState(false);
+  const showError = Boolean(error) && !dismissed;
 
   return (
     <div className="min-h-0 flex flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
@@ -47,7 +49,9 @@ export default function Dashboard() {
         currentDateTime={currentDateTime}
       />
 
-      {error && <ErrorMsg message={error} onClose={() => setError("")} />}
+      {showError && (
+        <ErrorMsg message={error} onClose={() => setDismissed(true)} />
+      )}
 
       <DashboardContentGrid
         stats={

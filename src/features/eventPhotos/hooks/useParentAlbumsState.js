@@ -1,8 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { PHOTO_ALBUMS_DATA } from "@data/mockParentData";
 import { useParentChild } from "@hooks/useParentChild";
+
+async function fetchParentAlbums() {
+    const { data, usedMock } = await withMockFallback(
+        () => apiClient.getAlbums(),
+        PHOTO_ALBUMS_DATA,
+        { label: "useParentAlbumsState" },
+    );
+
+    if (usedMock) return { albums: data, usedMock: true };
+    if (Array.isArray(data)) return { albums: data, usedMock: false };
+    if (Array.isArray(data?.albums)) return { albums: data.albums, usedMock: false };
+    return { albums: PHOTO_ALBUMS_DATA, usedMock: false };
+}
 
 /**
  * Read-only counterpart to `useAlbumsState` for the parent portal. Shares the
@@ -14,49 +28,21 @@ import { useParentChild } from "@hooks/useParentChild";
 export function useParentAlbumsState() {
     const { selectedChildId } = useParentChild();
 
-    const [albums, setAlbums] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const { data: queryData, isLoading } = useQuery({
+        queryKey: ["albums", "parent"],
+        queryFn: fetchParentAlbums,
+    });
+
+    const albums = useMemo(() => queryData?.albums ?? [], [queryData]);
+    const loading = isLoading;
+    const [dismissed, setDismissed] = useState(false);
+    const error = queryData?.usedMock && !dismissed
+        ? "Unable to load live photos. Displaying cached photos instead."
+        : "";
 
     const [searchQuery, setSearchQuery] = useState("");
 
-    const dismissError = useCallback(() => setError(""), []);
-
-    useEffect(() => {
-        let isMounted = true;
-
-        const loadAlbums = async () => {
-            setLoading(true);
-            setError("");
-
-            const { data, usedMock } = await withMockFallback(
-                () => apiClient.getAlbums(),
-                PHOTO_ALBUMS_DATA,
-                { label: "useParentAlbumsState" },
-            );
-
-            if (!isMounted) return;
-
-            if (usedMock) {
-                setAlbums(data);
-                setError("Unable to load live photos. Displaying cached photos instead.");
-            } else if (Array.isArray(data)) {
-                setAlbums(data);
-            } else if (Array.isArray(data?.albums)) {
-                setAlbums(data.albums);
-            } else {
-                setAlbums(PHOTO_ALBUMS_DATA);
-            }
-
-            if (isMounted) setLoading(false);
-        };
-
-        loadAlbums();
-
-        return () => {
-            isMounted = false;
-        };
-    }, []);
+    const dismissError = useCallback(() => setDismissed(true), []);
 
     // Only show albums that include the currently selected child.
     const childAlbums = useMemo(() => {
