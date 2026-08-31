@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
 import { PHOTO_ALBUMS_DATA } from "@data/mockData";
@@ -21,6 +21,7 @@ async function fetchAlbums() {
  * disconnected copies.
  */
 export function useAlbumsState() {
+    const queryClient = useQueryClient();
     const objectUrlsRef = useRef(new Set());
 
     const { data: queryData, isLoading, isError } = useQuery({
@@ -94,7 +95,9 @@ export function useAlbumsState() {
                 return { success: false, error: "An album with this name already exists." };
             }
 
-            const newAlbum = {
+            // Optimistic local album so the modal can close immediately; the
+            // real id is swapped in once the server responds.
+            const optimisticAlbum = {
                 id: crypto.randomUUID(),
                 title: trimmedTitle,
                 category: "Uncategorized",
@@ -103,12 +106,27 @@ export function useAlbumsState() {
                 photos: [],
             };
 
-            setAlbums((current) => [newAlbum, ...current]);
+            setAlbums((current) => [optimisticAlbum, ...current]);
             showToast("success", `"${trimmedTitle}" album was created.`);
 
-            return { success: true, album: newAlbum };
+            apiClient
+                .createAlbum(trimmedTitle) // MOCK_FALLBACK
+                .then((saved) => {
+                    setAlbums((current) =>
+                        current.map((album) =>
+                            album.id === optimisticAlbum.id ? { ...optimisticAlbum, ...saved } : album,
+                        ),
+                    );
+                    queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] });
+                })
+                .catch((err) => {
+                    console.warn("[MOCK_FALLBACK] createAlbum failed, kept locally:", err);
+                    showToast("warning", `"${trimmedTitle}" was created locally (not synced to server).`);
+                });
+
+            return { success: true, album: optimisticAlbum };
         },
-        [albums, showToast],
+        [albums, queryClient, showToast],
     );
 
     const deleteAlbum = useCallback(
@@ -129,8 +147,16 @@ export function useAlbumsState() {
             );
 
             showToast("success", `"${album.title}" album was deleted.`);
+
+            apiClient
+                .deleteAlbum(albumId) // MOCK_FALLBACK
+                .then(() => queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] }))
+                .catch((err) => {
+                    console.warn("[MOCK_FALLBACK] deleteAlbum failed, removed locally only:", err);
+                    showToast("warning", `"${album.title}" was deleted locally (not synced to server).`);
+                });
         },
-        [getAlbumById, showToast],
+        [getAlbumById, queryClient, showToast],
     );
 
     const addPhotos = useCallback(
@@ -143,7 +169,8 @@ export function useAlbumsState() {
                 return;
             }
 
-            const newPhotos = validFiles.map((file) => {
+            // Optimistic blob-preview photos, swapped for server URLs on success.
+            const optimisticPhotos = validFiles.map((file) => {
                 const url = URL.createObjectURL(file);
                 objectUrlsRef.current.add(url);
 
@@ -157,19 +184,52 @@ export function useAlbumsState() {
             setAlbums((current) =>
                 current.map((album) =>
                     String(album.id) === String(albumId)
-                        ? { ...album, photos: [...album.photos, ...newPhotos] }
+                        ? { ...album, photos: [...album.photos, ...optimisticPhotos] }
                         : album,
                 ),
             );
 
             const message =
                 rejectedCount > 0
-                    ? `${newPhotos.length} photo(s) added, ${rejectedCount} file(s) skipped (unsupported type).`
-                    : `${newPhotos.length} photo(s) added.`;
+                    ? `${optimisticPhotos.length} photo(s) added, ${rejectedCount} file(s) skipped (unsupported type).`
+                    : `${optimisticPhotos.length} photo(s) added.`;
 
             showToast(rejectedCount > 0 ? "warning" : "success", message);
+
+            apiClient
+                .addAlbumPhotos(albumId, validFiles) // MOCK_FALLBACK
+                .then((savedPhotos) => {
+                    const savedList = Array.isArray(savedPhotos) ? savedPhotos : savedPhotos?.photos;
+                    if (!Array.isArray(savedList) || savedList.length !== optimisticPhotos.length) return;
+
+                    setAlbums((current) =>
+                        current.map((album) => {
+                            if (String(album.id) !== String(albumId)) return album;
+
+                            return {
+                                ...album,
+                                photos: album.photos.map((photo) => {
+                                    const index = optimisticPhotos.findIndex((p) => p.id === photo.id);
+                                    if (index === -1) return photo;
+
+                                    if (isBlobUrl(photo.url)) {
+                                        URL.revokeObjectURL(photo.url);
+                                        objectUrlsRef.current.delete(photo.url);
+                                    }
+
+                                    return { ...photo, ...savedList[index] };
+                                }),
+                            };
+                        }),
+                    );
+                    queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] });
+                })
+                .catch((err) => {
+                    console.warn("[MOCK_FALLBACK] addAlbumPhotos failed, kept locally:", err);
+                    showToast("warning", "Photo(s) saved locally (not synced to server).");
+                });
         },
-        [showToast],
+        [queryClient, showToast],
     );
 
     const deletePhoto = useCallback(
@@ -197,8 +257,16 @@ export function useAlbumsState() {
             );
 
             showToast("success", "Photo was deleted.");
+
+            apiClient
+                .deleteAlbumPhoto(albumId, photoId) // MOCK_FALLBACK
+                .then(() => queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] }))
+                .catch((err) => {
+                    console.warn("[MOCK_FALLBACK] deleteAlbumPhoto failed, removed locally only:", err);
+                    showToast("warning", "Photo was deleted locally (not synced to server).");
+                });
         },
-        [showToast],
+        [queryClient, showToast],
     );
 
     return {

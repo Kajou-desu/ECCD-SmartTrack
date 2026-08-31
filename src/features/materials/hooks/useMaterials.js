@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { apiClient } from "@api/client.js";
 import { useMaterialsQuery } from "./useMaterialsQuery.js";
 
 export const MATERIAL_MODAL = {
@@ -10,6 +12,7 @@ export const MATERIAL_MODAL = {
 };
 
 export function useMaterials() {
+  const queryClient = useQueryClient();
   const objectUrlsRef = useRef(new Set());
 
   const { data: queryData, isLoading } = useMaterialsQuery();
@@ -130,77 +133,106 @@ export function useMaterials() {
   );
 
   const confirmAdd = useCallback(
-    (newMaterial) => {
-      const fileUrl = createFileUrl(newMaterial.file);
-
-      if (!fileUrl) {
+    async (newMaterial) => {
+      if (!(newMaterial.file instanceof File)) {
         showToast("error", "Please select a valid PDF file.");
         return;
       }
 
-      const createdMaterial = {
-        ...newMaterial,
-        id: crypto.randomUUID(),
-        fileName: newMaterial.file.name,
-        fileUrl,
-        createdAt: new Date().toISOString(),
-      };
-
-      setMaterials((current) => [createdMaterial, ...current]);
-      closeModal();
-      showToast("success", `"${createdMaterial.title}" was added successfully.`);
+      try {
+        const created = await apiClient.createMaterial(newMaterial); // MOCK_FALLBACK
+        setMaterials((current) => [created, ...current]);
+        queryClient.invalidateQueries({ queryKey: ["materials"] });
+        closeModal();
+        showToast("success", `"${created.title ?? newMaterial.title}" was added successfully.`);
+      } catch (err) {
+        console.warn("[MOCK_FALLBACK] createMaterial failed, applying locally:", err);
+        const fileUrl = createFileUrl(newMaterial.file);
+        const createdMaterial = {
+          ...newMaterial,
+          id: crypto.randomUUID(),
+          fileName: newMaterial.file.name,
+          fileUrl,
+          createdAt: new Date().toISOString(),
+        };
+        setMaterials((current) => [createdMaterial, ...current]);
+        closeModal();
+        showToast("warning", `"${createdMaterial.title}" was added locally (not synced to server).`);
+      }
     },
-    [createFileUrl, showToast, closeModal],
+    [createFileUrl, queryClient, showToast, closeModal],
   );
 
   const confirmEdit = useCallback(
-    (updatedMaterial) => {
-      setMaterials((current) =>
-        current.map((material) => {
-          if (material.id !== updatedMaterial.id) return material;
+    async (updatedMaterial) => {
+      try {
+        const saved = await apiClient.updateMaterial(updatedMaterial.id, updatedMaterial); // MOCK_FALLBACK
+        setMaterials((current) =>
+          current.map((material) => (material.id === updatedMaterial.id ? saved : material)),
+        );
+        queryClient.invalidateQueries({ queryKey: ["materials"] });
+        closeModal();
+        showToast("success", `"${saved.title ?? updatedMaterial.title}" was updated successfully.`);
+      } catch (err) {
+        console.warn("[MOCK_FALLBACK] updateMaterial failed, applying locally:", err);
+        setMaterials((current) =>
+          current.map((material) => {
+            if (material.id !== updatedMaterial.id) return material;
 
-          const hasNewFile =
-            updatedMaterial.file instanceof File &&
-            updatedMaterial.file !== material.file;
+            const hasNewFile =
+              updatedMaterial.file instanceof File &&
+              updatedMaterial.file !== material.file;
 
-          if (!hasNewFile) {
-            return updatedMaterial;
-          }
+            if (!hasNewFile) {
+              return updatedMaterial;
+            }
 
-          const newFileUrl = createFileUrl(updatedMaterial.file);
+            const newFileUrl = createFileUrl(updatedMaterial.file);
 
-          if (material.fileUrl) {
-            revokeFileUrl(material.fileUrl);
-          }
+            if (material.fileUrl) {
+              revokeFileUrl(material.fileUrl);
+            }
 
-          return {
-            ...updatedMaterial,
-            fileUrl: newFileUrl,
-            fileName: updatedMaterial.file.name,
-          };
-        }),
-      );
-
-      closeModal();
-      showToast("success", `"${updatedMaterial.title}" was updated successfully.`);
+            return {
+              ...updatedMaterial,
+              fileUrl: newFileUrl,
+              fileName: updatedMaterial.file.name,
+            };
+          }),
+        );
+        closeModal();
+        showToast("warning", `"${updatedMaterial.title}" was updated locally (not synced to server).`);
+      }
     },
-    [createFileUrl, revokeFileUrl, showToast, closeModal],
+    [createFileUrl, revokeFileUrl, queryClient, showToast, closeModal],
   );
 
-  const confirmDelete = useCallback(() => {
+  const confirmDelete = useCallback(async () => {
     if (!selectedMaterial) return;
 
-    if (selectedMaterial.fileUrl) {
-      revokeFileUrl(selectedMaterial.fileUrl);
+    try {
+      await apiClient.deleteMaterial(selectedMaterial.id); // MOCK_FALLBACK
+      if (selectedMaterial.fileUrl) {
+        revokeFileUrl(selectedMaterial.fileUrl);
+      }
+      setMaterials((current) =>
+        current.filter((material) => material.id !== selectedMaterial.id),
+      );
+      queryClient.invalidateQueries({ queryKey: ["materials"] });
+      showToast("success", `"${selectedMaterial.title}" was deleted successfully.`);
+      closeModal();
+    } catch (err) {
+      console.warn("[MOCK_FALLBACK] deleteMaterial failed, applying locally:", err);
+      if (selectedMaterial.fileUrl) {
+        revokeFileUrl(selectedMaterial.fileUrl);
+      }
+      setMaterials((current) =>
+        current.filter((material) => material.id !== selectedMaterial.id),
+      );
+      showToast("warning", `"${selectedMaterial.title}" was deleted locally (not synced to server).`);
+      closeModal();
     }
-
-    setMaterials((current) =>
-      current.filter((material) => material.id !== selectedMaterial.id),
-    );
-
-    showToast("success", `"${selectedMaterial.title}" was deleted successfully.`);
-    closeModal();
-  }, [selectedMaterial, revokeFileUrl, showToast, closeModal]);
+  }, [selectedMaterial, revokeFileUrl, queryClient, showToast, closeModal]);
 
   const handleUploadSuccess = useCallback(
     (message) => {

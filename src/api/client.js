@@ -306,6 +306,55 @@ export const apiClient = {
   },
 
   /**
+   * Create a new (empty) photo album.
+   * @param {string} title
+   */
+  async createAlbum(title) {
+    return fetchWithRetry(`${API_BASE_URL}/api/albums`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ title }),
+    });
+  },
+
+  /**
+   * Delete an album (and its photos).
+   * @param {number|string} albumId
+   */
+  async deleteAlbum(albumId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Upload one or more photos into an album.
+   * @param {number|string} albumId
+   * @param {File[]} files
+   * @returns {Promise<Array>} Array of created photo records
+   */
+  async addAlbumPhotos(albumId, files) {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("photos", file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}/photos`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Delete a single photo from an album.
+   * @param {number|string} albumId
+   * @param {number|string} photoId
+   */
+  async deleteAlbumPhoto(albumId, photoId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}/photos/${photoId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
    * Fetch all learning materials (teacher + parent views share this list).
    * @returns {Promise<Array>} Array of material records
    */
