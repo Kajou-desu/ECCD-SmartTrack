@@ -3,6 +3,7 @@ import NotificationModal from "@components/shared/NotificationModal";
 import ReminderBanner from "../shared/ReminderBanner";
 import ChildSelectorDropdown from "./ChildSelectorDropdown";
 import Logo from "@assets/ECCDST_Logo.png";
+import { useNotifications } from "@hooks/useNotifications";
 import { Bell, Menu } from "lucide-react";
 
 export default function ParentHeader({
@@ -11,6 +12,7 @@ export default function ParentHeader({
   onOpenSidebar,
   mobileMenuButtonRef,
 }) {
+  const { unreadCount } = useNotifications();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   return (
@@ -72,18 +74,19 @@ export default function ParentHeader({
           <button
             type="button"
             onClick={() => setIsNotificationOpen(true)}
-            aria-label="Notifications"
+            aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
             aria-haspopup="dialog"
             aria-expanded={isNotificationOpen}
             title="Notifications"
-            className="cursor-pointer relative flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#C2570C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
+            className="relative flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-[#C2570C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
           >
             <Bell aria-hidden="true" className="h-5 w-5" />
 
-            <span
-              aria-hidden="true"
-              className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
-            />
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
         </div>
       </div>

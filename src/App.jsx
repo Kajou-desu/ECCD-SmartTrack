@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ErrorBoundary from "@components/shared/ErrorBoundary.jsx";
 import RouteSpinner from "@components/shared/RouteSpinner.jsx";
 import { AuthProvider } from "@context/AuthContext.jsx";
+import { NotificationProvider } from "@context/NotificationContext.jsx";
 import AppRoutes from "./routes/AppRoutes.jsx";
 
 const queryClient = new QueryClient({
@@ -34,9 +35,11 @@ export default function App() {
           <ScrollToTop />
 
           <AuthProvider>
-            <Suspense fallback={<RouteSpinner />}>
-              <AppRoutes />
-            </Suspense>
+            <NotificationProvider>
+              <Suspense fallback={<RouteSpinner />}>
+                <AppRoutes />
+              </Suspense>
+            </NotificationProvider>
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>

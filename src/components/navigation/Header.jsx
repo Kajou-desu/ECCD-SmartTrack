@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ReminderBanner from "../shared/ReminderBanner";
 import NotificationModal from "../shared/NotificationModal";
 import Logo from "@assets/ECCDST_Logo.png";
+import { useNotifications } from "@hooks/useNotifications";
 import { CalendarDays, Bell, Play, Pause, Menu } from "lucide-react";
 
 export default function Header({
@@ -13,6 +14,7 @@ export default function Header({
   mobileMenuButtonRef,
 }) {
   const navigate = useNavigate();
+  const { unreadCount } = useNotifications();
   const [isRecording, setIsRecording] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
@@ -81,18 +83,19 @@ export default function Header({
           <button
             type="button"
             onClick={() => setIsNotificationOpen(true)}
-            aria-label="Notifications"
+            aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
             aria-haspopup="dialog"
             aria-expanded={isNotificationOpen}
             title="Notifications"
-            className="cursor-pointer relative flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
+            className="relative flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
           >
             <Bell aria-hidden="true" className="h-5 w-5" />
 
-            <span
-              aria-hidden="true"
-              className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"
-            />
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
 
           {/* Divider - Hidden on mobile */}

@@ -7,6 +7,11 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const clearStoredAuth = useCallback(() => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authUser");
+  }, []);
+
   // Initialize auth state from localStorage on mount
   useEffect(() => {
     const initializeAuth = () => {
@@ -15,52 +20,63 @@ export function AuthProvider({ children }) {
         const storedUser = localStorage.getItem("authUser");
 
         if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          const parsedUser = JSON.parse(storedUser);
+
+          if (typeof storedToken === "string" && storedToken.trim() && parsedUser) {
+            setToken(storedToken.trim());
+            setUser(parsedUser);
+          } else {
+            clearStoredAuth();
+          }
         }
       } catch (error) {
         console.error("Failed to restore auth state:", error);
-        // Clear invalid data
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("authUser");
+        clearStoredAuth();
       } finally {
         setIsLoading(false);
       }
     };
 
     initializeAuth();
-  }, []); // Only run once on mount
+  }, [clearStoredAuth]);
 
   // Persist token changes to localStorage
   useEffect(() => {
     if (token) {
-      localStorage.setItem("authToken", token);
+      localStorage.setItem("authToken", token.trim());
     } else {
-      localStorage.removeItem("authToken");
+      clearStoredAuth();
     }
-  }, [token]);
+  }, [token, clearStoredAuth]);
 
   // Persist user changes to localStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem("authUser", JSON.stringify(user));
     } else {
-      localStorage.removeItem("authUser");
+      clearStoredAuth();
     }
-  }, [user]);
+  }, [user, clearStoredAuth]);
 
   const login = useCallback((authToken, authUser) => {
-    setToken(authToken);
+    const sanitizedToken = typeof authToken === "string" ? authToken.trim() : "";
+
+    if (!sanitizedToken) {
+      clearStoredAuth();
+      setToken(null);
+      setUser(null);
+      return;
+    }
+
+    setToken(sanitizedToken);
     setUser(authUser);
-  }, []);
+  }, [clearStoredAuth]);
 
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
-
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("authUser");
-  }, []);
+    clearStoredAuth();
+  }, [clearStoredAuth]);
 
   useEffect(() => {
     setUnauthorizedHandler(() => {

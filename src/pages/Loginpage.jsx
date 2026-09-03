@@ -6,6 +6,7 @@ import { useAuth } from "@hooks/useAuth";
 import { apiClient } from "@api/client.js";
 import { LoginSchema, PasswordResetSchema } from "@validation/auth.js";
 import logo from "@assets/ECCDST_Logo.png";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const { login } = useAuth();
@@ -21,6 +22,11 @@ export default function Login() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [forgotEmail, setForgotEmail] = useState("");
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
 
   const devCredentials = {
     email: "teacher@eccd.com",
@@ -317,16 +323,35 @@ export default function Login() {
                 <label className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">
                   Password
                 </label>
-                <input
-                  type="password"
-                  placeholder="Password"
-                  {...register("password")}
-                  className={`w-full p-3 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition ${
-                    errors.password
-                      ? "border-red-500 focus:ring-red-500/40 focus:border-red-500"
-                      : "border-slate-300 focus:ring-[#C2570C]/40 focus:border-[#C2570C]"
-                  }`}
-                />
+                <div className="relative">
+                  <input
+                    type={showPasswords.current ? "text" : "password"}
+                    name="current"
+                    placeholder="Password"
+                    {...register("password")}
+                    className={`w-full p-3 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition ${
+                      errors.password
+                        ? "border-red-500 focus:ring-red-500/40 focus:border-red-500"
+                        : "border-slate-300 focus:ring-[#C2570C]/40 focus:border-[#C2570C]"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPasswords((prev) => ({
+                        ...prev,
+                        current: !prev.current,
+                      }))
+                    }
+                    className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-[#C2570C]"
+                  >
+                    {showPasswords.current ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
                 {errors.password && (
                   <p className="mt-1 text-xs text-red-600">
                     {errors.password.message}

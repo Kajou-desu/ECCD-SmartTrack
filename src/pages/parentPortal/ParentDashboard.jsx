@@ -105,7 +105,7 @@ export default function ParentDashboard() {
           <div className="lg:h-125 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <WeeklyGoalsCard goals={progress.weeklyGoals} />
             <RecentActivitiesCard activities={progress.recentActivities} />
-            <EventCard />
+            <EventCard showBirthdays={false} />
           </div>
         </>
       )}

@@ -37,18 +37,14 @@ async function handleApiResponse(
   }
 
   if (!response.ok) {
-    const message =
-      data.message || `HTTP ${response.status}`;
+    const genericMessage = "Something went wrong.";
 
-    if (
-      response.status === 401 &&
-      handleUnauthorized
-    ) {
+    if (response.status === 401 && handleUnauthorized) {
       onUnauthorized?.();
     }
 
     throw new ApiError(
-      message,
+      genericMessage,
       response.status,
       data
     );
@@ -477,6 +473,53 @@ export const apiClient = {
   async getDailyTheme() {
     return fetchWithRetry(`${API_BASE_URL}/api/dashboard/daily-theme`, {
       method: "GET",
+    });
+  },
+
+  /** Fetch notifications for the current user. */
+  async getNotifications({ unreadOnly = false } = {}) {
+    const params = new URLSearchParams();
+
+    if (unreadOnly) {
+      params.set("unread", "true");
+    }
+
+    const queryString = params.toString();
+
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications${queryString ? `?${queryString}` : ""}`, {
+      method: "GET",
+    });
+  },
+
+  /** Mark a specific notification as read. */
+  async markNotificationRead(notificationId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
+      method: "PATCH",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ read: true }),
+    });
+  },
+
+  /** Mark all notifications as read for the current user. */
+  async markAllNotificationsRead() {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/read-all`, {
+      method: "PATCH",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ read: true }),
+    });
+  },
+
+  /** Dismiss a single notification. */
+  async dismissNotification(notificationId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/${notificationId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /** Remove all notifications for the current user. */
+  async dismissAllNotifications() {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications`, {
+      method: "DELETE",
     });
   },
 };

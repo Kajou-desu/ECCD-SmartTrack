@@ -129,7 +129,7 @@ export default function SecuritySettings({ onNotify }) {
                   current: !prev.current,
                 }))
               }
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-[#C2570C]"
+              className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-[#C2570C]"
             >
               {showPasswords.current ? (
                 <EyeOff className="h-4 w-4" />
@@ -162,7 +162,7 @@ export default function SecuritySettings({ onNotify }) {
                   new: !prev.new,
                 }))
               }
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-[#C2570C]"
+              className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-[#C2570C]"
             >
               {showPasswords.new ? (
                 <EyeOff className="h-4 w-4" />
@@ -266,7 +266,7 @@ export default function SecuritySettings({ onNotify }) {
                   confirm: !prev.confirm,
                 }))
               }
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-[#C2570C]"
+              className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-[#C2570C]"
             >
               {showPasswords.confirm ? (
                 <EyeOff className="h-4 w-4" />
@@ -292,7 +292,7 @@ export default function SecuritySettings({ onNotify }) {
           <button
             type="submit"
             disabled={!canSubmit}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#C2570C] py-3 font-semibold text-white transition hover:bg-orange-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer flex w-full items-center justify-center gap-2 rounded-xl bg-[#C2570C] py-3 font-semibold text-white transition hover:bg-orange-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             Save New Password

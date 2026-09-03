@@ -3,14 +3,13 @@ import { CalendarFold, Cake } from "lucide-react";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { HOLIDAYS } from "@constants/holidays.js";
 
-export function EventCard() {
+export function EventCard({ showBirthdays = true }) {
   const [selectedEvent, setSelectedEvent] = useState("birthdays");
   const { data } = useStudentsQuery();
   const students = data?.students ?? [];
 
   const currentMonth = new Date().getMonth();
 
-  // Get data for student
   const birthdays = students
     .map((student) => ({
       id: student.id,
@@ -29,12 +28,11 @@ export function EventCard() {
 
   const hasBirthdays = birthdays.length > 0;
   const hasHolidays = HOLIDAYS.length > 0;
-
-  const displayedEvents = selectedEvent === "birthdays" ? birthdays : HOLIDAYS;
+  const activeEvent = showBirthdays ? selectedEvent : "holidays";
+  const displayedEvents = activeEvent === "birthdays" ? birthdays : HOLIDAYS;
 
   return (
     <div className="flex h-full overflow-hidden flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      {/* Header */}
       <div className="flex shrink-0 items-center gap-2">
         <CalendarFold className="h-6 w-6 text-[#C2570C]" />
         <h4 className="text-lg font-semibold text-gray-800 sm:text-xl">
@@ -42,39 +40,37 @@ export function EventCard() {
         </h4>
       </div>
 
-      {/* Filter Button */}
-      <div className="flex shrink-0 gap-2" role="group" aria-label="Event type">
-        {/* Birthday */}
-        <button
-          type="button"
-          aria-pressed={selectedEvent === "birthdays"}
-          onClick={() => setSelectedEvent("birthdays")}
-          className={`w-full cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-            selectedEvent === "birthdays"
-              ? "bg-[#C2570C] text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          Birthdays
-        </button>
-        {/* Holidays */}
-        <button
-          type="button"
-          aria-pressed={selectedEvent === "holidays"}
-          onClick={() => setSelectedEvent("holidays")}
-          className={`w-full cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-            selectedEvent === "holidays"
-              ? "bg-[#C2570C] text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-        >
-          Holidays
-        </button>
-      </div>
+      {showBirthdays && (
+        <div className="flex shrink-0 gap-2" role="group" aria-label="Event type">
+          <button
+            type="button"
+            aria-pressed={selectedEvent === "birthdays"}
+            onClick={() => setSelectedEvent("birthdays")}
+            className={`w-full cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              selectedEvent === "birthdays"
+                ? "bg-[#C2570C] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Birthdays
+          </button>
+          <button
+            type="button"
+            aria-pressed={selectedEvent === "holidays"}
+            onClick={() => setSelectedEvent("holidays")}
+            className={`w-full cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              selectedEvent === "holidays"
+                ? "bg-[#C2570C] text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Holidays
+          </button>
+        </div>
+      )}
 
-      {/* Event item list */}
       <div className="min-h-0 max-h-80 flex-1 space-y-2 overflow-y-auto pr-2 lg:max-h-none [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-track]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-gray-400">
-        {selectedEvent === "birthdays" ? (
+        {activeEvent === "birthdays" ? (
           hasBirthdays ? (
             displayedEvents.map((birthday) => (
               <div
