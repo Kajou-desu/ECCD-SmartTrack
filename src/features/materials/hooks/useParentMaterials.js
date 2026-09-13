@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiClient } from "@api/client.js";
-import { getSubmissionsForChild } from "@data/mockSubmissionsStore";
 import { useParentChild } from "@hooks/useParentChild";
 import { useMaterialsQuery } from "./useMaterialsQuery.js";
 
@@ -27,18 +26,18 @@ function withCompletion(material, submissions) {
 export function useParentMaterials() {
     const { selectedChildId } = useParentChild();
 
-    const { data: materialsQueryData, isLoading: materialsLoading } = useMaterialsQuery();
+    const {
+        data: materialsQueryData,
+        isLoading: materialsLoading,
+        isError: materialsError,
+        refetch: refetchMaterials,
+    } = useMaterialsQuery();
 
     const [submissions, setSubmissions] = useState([]);
     const [submissionsLoading, setSubmissionsLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [submissionsError, setSubmissionsError] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [syncedUsedMock, setSyncedUsedMock] = useState(false);
-
-    if (materialsQueryData?.usedMock && !syncedUsedMock) {
-        setSyncedUsedMock(true);
-        setError("Unable to load live materials. Displaying cached materials instead.");
-    }
+    const [reloadToken, setReloadToken] = useState(0);
 
     useEffect(() => {
         let isMounted = true;
@@ -46,20 +45,28 @@ export function useParentMaterials() {
         const loadSubmissions = async () => {
             setSubmissionsLoading(true);
 
-            let submissionsData = [];
-            if (selectedChildId) {
-                try {
-                    const data = await apiClient.getSubmissions(selectedChildId);
-                    submissionsData = Array.isArray(data) ? data : [];
-                } catch (err) {
-                    console.error("useParentMaterials failed to fetch submissions:", err);
-                    submissionsData = getSubmissionsForChild(selectedChildId); // MOCK_FALLBACK
+            if (!selectedChildId) {
+                if (isMounted) {
+                    setSubmissions([]);
+                    setSubmissionsError(false);
+                    setSubmissionsLoading(false);
                 }
+                return;
             }
 
-            if (!isMounted) return;
-            setSubmissions(submissionsData);
-            setSubmissionsLoading(false);
+            try {
+                const data = await apiClient.getSubmissions(selectedChildId);
+                if (!isMounted) return;
+                setSubmissions(Array.isArray(data) ? data : []);
+                setSubmissionsError(false);
+            } catch (err) {
+                console.error("useParentMaterials failed to fetch submissions:", err);
+                if (!isMounted) return;
+                setSubmissions([]);
+                setSubmissionsError(true);
+            } finally {
+                if (isMounted) setSubmissionsLoading(false);
+            }
         };
 
         loadSubmissions();
@@ -67,9 +74,17 @@ export function useParentMaterials() {
         return () => {
             isMounted = false;
         };
-    }, [selectedChildId]);
+    }, [selectedChildId, reloadToken]);
 
     const loading = materialsLoading || submissionsLoading;
+    const isError = materialsError || submissionsError;
+    const error = isError ? "Unable to load materials. Tap the X to try again." : "";
+
+    const retry = () => {
+        refetchMaterials();
+        setReloadToken((n) => n + 1);
+    };
+
     const materials = useMemo(
         () => (materialsQueryData?.materials ?? []).map((m) => withCompletion(m, submissions)),
         [materialsQueryData, submissions],
@@ -94,6 +109,7 @@ export function useParentMaterials() {
         setSearchQuery,
         loading,
         error,
+        retry,
     };
 }
 

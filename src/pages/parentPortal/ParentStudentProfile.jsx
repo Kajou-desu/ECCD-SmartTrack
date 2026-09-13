@@ -8,7 +8,6 @@ import RequiredDocumentsCard from "@features/students/components/profile/Require
 import EditMedicalModal from "@features/students/components/profile/EditMedicalModal";
 import UploadDocumentModal from "@features/students/components/profile/UploadDocumentModal";
 import LoadingState from "@components/shared/LoadingState";
-import ErrorMsg from "@components/ui/ErrorMsg";
 import { Users, FileQuestion } from "lucide-react";
 
 export default function ParentStudentProfile() {
@@ -37,19 +36,16 @@ export default function ParentStudentProfile() {
 }
 
 function ParentStudentProfileView({ selectedChild }) {
-  const { data: queryData, isLoading } = useStudentProfileQuery(
+  const { data: queryData, isLoading, isError, refetch } = useStudentProfileQuery(
     selectedChild.id,
   );
   const [profile, setProfile] = useState(null);
   const [initialized, setInitialized] = useState(false);
-  const [error, setError] = useState("");
   const [activeModal, setActiveModal] = useState(null); // "medical" | "upload" | null
 
   if (queryData && !initialized) {
     setInitialized(true);
     setProfile(queryData.profile);
-    if (queryData.usedMock)
-      setError("Unable to sync with server. Showing cached data.");
   }
 
   const loading = isLoading;
@@ -58,6 +54,22 @@ function ParentStudentProfileView({ selectedChild }) {
     return (
       <div className="min-h-[calc(100vh-70px)] bg-[#f8f9ff] p-4 sm:p-6 lg:p-8">
         <LoadingState message="Loading profile..." />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-[calc(100vh-70px)] bg-[#f8f9ff] p-4 sm:p-6 lg:p-8">
+        <div className="bg-white rounded-3xl p-8 border border-gray-200 text-center">
+          <p className="text-gray-600">Unable to load this profile.</p>
+          <button
+            onClick={() => refetch()}
+            className="mt-4 cursor-pointer rounded-lg bg-[#C2570C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-800"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -87,8 +99,6 @@ function ParentStudentProfileView({ selectedChild }) {
           uploaded documents. All information is kept secure and confidential.
         </p>
       </div>
-
-      {error && <ErrorMsg message={error} onClose={() => setError("")} />}
 
       <StudentProfileHeader student={student} />
 

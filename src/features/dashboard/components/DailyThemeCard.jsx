@@ -1,25 +1,39 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { DAILY_THEME } from "@data/mockData";
 import { ArrowRight, CircleCheck } from "lucide-react";
 
 async function fetchDailyTheme() {
-  const { data } = await withMockFallback(
-    () => apiClient.getDailyTheme(),
-    DAILY_THEME,
-    { label: "DailyThemeCard" },
-  );
-  return data ?? DAILY_THEME;
+  return apiClient.getDailyTheme();
 }
 
 export function DailyThemeCard() {
-  const { data } = useQuery({
+  const { data: theme, isLoading, isError, refetch } = useQuery({
     queryKey: ["dailyTheme"],
     queryFn: fetchDailyTheme,
   });
 
-  const theme = data ?? DAILY_THEME;
+  if (isLoading) {
+    return (
+      <div className="flex h-full min-h-[200px] items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <p className="text-sm text-gray-500">Loading today's theme...</p>
+      </div>
+    );
+  }
+
+  if (isError || !theme) {
+    return (
+      <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <p className="text-sm text-gray-500">Unable to load today's theme.</p>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="cursor-pointer rounded-lg bg-[#C2570C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#a94709]"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
@@ -52,7 +66,7 @@ export function DailyThemeCard() {
               {theme.description}
             </p>
             <div className="space-y-3">
-              {theme.objectives.map((objective, idx) => (
+              {(theme.objectives ?? []).map((objective, idx) => (
                 <div key={idx} className="flex items-start gap-3">
                   <CircleCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#C2570C]" />
                   <p className="text-sm leading-6 text-gray-700">{objective}</p>

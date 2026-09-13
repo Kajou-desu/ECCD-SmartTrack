@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 
-import { normalizeRole, ROLES } from "../utils/accountUtils.js";
+import { normalizeRole } from "../utils/accountUtils.js";
 
 const inputClass =
   "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10";
@@ -43,6 +43,7 @@ export default function AccountForm({
   loading,
   message,
   isEdit = false,
+  assignableRoles,
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -123,7 +124,7 @@ export default function AccountForm({
           className={inputClass}
           required
         >
-          {ROLES.map((role) => (
+          {assignableRoles.map((role) => (
             <option key={role} value={role}>
               {role}
             </option>

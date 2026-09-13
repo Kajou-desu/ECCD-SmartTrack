@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useStudentProfileQuery } from "@features/students/hooks/useStudentProfileQuery.js";
+import { apiClient } from "@api/client.js";
 import StudentProfileHeader from "@features/students/components/profile/StudentProfileHeader";
 import GuardianContactsCard from "@features/students/components/profile/GuardianContactsCard";
 import MedicalNotesCard from "@features/students/components/profile/MedicalNotesCard";
@@ -23,17 +24,15 @@ export default function StudentDetail() {
 function StudentDetailView({ studentId }) {
   const navigate = useNavigate();
 
-  const { data: queryData, isLoading } = useStudentProfileQuery(studentId);
+  const { data: queryData, isLoading, isError, refetch } = useStudentProfileQuery(studentId);
   const [profile, setProfile] = useState(null);
   const [initialized, setInitialized] = useState(false);
-  const [error, setError] = useState("");
   const [activeModal, setActiveModal] = useState(null); // "guardians" | "medical" | "upload" | null
+  const [docError, setDocError] = useState("");
 
   if (queryData && !initialized) {
     setInitialized(true);
     setProfile(queryData.profile);
-    if (queryData.usedMock)
-      setError("Unable to sync with server. Showing cached data.");
   }
 
   const loading = isLoading;
@@ -42,6 +41,29 @@ function StudentDetailView({ studentId }) {
     return (
       <div className="min-h-[calc(100vh-70px)] bg-[#f8f9ff] p-4 sm:p-6 lg:p-8">
         <LoadingState message="Loading student profile..." />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-[calc(100vh-70px)] bg-[#f8f9ff] p-4 sm:p-6 lg:p-8">
+        <button
+          onClick={() => navigate("/student-info")}
+          className="cursor-pointer flex items-center gap-2 text-[#C2570C] hover:text-orange-700 font-semibold mb-4 transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
+        >
+          <ArrowLeft size={20} />
+          <span>Back</span>
+        </button>
+        <div className="bg-white rounded-3xl p-8 border border-gray-200 text-center">
+          <p className="text-gray-600">Unable to load this student's profile.</p>
+          <button
+            onClick={() => refetch()}
+            className="mt-4 cursor-pointer rounded-lg bg-[#C2570C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-800"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -83,7 +105,7 @@ function StudentDetailView({ studentId }) {
         />
       </div>
 
-      {error && <ErrorMsg message={error} onClose={() => setError("")} />}
+      {docError && <ErrorMsg message={docError} onClose={() => setDocError("")} />}
 
       <StudentProfileHeader student={student} />
 
@@ -103,10 +125,21 @@ function StudentDetailView({ studentId }) {
           documents={documents}
           onUpload={() => setActiveModal("upload")}
           onRemove={(docId) => {
+            const removedDoc = profile.documents?.find((doc) => doc.id === docId);
+            setDocError("");
             setProfile((current) => ({
               ...current,
               documents: current.documents.filter((doc) => doc.id !== docId),
             }));
+
+            apiClient.deleteStudentDocument(studentId, docId).catch((err) => {
+              // Roll back — the delete didn't actually happen server-side.
+              setProfile((current) => ({
+                ...current,
+                documents: [...current.documents, removedDoc].filter(Boolean),
+              }));
+              setDocError(err.message || "Failed to delete the document. Please try again.");
+            });
           }}
         />
       </div>
@@ -138,6 +171,7 @@ function StudentDetailView({ studentId }) {
 
       {activeModal === "upload" && (
         <UploadDocumentModal
+          studentId={studentId}
           onCancel={() => setActiveModal(null)}
           onSave={(newDocument) => {
             setProfile((current) => ({

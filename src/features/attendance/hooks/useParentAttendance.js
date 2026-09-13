@@ -1,15 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { ATTENDANCE_DATA_BY_CHILD } from "@data/mockParentData";
 
 async function fetchAttendance(childId, monthKey) {
-    const { data } = await withMockFallback(
-        () => apiClient.getChildAttendance(childId, monthKey),
-        ATTENDANCE_DATA_BY_CHILD[childId]?.[monthKey] ?? null,
-        { label: "useParentAttendance" },
-    );
-    return data;
+    return apiClient.getChildAttendance(childId, monthKey);
 }
 
 // Returns { status: "loading" | "empty" | "error" | "success", data, retry }

@@ -2,9 +2,10 @@ import useParentMaterials from "@features/materials/hooks/useParentMaterials";
 import ParentMaterialsToolbar from "@features/materials/components/ParentMaterialsToolbar";
 import ParentMaterialsList from "@features/materials/components/ParentMaterialsList";
 import MaterialsLoadingState from "@features/materials/components/MaterialsLoadingState";
+import ErrorMsg from "@components/ui/ErrorMsg";
 
 export default function ParentMaterials() {
-  const { materials, filteredMaterials, searchQuery, setSearchQuery, loading } =
+  const { materials, filteredMaterials, searchQuery, setSearchQuery, loading, error, retry } =
     useParentMaterials();
 
   const handleView = (material) => {
@@ -20,6 +21,8 @@ export default function ParentMaterials() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
         />
+
+        {error && <ErrorMsg message={error} onClose={retry} />}
 
         {loading ? (
           <MaterialsLoadingState />

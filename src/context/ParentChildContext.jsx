@@ -2,30 +2,21 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ParentChildContext } from "./parentChildContextObject";
 import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { CHILDREN_DATA } from "@data/mockParentData";
 
 async function fetchChildren() {
-  const { data } = await withMockFallback(
-    () => apiClient.getChildren(),
-    CHILDREN_DATA,
-    { label: "ParentChildContext" },
-  );
-  return Array.isArray(data)
-    ? data
-    : Array.isArray(data?.children)
-      ? data.children
-      : CHILDREN_DATA;
+  const data = await apiClient.getChildren();
+  return Array.isArray(data) ? data : Array.isArray(data?.children) ? data.children : [];
 }
 
 export function ParentChildProvider({ children }) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["children"],
     queryFn: fetchChildren,
   });
 
   const availableChildren = useMemo(() => data ?? [], [data]);
   const childrenLoading = isLoading;
+  const childrenError = isError;
 
   const [manualSelectedChildId, setSelectedChildId] = useState(null);
   const selectedChildId =
@@ -40,6 +31,8 @@ export function ParentChildProvider({ children }) {
   const value = {
     availableChildren,
     childrenLoading,
+    childrenError,
+    retryChildren: refetch,
     selectedChild,
     selectedChildId,
     setSelectedChildId,

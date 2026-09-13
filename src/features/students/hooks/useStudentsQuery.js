@@ -1,25 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { getAllStudentsData } from "@data/mockData.js";
 import { normalizeStudent } from "@utils/normalizeStudent.js";
 
 async function fetchStudents() {
-    const { data, usedMock } = await withMockFallback(
-        () => apiClient.getStudents(),
-        getAllStudentsData(),
-        { label: "students" },
-    );
-
-    if (usedMock) {
-        return {
-            students: data.map(({ student, guardians }) => normalizeStudent(student, guardians)),
-            usedMock: true,
-        };
-    }
-
+    const data = await apiClient.getStudents();
     const list = Array.isArray(data) ? data : Array.isArray(data?.students) ? data.students : [];
-    return { students: list.map((s) => normalizeStudent(s)), usedMock: false };
+    return { students: list.map((s) => normalizeStudent(s)) };
 }
 
 // Single cached query shared by every consumer of the students list

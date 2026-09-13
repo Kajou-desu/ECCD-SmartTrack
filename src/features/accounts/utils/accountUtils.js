@@ -26,6 +26,13 @@ export const INITIAL_DELETE = {
 
 export const ROLES = ["Parent", "Teacher", "Admin"];
 
+// Only an Admin can grant the Admin role. This is a UI convenience only —
+// the backend must independently reject any request that tries to assign
+// or keep a role the caller isn't allowed to grant.
+export function getAssignableRoles(actingRole) {
+    return actingRole === "Admin" ? ROLES : ROLES.filter((role) => role !== "Admin");
+}
+
 export function getAccountId(account) {
     return account?._id || account?.id || account?.userId || null;
 }

@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { apiClient } from "@api/client.js";
-import { addSubmission } from "@data/mockSubmissionsStore";
 import Modal from "@components/ui/Modal";
-import { isAllowedStudentWorkFile } from "@features/materials/utils/fileValidation";
+import { isAllowedStudentWorkFile, isFileSizeValid, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
 import { Loader2, Upload, X } from "lucide-react";
 
 export default function UploadStudentWork({ material, onClose, onSuccess }) {
@@ -12,6 +11,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [fileError, setFileError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
   const { data } = useStudentsQuery();
@@ -59,6 +59,13 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
       return;
     }
 
+    if (!isFileSizeValid(file, MAX_MATERIAL_FILE_SIZE_BYTES)) {
+      event.target.value = "";
+      setSelectedFile(null);
+      setFileError(`File is too large. Maximum size is ${formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}.`);
+      return;
+    }
+
     setFileError("");
     setSelectedFile(file);
   };
@@ -69,6 +76,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
     if (!selectedStudent || !selectedFile || isUploading) return;
 
     setIsUploading(true);
+    setSubmitError("");
 
     try {
       await apiClient.submitStudentWork({
@@ -76,21 +84,14 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
         studentId: selectedStudent.id,
         file: selectedFile,
       });
+      onSuccess(
+        `"${selectedFile.name}" was uploaded for ${selectedStudent.name}.`,
+      );
     } catch (err) {
-      console.error("submitStudentWork failed, using local fallback:", err);
-      addSubmission({
-        // MOCK_FALLBACK
-        materialId: material.id,
-        studentId: selectedStudent.id,
-        file: selectedFile,
-      });
+      setSubmitError(err.message || "Failed to upload the file. Please try again.");
     } finally {
       setIsUploading(false);
     }
-
-    onSuccess(
-      `"${selectedFile.name}" was uploaded for ${selectedStudent.name}.`,
-    );
   };
 
   return (
@@ -239,6 +240,12 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
             <span className="font-semibold">{selectedFile.name}</span>
           </div>
         ) : null}
+
+        {submitError && (
+          <p role="alert" className="mt-4 text-xs text-red-600">
+            {submitError}
+          </p>
+        )}
 
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button

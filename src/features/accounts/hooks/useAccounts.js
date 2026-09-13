@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { API_BASE_URL } from "@config/api.js";
+import { apiClient } from "@api/client.js";
 
 import {
     groupAccounts,
@@ -9,38 +9,13 @@ import {
     updateAccountPayload,
 } from "../utils/accountUtils.js";
 
-function getToken() {
-    return localStorage.getItem("authToken");
-}
-
-async function request(endpoint, options = {}) {
-    const token = getToken();
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers: {
-            ...(options.body ? { "Content-Type": "application/json" } : {}),
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...options.headers,
-        },
-        credentials: options.credentials ?? "include",
-    });
-
-    const contentType = response.headers.get("content-type");
-
-    const data = contentType?.includes("application/json")
-        ? await response.json().catch(() => ({}))
-        : {};
-
-    if (!response.ok) {
-        throw new Error(
-            data?.message ||
-            data?.error ||
-            `Request failed with status ${response.status}.`,
-        );
-    }
-
-    return data;
+// apiClient.js intentionally reduces every failed response to a generic
+// "Something went wrong." (so raw server/internal errors never reach the
+// user), but keeps the real parsed response body on `err.details`. Account
+// management needs the actual validation message (e.g. "Email already in
+// use"), so pull it from there when the backend provided one.
+function getErrorMessage(err, fallback) {
+    return err?.details?.message || err?.details?.error || fallback;
 }
 
 export default function useAccounts() {
@@ -62,7 +37,7 @@ export default function useAccounts() {
         const fetchId = ++fetchIdRef.current;
 
         try {
-            const data = await request("/api/users/all");
+            const data = await apiClient.getAccounts();
 
             if (
                 !isMountedRef.current ||
@@ -81,7 +56,7 @@ export default function useAccounts() {
                 return;
             }
 
-            setError(err.message || "Failed to fetch account directory.");
+            setError(getErrorMessage(err, "Failed to fetch account directory."));
         } finally {
             if (
                 isMountedRef.current &&
@@ -108,15 +83,12 @@ export default function useAccounts() {
             setError("");
 
             try {
-                await request("/api/users/register", {
-                    method: "POST",
-                    body: JSON.stringify(createAccountPayload(formData)),
-                });
+                await apiClient.createAccount(createAccountPayload(formData));
 
                 await fetchAccounts({ silent: true });
             } catch (err) {
                 if (isMountedRef.current) {
-                    setError(err.message || "Failed to create account.");
+                    setError(getErrorMessage(err, "Failed to create account."));
                 }
 
                 throw err;
@@ -135,15 +107,12 @@ export default function useAccounts() {
             setError("");
 
             try {
-                await request("/api/profile/update", {
-                    method: "PUT",
-                    body: JSON.stringify(updateAccountPayload(formData)),
-                });
+                await apiClient.updateAccount(updateAccountPayload(formData));
 
                 await fetchAccounts({ silent: true });
             } catch (err) {
                 if (isMountedRef.current) {
-                    setError(err.message || "Failed to update account.");
+                    setError(getErrorMessage(err, "Failed to update account."));
                 }
 
                 throw err;
@@ -161,9 +130,7 @@ export default function useAccounts() {
         setError("");
 
         try {
-            await request(`/api/users/delete/${accountId}`, {
-                method: "DELETE",
-            });
+            await apiClient.deleteAccount(accountId);
 
             if (isMountedRef.current) {
                 setAccounts((current) =>
@@ -174,7 +141,7 @@ export default function useAccounts() {
             }
         } catch (err) {
             if (isMountedRef.current) {
-                setError(err.message || "Failed to delete account.");
+                setError(getErrorMessage(err, "Failed to delete account."));
             }
 
             throw err;

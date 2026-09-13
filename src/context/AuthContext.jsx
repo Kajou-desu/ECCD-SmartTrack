@@ -2,6 +2,17 @@
 import { AuthContext } from "./authContextObject";
 import { setUnauthorizedHandler } from "@api/client";
 
+// A malformed or missing exp claim is treated as expired (fail closed).
+function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (!payload.exp) return true;
+    return Date.now() >= payload.exp * 1000;
+  } catch {
+    return true;
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
@@ -21,9 +32,10 @@ export function AuthProvider({ children }) {
 
         if (storedToken && storedUser) {
           const parsedUser = JSON.parse(storedUser);
+          const trimmedToken = typeof storedToken === "string" ? storedToken.trim() : "";
 
-          if (typeof storedToken === "string" && storedToken.trim() && parsedUser) {
-            setToken(storedToken.trim());
+          if (trimmedToken && parsedUser && !isTokenExpired(trimmedToken)) {
+            setToken(trimmedToken);
             setUser(parsedUser);
           } else {
             clearStoredAuth();

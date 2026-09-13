@@ -1,11 +1,40 @@
+import { useState } from "react";
+import {
+  isFileSizeValid,
+  MAX_MATERIAL_FILE_SIZE_BYTES,
+  formatFileSize,
+} from "@features/materials/utils/fileValidation";
+
+const ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png"];
+
+function getFileExtension(fileName = "") {
+  const lastDot = fileName.lastIndexOf(".");
+  return lastDot === -1 ? "" : fileName.slice(lastDot).toLowerCase();
+}
+
 export default function FileUploadField({ name, value = [], onChange }) {
+  const [error, setError] = useState("");
+
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files || []);
+
+    const validFiles = files.filter(
+      (file) =>
+        ALLOWED_EXTENSIONS.includes(getFileExtension(file.name)) &&
+        isFileSizeValid(file, MAX_MATERIAL_FILE_SIZE_BYTES),
+    );
+    const rejectedCount = files.length - validFiles.length;
+
+    setError(
+      rejectedCount > 0
+        ? `${rejectedCount} file(s) skipped. Only PDF, DOC, DOCX, JPG, or PNG under ${formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)} are accepted.`
+        : "",
+    );
 
     onChange({
       target: {
         name,
-        value: files,
+        value: validFiles,
       },
     });
   };
@@ -20,8 +49,16 @@ export default function FileUploadField({ name, value = [], onChange }) {
         </svg>
 
         <p className="text-sm font-semibold text-slate-700">Select documents to upload</p>
-        <p className="mt-1 text-xs text-slate-500">PDF, DOC, DOCX, JPG, or PNG</p>
+        <p className="mt-1 text-xs text-slate-500">
+          PDF, DOC, DOCX, JPG, or PNG, up to {formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}
+        </p>
       </label>
+
+      {error && (
+        <p role="alert" className="mt-2 text-xs text-red-600">
+          {error}
+        </p>
+      )}
 
       {value.length > 0 ? (
         <div className="mt-4">

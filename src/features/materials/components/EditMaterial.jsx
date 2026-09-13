@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
-import { isPdfFile } from "@features/materials/utils/fileValidation";
+import { isPdfFile, isFileSizeValid, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
 import { FileText, Upload, X } from "lucide-react";
 
 export default function EditMaterial({ material, onCancel, onConfirm }) {
@@ -34,6 +34,11 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
 
     if (!isPdfFile(selectedFile)) {
       setFileError("Only PDF files are supported.");
+      return;
+    }
+
+    if (!isFileSizeValid(selectedFile, MAX_MATERIAL_FILE_SIZE_BYTES)) {
+      setFileError(`File is too large. Maximum size is ${formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}.`);
       return;
     }
 
@@ -108,7 +113,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
                 </p>
 
                 <p className="text-xs text-slate-500">
-                  Click to replace the file
+                  Click to replace the file (up to {formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)})
                 </p>
               </div>
             </button>

@@ -1,9 +1,6 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@hooks/useAuth";
 import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { DASHBOARD_STATS } from "@data/mockData";
 import DashboardHeader from "@features/dashboard/components/DashboardHeader";
 import useDashboardGreeting from "@features/dashboard/hooks/useDashboardGreeting";
 import {
@@ -15,12 +12,7 @@ import StatCard from "@components/shared/StatCard";
 import ErrorMsg from "@components/ui/ErrorMsg";
 
 async function fetchDashboardStats() {
-  const { data, usedMock } = await withMockFallback(
-    () => apiClient.getDashboardStats(),
-    DASHBOARD_STATS,
-    { label: "Dashboard" },
-  );
-  return { stats: data ?? DASHBOARD_STATS, usedMock };
+  return apiClient.getDashboardStats();
 }
 
 export default function Dashboard() {
@@ -29,17 +21,12 @@ export default function Dashboard() {
     user?.name,
   );
 
-  const { data: queryData } = useQuery({
+  const { data: stats, isError, refetch } = useQuery({
     queryKey: ["dashboardStats"],
     queryFn: fetchDashboardStats,
   });
 
-  const stats = queryData?.stats ?? DASHBOARD_STATS;
-  const error = queryData?.usedMock
-    ? "Unable to sync with server. Showing cached data."
-    : "";
-  const [dismissed, setDismissed] = useState(false);
-  const showError = Boolean(error) && !dismissed;
+  const showError = isError;
 
   return (
     <div className="min-h-0 flex flex-col gap-6 bg-[#f8f9ff] p-4 sm:p-6">
@@ -50,7 +37,10 @@ export default function Dashboard() {
       />
 
       {showError && (
-        <ErrorMsg message={error} onClose={() => setDismissed(true)} />
+        <ErrorMsg
+          message="Unable to load dashboard stats. Please try again."
+          onClose={() => refetch()}
+        />
       )}
 
       <DashboardContentGrid
@@ -61,7 +51,7 @@ export default function Dashboard() {
                 key={c.key}
                 Icon={c.Icon}
                 label={c.label}
-                value={c.value ?? stats[c.valueKey] ?? "--"}
+                value={c.value ?? stats?.[c.valueKey] ?? "--"}
                 color={c.color}
               />
             ))}

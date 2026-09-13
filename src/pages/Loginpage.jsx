@@ -28,20 +28,6 @@ export default function Login() {
     confirm: false,
   });
 
-  const devCredentials = {
-    email: "teacher@eccd.com",
-    password: "TeacherPass123",
-    name: "Sample Teacher",
-    role: "Teacher",
-  };
-
-  const sampleParentCredentials = {
-    email: "parent@eccd.com",
-    password: "ParentPass123",
-    name: "Sample Parent",
-    role: "Parent",
-  };
-
   const {
     register,
     handleSubmit,
@@ -68,54 +54,6 @@ export default function Login() {
 
     try {
       const email = data.email.trim().toLowerCase();
-      const password = data.password;
-
-      if (
-        email === sampleParentCredentials.email.toLowerCase() &&
-        password === sampleParentCredentials.password
-      ) {
-        const loginData = {
-          token: "parent-demo-token-",
-          user: {
-            name: sampleParentCredentials.name,
-            email: sampleParentCredentials.email,
-            role: sampleParentCredentials.role,
-          },
-        };
-
-        login(loginData.token, loginData.user);
-        setSuccessMessage("✓ Parent portal access granted!");
-
-        // Navigate to parent dashboard after brief delay
-        setTimeout(() => {
-          navigate("/parent/dashboard", { replace: true });
-        }, 500);
-        return;
-      }
-
-      if (
-        email === devCredentials.email.toLowerCase() &&
-        password === devCredentials.password
-      ) {
-        const loginData = {
-          token: "dev-token-",
-          user: {
-            name: devCredentials.name,
-            email: devCredentials.email,
-            role: devCredentials.role,
-          },
-        };
-
-        login(loginData.token, loginData.user);
-        setSuccessMessage("✓ Educator portal access granted!");
-
-        // Navigate to educator dashboard after brief delay
-        setTimeout(() => {
-          navigate("/dashboard", { replace: true });
-        }, 500);
-        return;
-      }
-
       const result = await apiClient.login(email, data.password);
       login(result.token, result.user);
       navigate(from, { replace: true });

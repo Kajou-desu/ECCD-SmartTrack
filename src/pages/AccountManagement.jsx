@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { useAuth } from "@hooks/useAuth";
 import useAccounts from "@features/accounts/hooks/useAccounts";
 import AccountSection from "@features/accounts/components/AccountSection";
 import AccountViewModal from "@features/accounts/components/AccountViewModal";
@@ -22,6 +23,7 @@ import {
   INITIAL_EDIT_FORM,
   getAccountId,
   getAccountName,
+  getAssignableRoles,
 } from "@features/accounts/utils/accountUtils.js";
 
 function EmptyAccounts({ onCreate }) {
@@ -52,6 +54,9 @@ function EmptyAccounts({ onCreate }) {
 }
 
 export default function AccountsManagement() {
+  const { user } = useAuth();
+  const assignableRoles = getAssignableRoles(user?.role);
+
   const {
     accounts,
     groupedAccounts,
@@ -312,6 +317,7 @@ export default function AccountsManagement() {
           onSubmit={handleCreateSubmit}
           onCancel={closeCreate}
           submitLabel="Create Account"
+          assignableRoles={assignableRoles}
         />
       )}
 
@@ -332,6 +338,7 @@ export default function AccountsManagement() {
           onCancel={closeEdit}
           submitLabel="Review Update"
           isEdit
+          assignableRoles={assignableRoles}
         />
       )}
 

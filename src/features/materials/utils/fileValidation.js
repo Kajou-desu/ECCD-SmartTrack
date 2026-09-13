@@ -8,6 +8,13 @@ const PDF_EXTENSION = ".pdf";
 const STUDENT_WORK_MIME_TYPES = ["application/pdf", "image/png", "image/jpeg"];
 const STUDENT_WORK_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg"];
 
+// Client-side cap only, for a fast/friendly rejection before an upload
+// starts. The server must independently enforce its own size limit.
+// Matches the backend's multer limit (see upload.js: fileSize: 10 * 1024 *
+// 1024) — this is a fast client-side rejection only; the server enforces
+// its own limit independently either way.
+export const MAX_MATERIAL_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
 export function getFileExtension(fileName = "") {
     const lastDot = fileName.lastIndexOf(".");
 
@@ -32,6 +39,12 @@ export function isAllowedStudentWorkFile(file) {
         STUDENT_WORK_MIME_TYPES.includes(file.type) ||
         STUDENT_WORK_EXTENSIONS.includes(getFileExtension(file.name))
     );
+}
+
+export function isFileSizeValid(file, maxBytes = MAX_MATERIAL_FILE_SIZE_BYTES) {
+    if (!file) return false;
+
+    return file.size <= maxBytes;
 }
 
 export function formatFileSize(bytes) {

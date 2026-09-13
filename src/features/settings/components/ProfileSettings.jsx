@@ -1,5 +1,11 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../../../hooks/useAuth.js";
+import {
+  isImageFile,
+  isFileSizeValid,
+  MAX_PHOTO_FILE_SIZE_BYTES,
+  formatFileSize,
+} from "@features/eventPhotos/utils/photoValidation";
 import { UserRound, Camera, Mail, Phone } from "lucide-react";
 
 export default function ProfileSettings({ onNotify }) {
@@ -16,16 +22,30 @@ export default function ProfileSettings({ onNotify }) {
   const [profileEditMode, setProfileEditMode] = useState(false);
   const handleProfilePictureChange = (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setProfile((prev) => ({
-          ...prev,
-          profilePicture: event.target?.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+    e.target.value = "";
+    if (!file) return;
+
+    if (!isImageFile(file)) {
+      onNotify?.("error", "Please choose an image file.");
+      return;
     }
+
+    if (!isFileSizeValid(file, MAX_PHOTO_FILE_SIZE_BYTES)) {
+      onNotify?.(
+        "error",
+        `Image is too large. Maximum size is ${formatFileSize(MAX_PHOTO_FILE_SIZE_BYTES)}.`,
+      );
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setProfile((prev) => ({
+        ...prev,
+        profilePicture: event.target?.result,
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleProfileChange = (field, value) => {

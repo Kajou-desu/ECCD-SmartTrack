@@ -6,7 +6,7 @@ import { useAttendanceQuery } from "./useAttendanceQuery.js";
 export function useAttendance(initialDate) {
   const [selectedDate, setSelectedDate] = useState(initialDate || toDayKey());
 
-  const { data: queryData, isLoading } = useAttendanceQuery(selectedDate);
+  const { data: queryData, isLoading, isError } = useAttendanceQuery(selectedDate);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [loadedDate, setLoadedDate] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
@@ -27,10 +27,14 @@ export function useAttendance(initialDate) {
   if (queryData && loadedDate !== selectedDate) {
     setLoadedDate(selectedDate);
     setAttendanceRecords(queryData.records);
-    setError(queryData.usedMock ? "Unable to sync with server. Showing cached data." : "");
+    setError("");
   }
 
-  const loading = isLoading || loadedDate !== selectedDate;
+  if (isError && loadedDate !== selectedDate && !error) {
+    setError("Unable to load attendance for this date. Please try again.");
+  }
+
+  const loading = isLoading || (loadedDate !== selectedDate && !isError);
 
   const filteredRecords = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();

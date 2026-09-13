@@ -1,19 +1,11 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { EVENTS_DATA } from "@data/mockData";
 import ErrorMsg from "@components/ui/ErrorMsg";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 async function fetchEvents(monthKey) {
-  const mockValue = EVENTS_DATA[monthKey] || EVENTS_DATA["2026-08"];
-  const { data, usedMock } = await withMockFallback(
-    () => apiClient.getEvents(monthKey),
-    mockValue,
-    { label: "CalendarEvents" },
-  );
-  return { attendanceData: data ?? mockValue, usedMock };
+  return apiClient.getEvents(monthKey);
 }
 
 export default function CalendarEvents() {
@@ -25,18 +17,14 @@ export default function CalendarEvents() {
     return `${year}-${month}`;
   }, [currentDate]);
 
-  const { data: queryData, isLoading } = useQuery({
+  const { data: attendanceData, isLoading, isError } = useQuery({
     queryKey: ["events", monthKey],
     queryFn: () => fetchEvents(monthKey),
   });
 
   const loading = isLoading;
-  const attendanceData = queryData?.attendanceData ?? null;
-  const error = queryData?.usedMock
-    ? "Unable to sync with server. Showing cached data."
-    : "";
   const [dismissedMonth, setDismissedMonth] = useState(null);
-  const showError = Boolean(error) && dismissedMonth !== monthKey;
+  const showError = isError && dismissedMonth !== monthKey;
 
   const monthName = currentDate.toLocaleString("en-US", {
     month: "long",
@@ -130,7 +118,7 @@ export default function CalendarEvents() {
 
   const eventLogs = useMemo(() => {
     if (!attendanceData) return [];
-    return attendanceData.logs.reduce((acc, log) => {
+    return (attendanceData.logs ?? []).reduce((acc, log) => {
       const legend = normalizeEventLegend(log.status);
       if (!acc.some((item) => item.legend === legend)) {
         acc.push({
@@ -162,7 +150,10 @@ export default function CalendarEvents() {
       </div>
 
       {showError && (
-        <ErrorMsg message={error} onClose={() => setDismissedMonth(monthKey)} />
+        <ErrorMsg
+          message="Unable to load events for this month. Please try again."
+          onClose={() => setDismissedMonth(monthKey)}
+        />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

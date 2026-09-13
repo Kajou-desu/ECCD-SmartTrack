@@ -1,18 +1,24 @@
 import { useEffect, useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
+import { apiClient } from "@api/client.js";
 import {
   isAllowedStudentWorkFile,
   isPdfFile,
+  isFileSizeValid,
+  MAX_MATERIAL_FILE_SIZE_BYTES,
+  formatFileSize,
 } from "@features/materials/utils/fileValidation";
-import { FileText, X } from "lucide-react";
+import { Loader2, FileText, X } from "lucide-react";
 import DocumentPreviewModal from "./DocumentPreviewModal";
 
-export default function UploadDocumentModal({ onCancel, onSave }) {
+export default function UploadDocumentModal({ studentId, onCancel, onSave }) {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [fileError, setFileError] = useState("");
   const [confirming, setConfirming] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   // Release the object URL whenever it's replaced or the modal unmounts.
   useEffect(() => {
@@ -34,6 +40,11 @@ export default function UploadDocumentModal({ onCancel, onSave }) {
       return;
     }
 
+    if (!isFileSizeValid(selectedFile, MAX_MATERIAL_FILE_SIZE_BYTES)) {
+      setFileError(`File is too large. Maximum size is ${formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}.`);
+      return;
+    }
+
     setFileError("");
     setFile(selectedFile);
     setPreviewUrl((current) => {
@@ -51,12 +62,19 @@ export default function UploadDocumentModal({ onCancel, onSave }) {
     setConfirming(true);
   };
 
-  const handleConfirm = () => {
-    onSave({
-      id: `doc-${Date.now()}`,
-      name: file.name,
-      verified: false,
-    });
+  const handleConfirm = async () => {
+    setUploading(true);
+    setUploadError("");
+
+    try {
+      const created = await apiClient.uploadStudentDocuments(studentId, [file]);
+      const newDocument = Array.isArray(created) ? created[0] : created;
+      onSave(newDocument);
+    } catch (err) {
+      setUploadError(err.message || "Failed to upload the document. Please try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (confirming) {
@@ -67,14 +85,30 @@ export default function UploadDocumentModal({ onCancel, onSave }) {
         onClose={onCancel}
         footer={
           <>
+            {uploadError && (
+              <p role="alert" className="mr-auto self-center text-xs text-red-600">
+                {uploadError}
+              </p>
+            )}
             <SecondaryButton
               label="Back"
               type="button"
+              disabled={uploading}
               onClick={() => setConfirming(false)}
             />
             <PrimaryButton
-              label="Confirm Upload"
+              label={
+                uploading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 size={14} className="animate-spin" />
+                    Uploading...
+                  </span>
+                ) : (
+                  "Confirm Upload"
+                )
+              }
               type="button"
+              disabled={uploading}
               onClick={handleConfirm}
             />
           </>
@@ -176,7 +210,9 @@ export default function UploadDocumentModal({ onCancel, onSave }) {
                   <p className="truncate text-sm font-medium text-slate-800">
                     Choose a file
                   </p>
-                  <p className="text-xs text-slate-500">PDF, PNG, or JPEG</p>
+                  <p className="text-xs text-slate-500">
+                    PDF, PNG, or JPEG, up to {formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}
+                  </p>
                 </div>
               </div>
             )}

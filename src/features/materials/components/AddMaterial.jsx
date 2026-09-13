@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
-import { isPdfFile } from "@features/materials/utils/fileValidation";
+import { isPdfFile, isFileSizeValid, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
 import { FileText, Upload, X } from "lucide-react";
 
 export default function AddMaterial({ onCancel, onConfirm }) {
@@ -38,6 +38,12 @@ export default function AddMaterial({ onCancel, onConfirm }) {
     if (!isPdfFile(selectedFile)) {
       event.target.value = "";
       setFileError("Only PDF files are supported.");
+      return;
+    }
+
+    if (!isFileSizeValid(selectedFile, MAX_MATERIAL_FILE_SIZE_BYTES)) {
+      event.target.value = "";
+      setFileError(`File is too large. Maximum size is ${formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}.`);
       return;
     }
 
@@ -112,7 +118,9 @@ export default function AddMaterial({ onCancel, onConfirm }) {
                   {file?.name || "Choose a PDF file"}
                 </p>
 
-                <p className="text-xs text-slate-500">PDF files only</p>
+                <p className="text-xs text-slate-500">
+                  PDF only, up to {formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}
+                </p>
               </div>
             </button>
 

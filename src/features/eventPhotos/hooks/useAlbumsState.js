@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { PHOTO_ALBUMS_DATA } from "@data/mockData";
-import { isBlobUrl, isImageFile } from "@features/eventPhotos/utils/photoValidation";
+import {
+    isBlobUrl,
+    isImageFile,
+    isFileSizeValid,
+    MAX_PHOTO_FILE_SIZE_BYTES,
+    formatFileSize,
+} from "@features/eventPhotos/utils/photoValidation";
 
 async function fetchAlbums() {
-    const { data } = await withMockFallback(
-        () => apiClient.getAlbums(),
-        PHOTO_ALBUMS_DATA,
-        { label: "useAlbumsState" },
-    );
-    return data;
+    const data = await apiClient.getAlbums();
+    return Array.isArray(data) ? data : Array.isArray(data?.albums) ? data.albums : [];
 }
 
 /**
@@ -107,10 +107,9 @@ export function useAlbumsState() {
             };
 
             setAlbums((current) => [optimisticAlbum, ...current]);
-            showToast("success", `"${trimmedTitle}" album was created.`);
 
             apiClient
-                .createAlbum(trimmedTitle) // MOCK_FALLBACK
+                .createAlbum(trimmedTitle)
                 .then((saved) => {
                     setAlbums((current) =>
                         current.map((album) =>
@@ -118,10 +117,11 @@ export function useAlbumsState() {
                         ),
                     );
                     queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] });
+                    showToast("success", `"${trimmedTitle}" album was created.`);
                 })
                 .catch((err) => {
-                    console.warn("[MOCK_FALLBACK] createAlbum failed, kept locally:", err);
-                    showToast("warning", `"${trimmedTitle}" was created locally (not synced to server).`);
+                    setAlbums((current) => current.filter((album) => album.id !== optimisticAlbum.id));
+                    showToast("error", err.message || `Failed to create "${trimmedTitle}". Please try again.`);
                 });
 
             return { success: true, album: optimisticAlbum };
@@ -132,40 +132,52 @@ export function useAlbumsState() {
     const deleteAlbum = useCallback(
         (albumId) => {
             const album = getAlbumById(albumId);
+            const originalIndex = albums.findIndex(
+                (current_) => String(current_.id) === String(albumId),
+            );
 
             if (!album) return;
-
-            album.photos.forEach((photo) => {
-                if (isBlobUrl(photo.url)) {
-                    URL.revokeObjectURL(photo.url);
-                    objectUrlsRef.current.delete(photo.url);
-                }
-            });
 
             setAlbums((current) =>
                 current.filter((current_) => String(current_.id) !== String(albumId)),
             );
 
-            showToast("success", `"${album.title}" album was deleted.`);
-
             apiClient
-                .deleteAlbum(albumId) // MOCK_FALLBACK
-                .then(() => queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] }))
+                .deleteAlbum(albumId)
+                .then(() => {
+                    album.photos.forEach((photo) => {
+                        if (isBlobUrl(photo.url)) {
+                            URL.revokeObjectURL(photo.url);
+                            objectUrlsRef.current.delete(photo.url);
+                        }
+                    });
+                    queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] });
+                    showToast("success", `"${album.title}" album was deleted.`);
+                })
                 .catch((err) => {
-                    console.warn("[MOCK_FALLBACK] deleteAlbum failed, removed locally only:", err);
-                    showToast("warning", `"${album.title}" was deleted locally (not synced to server).`);
+                    setAlbums((current) => {
+                        const restored = [...current];
+                        restored.splice(Math.min(originalIndex, restored.length), 0, album);
+                        return restored;
+                    });
+                    showToast("error", err.message || `Failed to delete "${album.title}". Please try again.`);
                 });
         },
-        [getAlbumById, queryClient, showToast],
+        [albums, getAlbumById, queryClient, showToast],
     );
 
     const addPhotos = useCallback(
         (albumId, files) => {
-            const validFiles = files.filter(isImageFile);
+            const validFiles = files.filter(
+                (file) => isImageFile(file) && isFileSizeValid(file, MAX_PHOTO_FILE_SIZE_BYTES),
+            );
             const rejectedCount = files.length - validFiles.length;
 
             if (validFiles.length === 0) {
-                showToast("error", "Please choose image files (PNG, JPG, GIF, or WEBP).");
+                showToast(
+                    "error",
+                    `Please choose image files (PNG, JPG, GIF, or WEBP) under ${formatFileSize(MAX_PHOTO_FILE_SIZE_BYTES)}.`,
+                );
                 return;
             }
 
@@ -189,44 +201,58 @@ export function useAlbumsState() {
                 ),
             );
 
-            const message =
-                rejectedCount > 0
-                    ? `${optimisticPhotos.length} photo(s) added, ${rejectedCount} file(s) skipped (unsupported type).`
-                    : `${optimisticPhotos.length} photo(s) added.`;
-
-            showToast(rejectedCount > 0 ? "warning" : "success", message);
-
             apiClient
-                .addAlbumPhotos(albumId, validFiles) // MOCK_FALLBACK
+                .addAlbumPhotos(albumId, validFiles)
                 .then((savedPhotos) => {
                     const savedList = Array.isArray(savedPhotos) ? savedPhotos : savedPhotos?.photos;
-                    if (!Array.isArray(savedList) || savedList.length !== optimisticPhotos.length) return;
+                    if (Array.isArray(savedList) && savedList.length === optimisticPhotos.length) {
+                        setAlbums((current) =>
+                            current.map((album) => {
+                                if (String(album.id) !== String(albumId)) return album;
 
+                                return {
+                                    ...album,
+                                    photos: album.photos.map((photo) => {
+                                        const index = optimisticPhotos.findIndex((p) => p.id === photo.id);
+                                        if (index === -1) return photo;
+
+                                        if (isBlobUrl(photo.url)) {
+                                            URL.revokeObjectURL(photo.url);
+                                            objectUrlsRef.current.delete(photo.url);
+                                        }
+
+                                        return { ...photo, ...savedList[index] };
+                                    }),
+                                };
+                            }),
+                        );
+                    }
+                    queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] });
+
+                    const message =
+                        rejectedCount > 0
+                            ? `${optimisticPhotos.length} photo(s) added, ${rejectedCount} file(s) skipped (unsupported type or too large).`
+                            : `${optimisticPhotos.length} photo(s) added.`;
+                    showToast(rejectedCount > 0 ? "warning" : "success", message);
+                })
+                .catch((err) => {
                     setAlbums((current) =>
                         current.map((album) => {
                             if (String(album.id) !== String(albumId)) return album;
 
                             return {
                                 ...album,
-                                photos: album.photos.map((photo) => {
-                                    const index = optimisticPhotos.findIndex((p) => p.id === photo.id);
-                                    if (index === -1) return photo;
-
-                                    if (isBlobUrl(photo.url)) {
-                                        URL.revokeObjectURL(photo.url);
-                                        objectUrlsRef.current.delete(photo.url);
-                                    }
-
-                                    return { ...photo, ...savedList[index] };
-                                }),
+                                photos: album.photos.filter(
+                                    (photo) => !optimisticPhotos.some((p) => p.id === photo.id),
+                                ),
                             };
                         }),
                     );
-                    queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] });
-                })
-                .catch((err) => {
-                    console.warn("[MOCK_FALLBACK] addAlbumPhotos failed, kept locally:", err);
-                    showToast("warning", "Photo(s) saved locally (not synced to server).");
+                    optimisticPhotos.forEach((photo) => {
+                        URL.revokeObjectURL(photo.url);
+                        objectUrlsRef.current.delete(photo.url);
+                    });
+                    showToast("error", err.message || "Failed to upload photo(s). Please try again.");
                 });
         },
         [queryClient, showToast],
@@ -234,18 +260,17 @@ export function useAlbumsState() {
 
     const deletePhoto = useCallback(
         (albumId, photoId) => {
+            let removedPhoto;
+            let removedIndex = -1;
+
             setAlbums((current) =>
                 current.map((album) => {
                     if (String(album.id) !== String(albumId)) return album;
 
-                    const photoToRemove = album.photos.find(
+                    removedIndex = album.photos.findIndex(
                         (photo) => String(photo.id) === String(photoId),
                     );
-
-                    if (photoToRemove && isBlobUrl(photoToRemove.url)) {
-                        URL.revokeObjectURL(photoToRemove.url);
-                        objectUrlsRef.current.delete(photoToRemove.url);
-                    }
+                    removedPhoto = album.photos[removedIndex];
 
                     return {
                         ...album,
@@ -256,14 +281,29 @@ export function useAlbumsState() {
                 }),
             );
 
-            showToast("success", "Photo was deleted.");
-
             apiClient
-                .deleteAlbumPhoto(albumId, photoId) // MOCK_FALLBACK
-                .then(() => queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] }))
+                .deleteAlbumPhoto(albumId, photoId)
+                .then(() => {
+                    if (removedPhoto && isBlobUrl(removedPhoto.url)) {
+                        URL.revokeObjectURL(removedPhoto.url);
+                        objectUrlsRef.current.delete(removedPhoto.url);
+                    }
+                    queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] });
+                    showToast("success", "Photo was deleted.");
+                })
                 .catch((err) => {
-                    console.warn("[MOCK_FALLBACK] deleteAlbumPhoto failed, removed locally only:", err);
-                    showToast("warning", "Photo was deleted locally (not synced to server).");
+                    if (removedPhoto) {
+                        setAlbums((current) =>
+                            current.map((album) => {
+                                if (String(album.id) !== String(albumId)) return album;
+
+                                const photos = [...album.photos];
+                                photos.splice(Math.min(removedIndex, photos.length), 0, removedPhoto);
+                                return { ...album, photos };
+                            }),
+                        );
+                    }
+                    showToast("error", err.message || "Failed to delete photo. Please try again.");
                 });
         },
         [queryClient, showToast],

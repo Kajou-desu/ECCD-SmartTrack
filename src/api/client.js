@@ -83,7 +83,6 @@ async function fetchWithTimeout(url, options = {}) {
       ...options,
       headers,
       signal: controller.signal,
-      credentials: options.credentials ?? "include",
     });
   } finally {
     clearTimeout(timeoutId);
@@ -431,7 +430,66 @@ export const apiClient = {
     });
   },
 
-  // --- Speculative endpoints (MOCK_FALLBACK callers) ---
+  /**
+   * Upload one or more documents to a student's profile.
+   * @param {number|string} studentId
+   * @param {File[]} files
+   * @returns {Promise<Array>} Array of created document records
+   */
+  async uploadStudentDocuments(studentId, files) {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("documents", file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/documents`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Delete a single document from a student's profile.
+   * @param {number|string} studentId
+   * @param {number|string} documentId
+   */
+  async deleteStudentDocument(studentId, documentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/documents/${documentId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /** Fetch the full account directory (admin/teacher account management). */
+  async getAccounts() {
+    return fetchWithRetry(`${API_BASE_URL}/api/users/all`, {
+      method: "GET",
+    });
+  },
+
+  /** @param {Object} payload - New account fields (name, email, password, role, ...) */
+  async createAccount(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/users/register`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** @param {Object} payload - Updated account fields, including the account id */
+  async updateAccount(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/update`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** @param {number|string} accountId */
+  async deleteAccount(accountId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/users/delete/${accountId}`, {
+      method: "DELETE",
+    });
+  },
+
+  // --- Endpoints without a confirmed backend contract yet ---
   // Names/shapes not yet confirmed with backend; adjust once real contract exists.
 
   /** @param {number|string} childId @param {string} monthKey e.g. "2026-08" */

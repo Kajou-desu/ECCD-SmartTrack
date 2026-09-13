@@ -6,16 +6,20 @@ import { useStudentsQuery } from "./useStudentsQuery.js";
 const ITEMS_PER_PAGE = 10;
 
 export function useStudents({ itemsPerPage = ITEMS_PER_PAGE } = {}) {
-    const { data, isLoading } = useStudentsQuery();
+    const { data, isLoading, isError, refetch } = useStudentsQuery();
     const students = useMemo(() => data?.students ?? [], [data]);
     const loading = isLoading;
 
     const [notice, setNotice] = useState("");
-    const [syncedUsedMock, setSyncedUsedMock] = useState(false);
+    const [syncedError, setSyncedError] = useState(false);
 
-    if (data?.usedMock && !syncedUsedMock) {
-        setSyncedUsedMock(true);
-        setNotice("Unable to load live student data. Displaying cached records instead.");
+    if (isError && !syncedError) {
+        setSyncedError(true);
+        setNotice("Unable to load student data. Please try again.");
+    }
+    if (!isError && syncedError) {
+        setSyncedError(false);
+        setNotice("");
     }
 
     const [searchTerm, setSearchTerm] = useState("");
@@ -86,6 +90,7 @@ export function useStudents({ itemsPerPage = ITEMS_PER_PAGE } = {}) {
         loading,
         notice,
         setNotice,
+        retry: refetch,
         searchTerm,
         setSearchTerm,
         filterStatus,

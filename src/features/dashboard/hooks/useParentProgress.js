@@ -1,15 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
-import { withMockFallback } from "@api/mockFallback.js"; // MOCK_FALLBACK
-import { PROGRESS_DATA_BY_CHILD } from "@data/mockParentData";
 
 async function fetchProgressData(childId) {
-    const { data } = await withMockFallback(
-        () => apiClient.getChildProgress(childId),
-        PROGRESS_DATA_BY_CHILD[childId] ?? null,
-        { label: "useParentProgress" },
-    );
-    return data;
+    return apiClient.getChildProgress(childId);
 }
 
 // Returns { status: "loading" | "empty" | "error" | "success", data, retry }
