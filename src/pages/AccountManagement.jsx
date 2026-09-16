@@ -240,18 +240,12 @@ export default function AccountsManagement() {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-5 sm:space-y-6 p-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-            Others
-          </span>
-
-          <PageHeader
-            title="Account Management"
-            subtitle="Manage registered system accounts and their access roles"
-          />
-        </div>
+        <PageHeader
+          title="Account Management"
+          subtitle="Manage registered system accounts and their access roles"
+        />
 
         <button
           type="button"
