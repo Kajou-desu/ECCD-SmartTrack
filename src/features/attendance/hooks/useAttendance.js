@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 import { toDayKey } from "@utils/dateKeys.js";
 import { useAttendanceQuery } from "./useAttendanceQuery.js";
 
 export function useAttendance(initialDate) {
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(initialDate || toDayKey());
 
   const { data: queryData, isLoading, isError } = useAttendanceQuery(selectedDate);
@@ -86,6 +88,12 @@ export function useAttendance(initialDate) {
 
       try {
         await apiClient.updateAttendance(id, selectedDate, nextStatus);
+        // The Dashboard's "Today's Attendance" widget reads ["attendance", date]
+        // from the same cache, and the stat cards read ["dashboardStats"] — both
+        // need to be invalidated or a manual status change here won't show up
+        // there until the cache's staleTime naturally expires.
+        queryClient.invalidateQueries({ queryKey: ["attendance", selectedDate] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
       } catch (err) {
         console.error("Failed to update attendance:", err);
         if (!mountedRef.current) return;
@@ -99,7 +107,7 @@ export function useAttendance(initialDate) {
         });
       }
     },
-    [savingIds, attendanceRecords, selectedDate],
+    [savingIds, attendanceRecords, selectedDate, queryClient],
   );
 
   const handleExport = useCallback(() => {

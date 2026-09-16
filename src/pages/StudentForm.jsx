@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useFormValidation } from "@hooks/useFormValidation";
 import { studentSchema } from "@validation/student.js";
 import { apiClient } from "@api/client.js";
@@ -39,6 +40,7 @@ const initialValues = {
 export default function StudentForm() {
   const { studentId } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const isEditing = Boolean(studentId);
 
   const [loading, setLoading] = useState(isEditing);
@@ -55,13 +57,20 @@ export default function StudentForm() {
           await apiClient.createStudent(data);
         }
 
+        // ["students"] is shared by the roster, the dashboard birthday widget,
+        // and the upload-work student picker; ["dashboardStats"] backs the
+        // "Total Students" card. Both need invalidating or a newly added/edited
+        // student won't show up there until the cache's staleTime expires.
+        queryClient.invalidateQueries({ queryKey: ["students"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
+
         navigate("/student-info");
       } catch (error) {
         console.error(error);
         setSubmitError(error?.message || "Unable to save student record.");
       }
     },
-    [isEditing, studentId, navigate],
+    [isEditing, studentId, navigate, queryClient],
   );
 
   const form = useFormValidation(
