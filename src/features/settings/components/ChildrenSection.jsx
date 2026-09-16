@@ -42,14 +42,22 @@ export default function ChildrenSection() {
       {/* Add Child Form */}
       {showAddChild && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+          <label htmlFor="new-child-name" className="sr-only">
+            Child's Name
+          </label>
           <input
+            id="new-child-name"
             type="text"
             placeholder="Child's Name"
             value={newChild.name}
             onChange={(e) => setNewChild({ ...newChild, name: e.target.value })}
             className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] transition"
           />
+          <label htmlFor="new-child-session" className="sr-only">
+            Session
+          </label>
           <input
+            id="new-child-session"
             type="text"
             placeholder="Session (Morning (am) or Afternoon (pm))"
             value={newChild.session}
@@ -58,7 +66,11 @@ export default function ChildrenSection() {
             }
             className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] transition"
           />
+          <label htmlFor="new-child-school-id" className="sr-only">
+            School ID (optional)
+          </label>
           <input
+            id="new-child-school-id"
             type="text"
             placeholder="School ID (optional)"
             value={newChild.schoolId}
@@ -105,6 +117,7 @@ export default function ChildrenSection() {
               </div>
               <button
                 onClick={() => handleRemoveChild(child.id)}
+                aria-label={`Remove ${child.name}`}
                 className="text-red-600 hover:text-red-800 transition"
               >
                 <Trash2 className="h-5 w-5" />

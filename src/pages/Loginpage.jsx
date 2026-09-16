@@ -237,10 +237,14 @@ export default function Login() {
           {viewMode === "login" && (
             <form onSubmit={handleSubmit(onLoginSubmit)}>
               <div className="mb-4">
-                <label className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">
+                <label
+                  htmlFor="login-email"
+                  className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
+                >
                   Email Address
                 </label>
                 <input
+                  id="login-email"
                   type="email"
                   placeholder="Email Address"
                   {...register("email")}
@@ -258,11 +262,15 @@ export default function Login() {
               </div>
 
               <div className="mb-2">
-                <label className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">
+                <label
+                  htmlFor="login-password"
+                  className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
+                >
                   Password
                 </label>
                 <div className="relative">
                   <input
+                    id="login-password"
                     type={showPasswords.current ? "text" : "password"}
                     name="current"
                     placeholder="Password"
@@ -275,6 +283,7 @@ export default function Login() {
                   />
                   <button
                     type="button"
+                    aria-label={showPasswords.current ? "Hide password" : "Show password"}
                     onClick={() =>
                       setShowPasswords((prev) => ({
                         ...prev,
@@ -325,10 +334,14 @@ export default function Login() {
                 verification code.
               </p>
               <div className="mb-5">
-                <label className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">
+                <label
+                  htmlFor="forgot-email"
+                  className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
+                >
                   Account Email Address
                 </label>
                 <input
+                  id="forgot-email"
                   type="email"
                   placeholder="Email Address"
                   value={forgotEmail}
@@ -364,10 +377,14 @@ export default function Login() {
               className="space-y-4"
             >
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5 text-center">
+                <label
+                  htmlFor="reset-otp"
+                  className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5 text-center"
+                >
                   6-Digit Verification Code
                 </label>
                 <input
+                  id="reset-otp"
                   type="text"
                   maxLength={6}
                   {...resetRegister("otpCode")}
@@ -386,10 +403,14 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">
+                <label
+                  htmlFor="reset-email"
+                  className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
+                >
                   Email Address
                 </label>
                 <input
+                  id="reset-email"
                   type="email"
                   placeholder="Email Address"
                   {...resetRegister("email")}
@@ -407,10 +428,14 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">
+                <label
+                  htmlFor="reset-new-password"
+                  className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
+                >
                   New Password
                 </label>
                 <input
+                  id="reset-new-password"
                   type="password"
                   placeholder="Enter new password"
                   {...resetRegister("newPassword")}
@@ -428,10 +453,14 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5">
+                <label
+                  htmlFor="reset-confirm-password"
+                  className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
+                >
                   Confirm New Password
                 </label>
                 <input
+                  id="reset-confirm-password"
                   type="password"
                   placeholder="Re-enter new password"
                   {...resetRegister("confirmPassword")}

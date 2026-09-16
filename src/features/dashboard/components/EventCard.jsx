@@ -101,7 +101,7 @@ export function EventCard({ showBirthdays = true }) {
             ))
           ) : (
             <div className="flex h-24 items-center justify-center">
-              <p className="text-sm italic text-gray-400">No birthdays found</p>
+              <p className="text-sm italic text-gray-500">No birthdays found</p>
             </div>
           )
         ) : hasHolidays ? (
@@ -123,7 +123,7 @@ export function EventCard({ showBirthdays = true }) {
           ))
         ) : (
           <div className="flex h-24 items-center justify-center">
-            <p className="text-sm italic text-gray-400">
+            <p className="text-sm italic text-gray-500">
               No upcoming holidays found
             </p>
           </div>

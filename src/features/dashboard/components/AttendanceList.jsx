@@ -117,7 +117,7 @@ export function AttendanceList() {
           ))
         ) : (
           <div className="flex h-24 items-center justify-center">
-            <p className="text-sm italic text-gray-400">
+            <p className="text-sm italic text-gray-500">
               No present attendance records
             </p>
           </div>

@@ -489,6 +489,63 @@ export const apiClient = {
     });
   },
 
+  /**
+   * Self-service profile update (name/email/phone/address). Never accepts
+   * a role change — see users.controller.js on the backend.
+   * @param {Object} payload
+   */
+  async updateMyProfile(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
+   * Self-service profile picture upload.
+   * @param {File} file
+   */
+  async uploadMyProfilePhoto(file) {
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me/photo`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Self-service password change. Returns a fresh token on success (the
+   * old one is invalidated everywhere, including this session, unless the
+   * caller swaps in the returned token).
+   * @param {string} currentPassword
+   * @param {string} newPassword
+   */
+  async changeMyPassword(currentPassword, newPassword) {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me/password`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword }),
+      handleUnauthorized: false,
+    });
+  },
+
+  /**
+   * Self-service account deletion (delete your own account). Requires
+   * re-entering the current password as confirmation.
+   * @param {string} password
+   */
+  async deleteMyAccount(password) {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me`, {
+      method: "DELETE",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ password }),
+      handleUnauthorized: false,
+    });
+  },
+
   // --- Endpoints without a confirmed backend contract yet ---
   // Names/shapes not yet confirmed with backend; adjust once real contract exists.
 
@@ -517,6 +574,21 @@ export const apiClient = {
   async getEvents(monthKey) {
     return fetchWithRetry(`${API_BASE_URL}/api/events?month=${monthKey}`, {
       method: "GET",
+    });
+  },
+
+  /**
+   * @param {Object} payload
+   * @param {string} payload.title
+   * @param {string} payload.date - "YYYY-MM-DD"
+   * @param {"Holiday"|"Birthday"|"Others"} payload.category
+   * @param {string} [payload.description]
+   */
+  async createEvent(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/events`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
     });
   },
 

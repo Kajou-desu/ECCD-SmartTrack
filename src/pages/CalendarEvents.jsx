@@ -1,15 +1,154 @@
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
+import Modal from "@components/ui/Modal";
 import ErrorMsg from "@components/ui/ErrorMsg";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 async function fetchEvents(monthKey) {
   return apiClient.getEvents(monthKey);
 }
 
+const EVENT_CATEGORIES = ["Holiday", "Birthday", "Others"];
+
+function AddEventModal({ onCancel, onCreated }) {
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [category, setCategory] = useState("Holiday");
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!title.trim() || !date || saving) return;
+
+    setSaving(true);
+    setError("");
+
+    try {
+      await apiClient.createEvent({
+        title: title.trim(),
+        date,
+        category,
+        description: description.trim() || undefined,
+      });
+      onCreated();
+    } catch (err) {
+      setError(err?.details?.message || "Failed to add event. Please try again.");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal onClose={onCancel} labelledBy="add-event-title">
+      <form onSubmit={handleSubmit} className="p-6">
+        <h2 id="add-event-title" className="text-lg font-bold text-gray-900">
+          Add Event
+        </h2>
+
+        <div className="mt-4 space-y-3">
+          <div>
+            <label htmlFor="event-title" className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">
+              Title
+            </label>
+            <input
+              id="event-title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-4 focus:ring-[#C2570C]/10"
+              placeholder="e.g. Founding Day"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="event-date" className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">
+              Date
+            </label>
+            <input
+              id="event-date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-4 focus:ring-[#C2570C]/10"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="event-category" className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">
+              Category
+            </label>
+            <select
+              id="event-category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-4 focus:ring-[#C2570C]/10"
+            >
+              {EVENT_CATEGORIES.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="event-description" className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">
+              Description (optional)
+            </label>
+            <textarea
+              id="event-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-4 focus:ring-[#C2570C]/10"
+              placeholder="Optional details about this event"
+            />
+          </div>
+        </div>
+
+        {error && (
+          <p role="alert" className="mt-3 text-xs text-red-600">
+            {error}
+          </p>
+        )}
+
+        <div className="mt-6 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={saving}
+            className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={!title.trim() || !date || saving}
+            className="cursor-pointer rounded-lg bg-[#C2570C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#a94709] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {saving ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader2 size={14} className="animate-spin" />
+                Adding...
+              </span>
+            ) : (
+              "Add Event"
+            )}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 export default function CalendarEvents() {
+  const queryClient = useQueryClient();
   const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 7));
+  const [showAddEventModal, setShowAddEventModal] = useState(false);
 
   const monthKey = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -72,7 +211,7 @@ export default function CalendarEvents() {
 
   const getDayColor = (day) => {
     const status = attendanceData?.daily?.[day];
-    if (!status) return "bg-gray-50 text-gray-400";
+    if (!status) return "bg-gray-50 text-gray-500";
     if (status === "Today")
       return "bg-orange-100 text-orange-700 border border-orange-300";
     if (status === "Holiday")
@@ -164,7 +303,7 @@ export default function CalendarEvents() {
             <h2 className="text-2xl font-bold text-gray-800">
               {monthName}
               {loading && (
-                <span className="ml-2 text-sm font-normal text-gray-400">
+                <span className="ml-2 text-sm font-normal text-gray-500">
                   Loading...
                 </span>
               )}
@@ -245,7 +384,10 @@ export default function CalendarEvents() {
         <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-800">Event Logs</h3>
-            <button className="text-sm font-semibold text-[#C2570C] hover:text-orange-800 cursor-pointer">
+            <button
+              onClick={() => setShowAddEventModal(true)}
+              className="text-sm font-semibold text-[#C2570C] hover:text-orange-800 cursor-pointer"
+            >
               Add Event
             </button>
           </div>
@@ -282,6 +424,16 @@ export default function CalendarEvents() {
           </div>
         </div>
       </div>
+
+      {showAddEventModal && (
+        <AddEventModal
+          onCancel={() => setShowAddEventModal(false)}
+          onCreated={() => {
+            queryClient.invalidateQueries({ queryKey: ["events"] });
+            setShowAddEventModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

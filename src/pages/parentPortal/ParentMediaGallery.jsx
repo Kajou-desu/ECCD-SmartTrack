@@ -111,9 +111,13 @@ export default function ParentMediaGallery({
                 )}
 
                 {/* Quick Actions Overlay */}
-                <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition flex items-center justify-center gap-2 opacity-0 hover:opacity-100">
+                <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition flex items-center justify-center gap-2 opacity-0 hover:opacity-100 focus-within:opacity-100">
                   {type === "materials" && (
-                    <button className="bg-white text-gray-800 p-2 rounded-full hover:bg-gray-100 cursor-pointer">
+                    <button
+                      type="button"
+                      aria-label={`Download ${item.title ?? "file"}`}
+                      className="bg-white text-gray-800 p-2 rounded-full hover:bg-gray-100 cursor-pointer"
+                    >
                       <Download className="h-5 w-5" />
                     </button>
                   )}

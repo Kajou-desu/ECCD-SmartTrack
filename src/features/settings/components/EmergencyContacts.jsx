@@ -55,7 +55,11 @@ export default function EmergencyContacts() {
       {/* Add Contact Form */}
       {showAddContact && (
         <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+          <label htmlFor="new-contact-name" className="sr-only">
+            Contact Name
+          </label>
           <input
+            id="new-contact-name"
             type="text"
             placeholder="Contact Name"
             value={newContact.name}
@@ -64,7 +68,11 @@ export default function EmergencyContacts() {
             }
             className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] transition"
           />
+          <label htmlFor="new-contact-relation" className="sr-only">
+            Relation
+          </label>
           <input
+            id="new-contact-relation"
             type="text"
             placeholder="Relation (e.g., Mother, Father, Guardian)"
             value={newContact.relation}
@@ -73,7 +81,11 @@ export default function EmergencyContacts() {
             }
             className="w-full border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] transition"
           />
+          <label htmlFor="new-contact-phone" className="sr-only">
+            Phone Number
+          </label>
           <input
+            id="new-contact-phone"
             type="tel"
             placeholder="Phone Number (e.g., +63 9198765432)"
             value={newContact.phone}
@@ -118,6 +130,7 @@ export default function EmergencyContacts() {
               </div>
               <button
                 onClick={() => handleRemoveContact(contact.id)}
+                aria-label={`Remove ${contact.name}`}
                 className="text-red-600 hover:text-red-800 transition ml-4"
               >
                 <Trash2 className="h-5 w-5" />

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Modal from "@components/ui/Modal";
 import {
   AlertCircle,
@@ -129,14 +129,54 @@ const TOAST_VARIANTS = {
   },
 };
 
+// Errors and warnings get more time to read; success/info messages are
+// typically shorter and lower-stakes.
+const TOAST_DURATION_MS = {
+  success: 4000,
+  info: 4000,
+  warning: 6000,
+  error: 6000,
+};
+
 export function Toast({ type = "success", message, onClose }) {
+  const duration = TOAST_DURATION_MS[type] ?? 4000;
+  const timerIdRef = useRef(null);
+  const remainingRef = useRef(duration);
+  const startedAtRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+
   useEffect(() => {
-    const timer = window.setTimeout(onClose, 4000);
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  const startTimer = (ms) => {
+    startedAtRef.current = Date.now();
+    timerIdRef.current = window.setTimeout(() => onCloseRef.current(), ms);
+  };
+
+  // Pausing (rather than just running longer) means a user who's mid-read
+  // when they mouse over or tab to the toast never has it vanish under them
+  // — satisfies WCAG 2.2.2 (Pause, Stop, Hide) for any message length.
+  const pauseTimer = () => {
+    if (timerIdRef.current === null) return;
+    window.clearTimeout(timerIdRef.current);
+    timerIdRef.current = null;
+    remainingRef.current -= Date.now() - startedAtRef.current;
+  };
+
+  const resumeTimer = () => {
+    if (timerIdRef.current !== null) return;
+    startTimer(Math.max(remainingRef.current, 0));
+  };
+
+  useEffect(() => {
+    startTimer(remainingRef.current);
 
     return () => {
-      window.clearTimeout(timer);
+      if (timerIdRef.current !== null) window.clearTimeout(timerIdRef.current);
     };
-  }, [onClose]);
+    // Mount-only: startTimer reads onCloseRef.current, not onClose directly.
+  }, []);
 
   const variant = TOAST_VARIANTS[type] || TOAST_VARIANTS.success;
   const Icon = variant.icon;
@@ -145,6 +185,10 @@ export function Toast({ type = "success", message, onClose }) {
     <div
       role={variant.role}
       aria-live={variant.ariaLive}
+      onMouseEnter={pauseTimer}
+      onMouseLeave={resumeTimer}
+      onFocus={pauseTimer}
+      onBlur={resumeTimer}
       className={`fixed bottom-4 right-4 z-70 flex w-[calc(100%-2rem)] max-w-sm items-start gap-3 rounded-xl border p-4 shadow-xl ${variant.border} ${variant.bg}`}
     >
       <div

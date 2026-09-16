@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { Lock, ShieldQuestionMark, EyeOff, Eye, Save } from "lucide-react";
+import { useAuth } from "@hooks/useAuth";
+import { apiClient } from "@api/client.js";
+import { Lock, ShieldQuestionMark, EyeOff, Eye, Save, Loader2 } from "lucide-react";
 
 export default function SecuritySettings({ onNotify }) {
+  const { updateToken } = useAuth();
+  const [saving, setSaving] = useState(false);
   const [password, setPassword] = useState({
     current: "",
     new: "",
@@ -42,22 +46,37 @@ export default function SecuritySettings({ onNotify }) {
     }));
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
+
     if (password.new !== password.confirm) {
       onNotify?.("error", "Passwords do not match.");
       return;
     }
-    if (password.new.length < 8) {
-      onNotify?.("error", "Password must be at least 8 characters.");
+    if (password.new.length < 10) {
+      onNotify?.("error", "Password must be at least 10 characters.");
       return;
     }
-    setPassword({ current: "", new: "", confirm: "" });
-    onNotify?.("success", "Password updated successfully.");
+
+    setSaving(true);
+    try {
+      const result = await apiClient.changeMyPassword(password.current, password.new);
+      updateToken(result.token);
+      setPassword({ current: "", new: "", confirm: "" });
+      onNotify?.("success", "Password updated successfully.");
+    } catch (err) {
+      onNotify?.(
+        "error",
+        err?.details?.message || "Failed to update password. Please try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   const passwordChecks = {
-    length: password.new.length >= 8,
+    length: password.new.length >= 10,
     uppercase: /[A-Z]/.test(password.new),
     number: /\d/.test(password.new),
     special: /[!@#$%^&*(),.?":{}|<>]/.test(password.new),
@@ -108,11 +127,15 @@ export default function SecuritySettings({ onNotify }) {
 
       <form onSubmit={handlePasswordSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label
+            htmlFor="current-password"
+            className="block text-sm font-medium text-gray-700 mb-1.5"
+          >
             Current Password
           </label>
           <div className="relative">
             <input
+              id="current-password"
               type={showPasswords.current ? "text" : "password"}
               name="current"
               value={password.current}
@@ -123,6 +146,7 @@ export default function SecuritySettings({ onNotify }) {
             />
             <button
               type="button"
+              aria-label={showPasswords.current ? "Hide password" : "Show password"}
               onClick={() =>
                 setShowPasswords((prev) => ({
                   ...prev,
@@ -141,21 +165,26 @@ export default function SecuritySettings({ onNotify }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label
+            htmlFor="new-password"
+            className="block text-sm font-medium text-gray-700 mb-1.5"
+          >
             New Password
           </label>
           <div className="relative">
             <input
+              id="new-password"
               type={showPasswords.new ? "text" : "password"}
               name="new"
               value={password.new}
               onChange={handlePasswordChange}
               required
               className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-12 text-sm transition focus:border-[#C2570C] focus:outline-none focus:ring-4 focus:ring-[#C2570C]/10"
-              placeholder="Enter new password (min 8 characters)"
+              placeholder="Enter new password (min 10 characters)"
             />
             <button
               type="button"
+              aria-label={showPasswords.new ? "Hide password" : "Show password"}
               onClick={() =>
                 setShowPasswords((prev) => ({
                   ...prev,
@@ -208,7 +237,7 @@ export default function SecuritySettings({ onNotify }) {
                       passwordChecks.length ? "text-green-600" : "text-gray-500"
                     }
                   >
-                    {passwordChecks.length ? "✓" : "•"} At least 8 characters
+                    {passwordChecks.length ? "✓" : "•"} At least 10 characters
                   </li>
 
                   <li
@@ -245,11 +274,15 @@ export default function SecuritySettings({ onNotify }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label
+            htmlFor="confirm-password"
+            className="block text-sm font-medium text-gray-700 mb-1.5"
+          >
             Confirm Password
           </label>
           <div className="relative">
             <input
+              id="confirm-password"
               type={showPasswords.confirm ? "text" : "password"}
               name="confirm"
               value={password.confirm}
@@ -260,6 +293,7 @@ export default function SecuritySettings({ onNotify }) {
             />
             <button
               type="button"
+              aria-label={showPasswords.confirm ? "Hide password" : "Show password"}
               onClick={() =>
                 setShowPasswords((prev) => ({
                   ...prev,
@@ -291,11 +325,20 @@ export default function SecuritySettings({ onNotify }) {
         <div className="pt-4 border-t border-gray-100">
           <button
             type="submit"
-            disabled={!canSubmit}
+            disabled={!canSubmit || saving}
             className="cursor-pointer flex w-full items-center justify-center gap-2 rounded-xl bg-[#C2570C] py-3 font-semibold text-white transition hover:bg-orange-800 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Save className="h-4 w-4" />
-            Save New Password
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Save New Password
+              </>
+            )}
           </button>
         </div>
       </form>

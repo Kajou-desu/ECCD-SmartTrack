@@ -1,29 +1,34 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../../../hooks/useAuth.js";
+import { apiClient } from "@api/client.js";
 import {
   isImageFile,
   isFileSizeValid,
   MAX_PHOTO_FILE_SIZE_BYTES,
   formatFileSize,
 } from "@features/eventPhotos/utils/photoValidation";
-import { UserRound, Camera, Mail, Phone } from "lucide-react";
+import { UserRound, Camera, Mail, Phone, Loader2 } from "lucide-react";
 
 export default function ProfileSettings({ onNotify }) {
   const fileInputRef = useRef(null);
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   const [profile, setProfile] = useState({
-    fullName: user.name,
+    firstName: user.firstName ?? "",
+    middleName: user.middleName ?? "",
+    lastName: user.lastName ?? "",
     email: user.email,
-    phone: "+63 9123456789",
-    profilePicture: null,
+    phone: user.phone ?? "",
   });
 
   const [profileEditMode, setProfileEditMode] = useState(false);
-  const handleProfilePictureChange = (e) => {
+  const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  const handleProfilePictureChange = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file) return;
+    if (!file || uploadingPhoto) return;
 
     if (!isImageFile(file)) {
       onNotify?.("error", "Please choose an image file.");
@@ -38,14 +43,16 @@ export default function ProfileSettings({ onNotify }) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setProfile((prev) => ({
-        ...prev,
-        profilePicture: event.target?.result,
-      }));
-    };
-    reader.readAsDataURL(file);
+    setUploadingPhoto(true);
+    try {
+      const updated = await apiClient.uploadMyProfilePhoto(file);
+      updateUser({ profilePicture: updated.profilePicture });
+      onNotify?.("success", "Profile photo updated.");
+    } catch (err) {
+      onNotify?.("error", err.message || "Failed to upload photo. Please try again.");
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   const handleProfileChange = (field, value) => {
@@ -55,10 +62,41 @@ export default function ProfileSettings({ onNotify }) {
     }));
   };
 
-  const handleProfileSave = () => {
-    setProfileEditMode(false);
-    onNotify?.("success", "Profile updated successfully.");
+  const handleProfileSave = async () => {
+    if (saving) return;
+    setSaving(true);
+
+    try {
+      const updated = await apiClient.updateMyProfile({
+        firstName: profile.firstName.trim(),
+        middleName: profile.middleName.trim(),
+        lastName: profile.lastName.trim(),
+        email: profile.email.trim(),
+        phone: profile.phone.trim() || undefined,
+      });
+      updateUser({
+        name: updated.name,
+        firstName: updated.firstName,
+        middleName: updated.middleName,
+        lastName: updated.lastName,
+        email: updated.email,
+        phone: updated.phone,
+      });
+      setProfileEditMode(false);
+      onNotify?.("success", "Profile updated successfully.");
+    } catch (err) {
+      onNotify?.(
+        "error",
+        err?.details?.message || "Failed to update profile. Please try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const fullName = [user.firstName, user.middleName, user.lastName]
+    .filter(Boolean)
+    .join(" ") || user.name;
 
   return (
     <div className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm space-y-8">
@@ -71,10 +109,12 @@ export default function ProfileSettings({ onNotify }) {
         <div className="flex flex-col items-center gap-4">
           <div className="relative group">
             <div className="h-32 w-32 rounded-full bg-linear-to-br from-[#C2570C] to-orange-600 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
-              {profile.profilePicture ? (
+              {uploadingPhoto ? (
+                <Loader2 className="h-10 w-10 animate-spin text-white" />
+              ) : user.profilePicture ? (
                 <img
-                  src={profile.profilePicture}
-                  alt="Profile"
+                  src={user.profilePicture}
+                  alt={`${fullName}'s profile`}
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -82,8 +122,10 @@ export default function ProfileSettings({ onNotify }) {
               )}
             </div>
             <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 bg-[#C2570C] hover:bg-orange-800 text-white p-3 rounded-full shadow-lg transition-colors"
+              aria-label="Change profile photo"
+              className="cursor-pointer absolute bottom-0 right-0 bg-[#C2570C] hover:bg-orange-800 text-white p-3 rounded-full shadow-lg transition-colors"
             >
               <Camera className="h-5 w-5" />
             </button>
@@ -96,9 +138,7 @@ export default function ProfileSettings({ onNotify }) {
             />
           </div>
           <div className="text-center space-y-1">
-            <h3 className="text-2xl font-bold text-gray-900">
-              {profile.fullName}
-            </h3>
+            <h3 className="text-2xl font-bold text-gray-900">{fullName}</h3>
 
             <p className="text-sm text-gray-500">{user.role}</p>
 
@@ -106,15 +146,18 @@ export default function ProfileSettings({ onNotify }) {
           </div>
           <div className="flex gap-3">
             <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition"
+              disabled={uploadingPhoto}
+              className="cursor-pointer px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Change Photo
+              {uploadingPhoto ? "Uploading..." : "Change Photo"}
             </button>
 
             <button
+              type="button"
               onClick={() => setProfileEditMode(true)}
-              className="px-5 py-2.5 rounded-xl bg-[#C2570C] text-white font-medium hover:bg-orange-800 transition"
+              className="cursor-pointer px-5 py-2.5 rounded-xl bg-[#C2570C] text-white font-medium hover:bg-orange-800 transition"
             >
               Edit Profile
             </button>
@@ -159,7 +202,7 @@ export default function ProfileSettings({ onNotify }) {
                 </div>
 
                 <p className="mt-4 text-lg font-semibold text-gray-900">
-                  {profile.fullName}
+                  {fullName}
                 </p>
               </div>
               <div className="rounded-2xl border border-gray-200 p-5 hover:border-[#C2570C] hover:shadow-md transition-all duration-200">
@@ -183,29 +226,59 @@ export default function ProfileSettings({ onNotify }) {
                 </div>
 
                 <p className="mt-4 text-lg font-semibold text-gray-900">
-                  {profile.phone}
+                  {profile.phone || "—"}
                 </p>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-gray-800">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={profile.fullName}
-                  onChange={(e) =>
-                    handleProfileChange("fullName", e.target.value)
-                  }
-                  className="border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-1 focus:ring-[#C2570C] transition"
-                />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="profile-firstname" className="text-sm font-bold text-gray-800">
+                    First Name
+                  </label>
+                  <input
+                    id="profile-firstname"
+                    type="text"
+                    value={profile.firstName}
+                    onChange={(e) => handleProfileChange("firstName", e.target.value)}
+                    className="border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-1 focus:ring-[#C2570C] transition"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="profile-middlename" className="text-sm font-bold text-gray-800">
+                    Middle Name
+                  </label>
+                  <input
+                    id="profile-middlename"
+                    type="text"
+                    value={profile.middleName}
+                    onChange={(e) => handleProfileChange("middleName", e.target.value)}
+                    className="border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-1 focus:ring-[#C2570C] transition"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="profile-lastname" className="text-sm font-bold text-gray-800">
+                    Last Name
+                  </label>
+                  <input
+                    id="profile-lastname"
+                    type="text"
+                    value={profile.lastName}
+                    onChange={(e) => handleProfileChange("lastName", e.target.value)}
+                    className="border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-1 focus:ring-[#C2570C] transition"
+                  />
+                </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-gray-800">Email</label>
+                <label htmlFor="profile-email" className="text-sm font-bold text-gray-800">
+                  Email
+                </label>
                 <input
+                  id="profile-email"
                   type="email"
                   value={profile.email}
                   onChange={(e) => handleProfileChange("email", e.target.value)}
@@ -214,8 +287,11 @@ export default function ProfileSettings({ onNotify }) {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-gray-800">Phone</label>
+                <label htmlFor="profile-phone" className="text-sm font-bold text-gray-800">
+                  Phone
+                </label>
                 <input
+                  id="profile-phone"
                   type="tel"
                   value={profile.phone}
                   onChange={(e) => handleProfileChange("phone", e.target.value)}
@@ -225,14 +301,34 @@ export default function ProfileSettings({ onNotify }) {
 
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={handleProfileSave}
-                  className="bg-[#C2570C] hover:bg-orange-800 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors flex-1"
+                  disabled={saving || !profile.firstName.trim() || !profile.lastName.trim()}
+                  className="cursor-pointer bg-[#C2570C] hover:bg-orange-800 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors flex-1 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Save Profile
+                  {saving ? (
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <Loader2 size={14} className="animate-spin" />
+                      Saving...
+                    </span>
+                  ) : (
+                    "Save Profile"
+                  )}
                 </button>
                 <button
-                  onClick={() => setProfileEditMode(false)}
-                  className="border border-gray-200 text-gray-700 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-50 transition-colors flex-1"
+                  type="button"
+                  onClick={() => {
+                    setProfileEditMode(false);
+                    setProfile({
+                      firstName: user.firstName ?? "",
+                      middleName: user.middleName ?? "",
+                      lastName: user.lastName ?? "",
+                      email: user.email,
+                      phone: user.phone ?? "",
+                    });
+                  }}
+                  disabled={saving}
+                  className="cursor-pointer border border-gray-200 text-gray-700 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-50 transition-colors flex-1 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Cancel
                 </button>

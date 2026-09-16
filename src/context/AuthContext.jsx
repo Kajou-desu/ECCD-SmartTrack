@@ -84,6 +84,22 @@ export function AuthProvider({ children }) {
     setUser(authUser);
   }, [clearStoredAuth]);
 
+  // Merges fields into the current session's user object — for self-service
+  // profile edits (name/email/phone), where the account isn't changing,
+  // just some of its display fields.
+  const updateUser = useCallback((patch) => {
+    setUser((current) => (current ? { ...current, ...patch } : current));
+  }, []);
+
+  // Swaps in a fresh token without touching the stored user — for the
+  // self-service password-change flow, which issues a new token (its
+  // tokenVersion bump would otherwise sign this very session out too).
+  const updateToken = useCallback((newToken) => {
+    const sanitizedToken = typeof newToken === "string" ? newToken.trim() : "";
+    if (!sanitizedToken) return;
+    setToken(sanitizedToken);
+  }, []);
+
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
@@ -107,6 +123,8 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!token,
     login,
     logout,
+    updateUser,
+    updateToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

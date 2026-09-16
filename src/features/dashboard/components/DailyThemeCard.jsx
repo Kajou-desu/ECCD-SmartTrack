@@ -76,9 +76,12 @@ export function DailyThemeCard() {
           </div>
           <button
             type="button"
-            className="flex w-full cursor-pointer items-center justify-start gap-2 rounded-lg bg-[#C2570C] px-4 py-2.5 font-semibold text-white transition hover:bg-[#a94709] sm:w-auto"
+            disabled
+            title="Lesson details are coming soon"
+            aria-disabled="true"
+            className="flex w-full cursor-not-allowed items-center justify-start gap-2 rounded-lg bg-[#C2570C]/50 px-4 py-2.5 font-semibold text-white transition sm:w-auto"
           >
-            <span className="text-sm">View Lesson</span>
+            <span className="text-sm">View Lesson (coming soon)</span>
             <ArrowRight className="h-5 w-5" />
           </button>
         </div>
