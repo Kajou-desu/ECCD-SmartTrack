@@ -39,7 +39,7 @@ function StatusMarker({ status }) {
     return (
       <span
         aria-hidden="true"
-        className="absolute bottom-1 right-1 h-0 w-0 border-x-[4px] border-x-transparent border-b-[6px] border-b-amber-600"
+        className="absolute bottom-1 right-1 h-0 w-0 border-x-4 border-x-transparent border-b-[6px] border-b-amber-600"
       />
     );
   }

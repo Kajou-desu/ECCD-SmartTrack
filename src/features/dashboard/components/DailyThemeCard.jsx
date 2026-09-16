@@ -14,7 +14,7 @@ export function DailyThemeCard() {
 
   if (isLoading) {
     return (
-      <div className="flex h-full min-h-[200px] items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="flex h-full min-h-50 items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
         <p className="text-sm text-gray-500">Loading today's theme...</p>
       </div>
     );
@@ -22,7 +22,7 @@ export function DailyThemeCard() {
 
   if (isError || !theme) {
     return (
-      <div className="flex h-full min-h-[200px] flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="flex h-full min-h-50 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
         <p className="text-sm text-gray-500">Unable to load today's theme.</p>
         <button
           type="button"
