@@ -15,7 +15,7 @@ export default function EmptyMaterialsState({ onAddMaterial }) {
         No learning materials yet
       </h2>
 
-      <p className="mt-2 max-w-sm text-sm text-slate-600">
+      <p className="my-4 max-w-sm text-sm text-slate-600">
         Start building your resource library by adding your first learning
         material.
       </p>

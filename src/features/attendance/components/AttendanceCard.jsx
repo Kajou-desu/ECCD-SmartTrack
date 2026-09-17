@@ -32,7 +32,14 @@ export default function AttendanceCard({ record, onMarkStatus, isSaving }) {
 
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-lg font-semibold text-gray-800">{studentName}</h3>
-          <p className="text-sm text-gray-500">Arrived at {record.time || "Not recorded"}</p>
+          <p className="text-sm text-gray-500">
+            {record.status === "present" && record.arrivedAt
+              ? `Arrived at ${new Date(record.arrivedAt).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}`
+              : "Not arrived"}
+          </p>
         </div>
 
         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[status] || statusStyles.absent}`}>{statusLabel}</span>

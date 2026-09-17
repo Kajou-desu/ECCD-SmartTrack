@@ -4,22 +4,9 @@ import { toDayKey } from "@utils/dateKeys.js";
 import { useAttendanceQuery } from "@features/attendance/hooks/useAttendanceQuery.js";
 import { Check, ArrowRight } from "lucide-react";
 
-// Helpers
-function timeToMinutes(time) {
-  if (!time) return 0;
-
-  const [value, period] = time.trim().split(/\s+/);
-  let [hours, minutes] = value.split(":").map(Number);
-  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
-    return 0;
-  }
-  if (period?.toUpperCase() === "AM" && hours === 12) {
-    hours = 0;
-  }
-  if (period?.toUpperCase() === "PM" && hours !== 12) {
-    hours += 12;
-  }
-  return hours * 60 + minutes;
+function getArrivalPeriod(arrivedAt) {
+  if (!arrivedAt) return null;
+  return new Date(arrivedAt).getHours() < 12 ? "am" : "pm";
 }
 
 export function AttendanceList() {
@@ -34,20 +21,12 @@ export function AttendanceList() {
   const filteredData = useMemo(() => {
     return records
       .filter((attendance) => {
-        // Only show present records
         if (attendance.status !== "present") {
           return false;
         }
-        if (selectedPeriod === "am") {
-          return attendance.time?.toUpperCase().includes("AM");
-        }
-
-        if (selectedPeriod === "pm") {
-          return attendance.time?.toUpperCase().includes("PM");
-        }
-        return true;
+        return getArrivalPeriod(attendance.arrivedAt) === selectedPeriod;
       })
-      .sort((a, b) => timeToMinutes(b.time) - timeToMinutes(a.time));
+      .sort((a, b) => new Date(b.arrivedAt || 0) - new Date(a.arrivedAt || 0));
   }, [records, selectedPeriod]);
 
   return (
@@ -131,7 +110,11 @@ function AttendanceListItem({ attendance }) {
   return (
     <div
       role="listitem"
-      aria-label={`Present: ${attendance.name}, ${attendance.time}`}
+      aria-label={`Present: ${attendance.name}, ${
+        attendance.arrivedAt
+          ? new Date(attendance.arrivedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+          : "time not recorded"
+      }`}
       className="group flex items-center justify-between rounded-lg border p-3 transition-colors duration-200 bg-green-50 hover:bg-green-100 border-green-200"
     >
       {/* Student Information */}
@@ -152,7 +135,9 @@ function AttendanceListItem({ attendance }) {
 
       {/* Attendance Time */}
       <p className="ml-2 shrink-0 whitespace-nowrap text-xs text-gray-500">
-        {attendance.time}
+        {attendance.arrivedAt
+          ? new Date(attendance.arrivedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+          : "Not recorded"}
       </p>
     </div>
   );

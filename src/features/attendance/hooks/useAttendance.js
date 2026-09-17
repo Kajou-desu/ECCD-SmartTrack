@@ -113,8 +113,8 @@ export function useAttendance(initialDate) {
   const handleExport = useCallback(() => {
     try {
       const escapeCsvValue = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-      const rows = filteredRecords.map((record) => [record.name, record.status, record.time].map(escapeCsvValue).join(","));
-      const csv = ["name,status,time", ...rows].join("\n");
+      const rows = filteredRecords.map((record) => [record.name, record.status, record.arrivedAt].map(escapeCsvValue).join(","));
+      const csv = ["name,status,arrivedAt", ...rows].join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
