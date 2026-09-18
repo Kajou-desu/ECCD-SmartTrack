@@ -1,7 +1,19 @@
 import FormField from "./FormField";
+import AddressFields from "./AddressFields";
 
-export default function ContactSection({ title, prefix, values, touched, errors, onChange, onBlur }) {
+export default function ContactSection({
+  title,
+  prefix,
+  values,
+  touched,
+  errors,
+  onChange,
+  onBlur,
+  onAddressChange,
+  onAddressBlur,
+}) {
   const fieldName = (field) => `${prefix}${field}`;
+  const addressKey = fieldName("Address");
 
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
@@ -42,14 +54,15 @@ export default function ContactSection({ title, prefix, values, touched, errors,
           />
         </div>
 
-        <FormField
+        <AddressFields
           label="Address"
-          name={fieldName("Address")}
-          value={values[fieldName("Address")]}
-          onChange={onChange}
-          onBlur={onBlur}
-          error={touched[fieldName("Address")] && errors[fieldName("Address")]}
-          placeholder="Complete home address"
+          purokName={fieldName("AddressPurok")}
+          barangayName={fieldName("AddressBarangay")}
+          purokValue={values[fieldName("AddressPurok")]}
+          barangayValue={values[fieldName("AddressBarangay")]}
+          onChange={onAddressChange}
+          onBlur={onAddressBlur}
+          error={touched[addressKey] && errors[addressKey]}
         />
       </div>
     </div>

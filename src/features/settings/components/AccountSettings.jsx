@@ -18,6 +18,8 @@ function DeleteAccountModal({ onCancel, onDeleted }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
 
   const handleDelete = async (event) => {
     event.preventDefault();
@@ -27,7 +29,18 @@ function DeleteAccountModal({ onCancel, onDeleted }) {
     setError("");
 
     try {
-      await apiClient.deleteMyAccount(password);
+      if (!otpSent) {
+        await apiClient.requestAccountDeletionOtp();
+        setOtpSent(true);
+        setDeleting(false);
+        return;
+      }
+      if (!/^\d{6}$/.test(otpCode)) {
+        setError("Enter the 6-digit verification code.");
+        setDeleting(false);
+        return;
+      }
+      await apiClient.deleteMyAccount(password, otpCode);
       onDeleted();
     } catch (err) {
       setError(
@@ -48,6 +61,23 @@ function DeleteAccountModal({ onCancel, onDeleted }) {
           This permanently deletes your account and cannot be undone. Enter your
           password to confirm.
         </p>
+
+        {otpSent && (
+          <label htmlFor="delete-account-otp" className="mt-4 block text-xs font-bold uppercase tracking-wide text-gray-500">
+            Email Verification Code
+          </label>
+        )}
+        {otpSent && (
+          <input
+            id="delete-account-otp"
+            inputMode="numeric"
+            maxLength={6}
+            value={otpCode}
+            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-2.5 text-center tracking-[0.4em]"
+            placeholder="000000"
+          />
+        )}
 
         <label htmlFor="delete-account-password" className="mt-4 block text-xs font-bold uppercase tracking-wide text-gray-500">
           Password
@@ -78,7 +108,7 @@ function DeleteAccountModal({ onCancel, onDeleted }) {
           </button>
           <button
             type="submit"
-            disabled={!password || deleting}
+            disabled={!password || deleting || (otpSent && otpCode.length !== 6)}
             className="cursor-pointer rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {deleting ? (
@@ -87,7 +117,7 @@ function DeleteAccountModal({ onCancel, onDeleted }) {
                 Deleting...
               </span>
             ) : (
-              "Delete My Account"
+              otpSent ? "Delete My Account" : "Send Email OTP"
             )}
           </button>
         </div>

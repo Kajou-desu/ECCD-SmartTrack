@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 import Modal from "@components/ui/Modal";
 import ErrorMsg from "@components/ui/ErrorMsg";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 async function fetchEvents(monthKey) {
   return apiClient.getEvents(monthKey);
@@ -147,6 +148,7 @@ function AddEventModal({ onCancel, onCreated }) {
 
 export default function CalendarEvents() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 7));
   const [showAddEventModal, setShowAddEventModal] = useState(false);
 
@@ -281,6 +283,14 @@ export default function CalendarEvents() {
   return (
     <div className="min-h-[calc(100vh-70px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
       <div>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="mb-4 inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
         <h1 className="text-3xl font-bold text-gray-800">Event Calendar</h1>
         <p className="mt-2 text-sm text-gray-600">
           Track upcoming events, special days, and school celebrations

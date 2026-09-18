@@ -38,6 +38,7 @@ export function useStudents({ itemsPerPage = ITEMS_PER_PAGE } = {}) {
             const searchableText = [
                 student.name,
                 student.id,
+                student.studentCode,
                 student.guardianName,
                 student.guardianPhone,
                 student.address,
@@ -103,6 +104,7 @@ export function useStudents({ itemsPerPage = ITEMS_PER_PAGE } = {}) {
         totalPages: pagination.totalPages,
         goToPage: pagination.goToPage,
         handleExport,
+        refetch,
     };
 }
 

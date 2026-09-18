@@ -5,6 +5,7 @@ import AlbumsToolbar from "@features/eventPhotos/components/AlbumsToolbar";
 import AlbumsList from "@features/eventPhotos/components/AlbumsList";
 import AlbumsLoadingState from "@features/eventPhotos/components/AlbumsLoadingState";
 import CreateAlbumModal from "@features/eventPhotos/components/CreateAlbumModal";
+import EditAlbumModal from "@features/eventPhotos/components/EditAlbumModal";
 import DeleteAlbumConfirm from "@features/eventPhotos/components/DeleteAlbumConfirm";
 import ErrorMsg from "@components/ui/ErrorMsg";
 import { Toast } from "@components/ui/Toast";
@@ -13,6 +14,7 @@ const ALBUM_MODAL = {
   NONE: null,
   CREATE: "create",
   DELETE: "delete",
+  EDIT: "edit",
 };
 
 export default function EventPhotos() {
@@ -28,6 +30,7 @@ export default function EventPhotos() {
     filteredAlbums,
     createAlbum,
     deleteAlbum,
+    updateAlbum,
     toast,
     dismissToast,
   } = useEventPhotos();
@@ -51,6 +54,18 @@ export default function EventPhotos() {
       closeModal();
     }
 
+    return result;
+  };
+
+  const handleEditAlbum = (album) => {
+    setSelectedAlbum(album);
+    setModalType(ALBUM_MODAL.EDIT);
+  };
+
+  const handleConfirmEdit = async (data) => {
+    if (!selectedAlbum) return;
+    const result = await updateAlbum(selectedAlbum.id, data);
+    if (result?.success !== false) closeModal();
     return result;
   };
 
@@ -80,6 +95,7 @@ export default function EventPhotos() {
           onClearSearch={() => setSearchQuery("")}
           onCreateAlbum={() => setModalType(ALBUM_MODAL.CREATE)}
           onOpenAlbum={handleOpenAlbum}
+          onEditAlbum={handleEditAlbum}
           onDeleteAlbum={(album) => {
             setSelectedAlbum(album);
             setModalType(ALBUM_MODAL.DELETE);
@@ -89,6 +105,14 @@ export default function EventPhotos() {
 
       {modalType === ALBUM_MODAL.CREATE && (
         <CreateAlbumModal onCancel={closeModal} onConfirm={handleCreateAlbum} />
+      )}
+
+      {modalType === ALBUM_MODAL.EDIT && selectedAlbum && (
+        <EditAlbumModal
+          album={selectedAlbum}
+          onCancel={closeModal}
+          onConfirm={handleConfirmEdit}
+        />
       )}
 
       {modalType === ALBUM_MODAL.DELETE && selectedAlbum && (

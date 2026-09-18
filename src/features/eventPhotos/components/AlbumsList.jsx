@@ -10,6 +10,7 @@ export default function AlbumsList({
   onCreateAlbum,
   onOpenAlbum,
   onDeleteAlbum,
+  onEditAlbum,
 }) {
   if (albums.length === 0) {
     return <AlbumsEmptyState onCreateAlbum={onCreateAlbum} />;
@@ -32,6 +33,7 @@ export default function AlbumsList({
           album={album}
           onOpen={onOpenAlbum}
           onDelete={onDeleteAlbum}
+          onEdit={onEditAlbum}
         />
       ))}
     </section>

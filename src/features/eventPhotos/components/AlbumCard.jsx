@@ -1,8 +1,8 @@
 import { useState } from "react";
 import formatDate from "@utils/formatDate";
-import { Images, Trash2 } from "lucide-react";
+import { Images, Pencil, Trash2 } from "lucide-react";
 
-export default function AlbumCard({ album, onOpen, onDelete }) {
+export default function AlbumCard({ album, onOpen, onDelete, onEdit }) {
   const [isCoverLoaded, setIsCoverLoaded] = useState(false);
   const coverPhoto = album.photos[0];
 
@@ -54,15 +54,29 @@ export default function AlbumCard({ album, onOpen, onDelete }) {
           {album.category}
         </span>
 
-        {onDelete && (
-          <button
-            type="button"
-            onClick={handleDeleteClick}
-            aria-label={`Delete ${album.title} album`}
-            className="absolute right-2 top-2 flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg bg-white/80 text-slate-700 shadow-sm transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-          >
-            <Trash2 size={16} aria-hidden="true" />
-          </button>
+        {(onEdit || onDelete) && (
+          <div className="absolute right-2 top-2 flex gap-1">
+            {onEdit && (
+              <button
+                type="button"
+                onClick={(event) => { event.stopPropagation(); onEdit(album); }}
+                aria-label={`Edit ${album.title} album`}
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/80 text-slate-700 shadow-sm transition hover:bg-orange-50 hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              >
+                <Pencil size={16} aria-hidden="true" />
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                onClick={handleDeleteClick}
+                aria-label={`Delete ${album.title} album`}
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/80 text-slate-700 shadow-sm transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+              >
+                <Trash2 size={16} aria-hidden="true" />
+              </button>
+            )}
+          </div>
         )}
       </div>
 

@@ -30,7 +30,7 @@ export function AttendanceList() {
   }, [records, selectedPeriod]);
 
   return (
-    <div className="flex min-h-0 h-full overflow-hidden flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <div className="w-full max-w-2xl flex min-h-0 h-full overflow-hidden flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Header */}
       <div className="flex shrink-0 flex-col gap-3">
         <div className="flex items-center justify-between gap-3">

@@ -6,6 +6,8 @@ import { Lock, ShieldQuestionMark, EyeOff, Eye, Save, Loader2 } from "lucide-rea
 export default function SecuritySettings({ onNotify }) {
   const { updateToken } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
   const [password, setPassword] = useState({
     current: "",
     new: "",
@@ -61,9 +63,25 @@ export default function SecuritySettings({ onNotify }) {
 
     setSaving(true);
     try {
-      const result = await apiClient.changeMyPassword(password.current, password.new);
+      if (!otpSent) {
+        await apiClient.requestPasswordChangeOtp();
+        setOtpSent(true);
+        onNotify?.("success", "Verification code sent to your email.");
+        return;
+      }
+      if (!/^\d{6}$/.test(otpCode)) {
+        onNotify?.("error", "Enter the 6-digit verification code.");
+        return;
+      }
+      const result = await apiClient.changeMyPassword(
+        password.current,
+        password.new,
+        otpCode,
+      );
       updateToken(result.token);
       setPassword({ current: "", new: "", confirm: "" });
+      setOtpCode("");
+      setOtpSent(false);
       onNotify?.("success", "Password updated successfully.");
     } catch (err) {
       onNotify?.(
@@ -322,6 +340,23 @@ export default function SecuritySettings({ onNotify }) {
           )}
         </div>
 
+        {otpSent && (
+          <div>
+            <label htmlFor="password-change-otp" className="block text-sm font-medium text-gray-700 mb-1.5">
+              Email Verification Code
+            </label>
+            <input
+              id="password-change-otp"
+              inputMode="numeric"
+              maxLength={6}
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-center text-lg tracking-[0.4em]"
+              placeholder="000000"
+            />
+          </div>
+        )}
+
         <div className="pt-4 border-t border-gray-100">
           <button
             type="submit"
@@ -336,7 +371,7 @@ export default function SecuritySettings({ onNotify }) {
             ) : (
               <>
                 <Save className="h-4 w-4" />
-                Save New Password
+                {otpSent ? "Verify & Save Password" : "Send Email OTP"}
               </>
             )}
           </button>

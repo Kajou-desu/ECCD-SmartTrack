@@ -4,7 +4,10 @@ export const INITIAL_FORM = {
     lastName: "",
     email: "",
     password: "",
+    phone: "",
+    address: "",
     role: "Parent",
+    studentIds: [],
 };
 
 export const INITIAL_EDIT_FORM = {
@@ -16,6 +19,7 @@ export const INITIAL_EDIT_FORM = {
     phone: "",
     address: "",
     role: "Parent",
+    studentIds: [],
 };
 
 export const INITIAL_DELETE = {
@@ -24,7 +28,7 @@ export const INITIAL_DELETE = {
     accountName: "",
 };
 
-export const ROLES = ["Parent", "Teacher", "Admin"];
+export const ROLES = ["Parent", "Guardian", "Teacher", "Admin"];
 
 // Only an Admin can grant the Admin role. This is a UI convenience only —
 // the backend must independently reject any request that tries to assign
@@ -92,7 +96,11 @@ export function groupAccounts(accounts) {
             } else if (role === "Teacher") {
                 groups.teachers.push(account);
             } else {
-                groups.parents.push(account);
+                if (role === "Guardian") {
+                    groups.guardians.push(account);
+                } else {
+                    groups.parents.push(account);
+                }
             }
 
             return groups;
@@ -101,6 +109,7 @@ export function groupAccounts(accounts) {
             admins: [],
             teachers: [],
             parents: [],
+            guardians: [],
         },
     );
 }
@@ -113,6 +122,7 @@ export function createAccountPayload(formData) {
         middleName: formData.middleName.trim(),
         lastName: formData.lastName.trim(),
         role: normalizeRole(formData.role),
+        studentIds: formData.studentIds ?? [],
     };
 }
 
@@ -126,5 +136,6 @@ export function updateAccountPayload(formData) {
         phone: formData.phone.trim(),
         address: formData.address.trim(),
         role: normalizeRole(formData.role),
+        studentIds: formData.studentIds ?? [],
     };
 }

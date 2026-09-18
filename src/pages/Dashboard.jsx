@@ -7,6 +7,7 @@ import {
   STAT_CARDS,
   MAIN_CARDS,
 } from "@features/dashboard/components/DashboardStats";
+import { QuickActions } from "@features/dashboard/components/QuickActions";
 import DashboardContentGrid from "@features/dashboard/components/DashboardContentGrid";
 import StatCard from "@components/shared/StatCard";
 import ErrorMsg from "@components/ui/ErrorMsg";
@@ -42,6 +43,8 @@ export default function Dashboard() {
           onClose={() => refetch()}
         />
       )}
+
+      <QuickActions />
 
       <DashboardContentGrid
         stats={

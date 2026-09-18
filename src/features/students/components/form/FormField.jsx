@@ -7,10 +7,14 @@ export default function FormField({
   error,
   placeholder,
   type = "text",
+  required = false,
 }) {
   return (
     <div>
-      <label htmlFor={name} className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">{label}</label>
+      <label htmlFor={name} className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">
+        {label}
+        {required && <span className="text-red-500"> *</span>}
+      </label>
 
       <input
         id={name}

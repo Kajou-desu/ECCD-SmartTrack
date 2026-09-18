@@ -13,4 +13,4 @@ export const studentSchema = z.object({
   specialNotes: z.string().optional(),
   session: z.enum(["morning", "afternoon"]).optional(),
   // allow additional fields (parents, documents) but validate common ones
-}).partial();
+}).partial().passthrough();

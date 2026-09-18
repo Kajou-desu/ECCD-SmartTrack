@@ -217,6 +217,14 @@ export const apiClient = {
     });
   },
 
+  async importStudents(students) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/import`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ students }),
+    });
+  },
+
   async deleteStudent(id) {
     return fetchWithRetry(`${API_BASE_URL}/api/students/${id}`, {
       method: "DELETE",
@@ -316,6 +324,14 @@ export const apiClient = {
    * Delete an album (and its photos).
    * @param {number|string} albumId
    */
+  async updateAlbum(albumId, payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
   async deleteAlbum(albumId) {
     return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}`, {
       method: "DELETE",
@@ -523,11 +539,15 @@ export const apiClient = {
    * @param {string} currentPassword
    * @param {string} newPassword
    */
-  async changeMyPassword(currentPassword, newPassword) {
+  async requestPasswordChangeOtp() {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me/password/request-otp`, { method: "POST" });
+  },
+
+  async changeMyPassword(currentPassword, newPassword, otpCode) {
     return fetchWithRetry(`${API_BASE_URL}/api/profile/me/password`, {
       method: "PUT",
       headers: jsonHeaders(),
-      body: JSON.stringify({ currentPassword, newPassword }),
+      body: JSON.stringify({ currentPassword, newPassword, otpCode }),
       handleUnauthorized: false,
     });
   },
@@ -537,11 +557,15 @@ export const apiClient = {
    * re-entering the current password as confirmation.
    * @param {string} password
    */
-  async deleteMyAccount(password) {
+  async requestAccountDeletionOtp() {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me/delete/request-otp`, { method: "POST" });
+  },
+
+  async deleteMyAccount(password, otpCode) {
     return fetchWithRetry(`${API_BASE_URL}/api/profile/me`, {
       method: "DELETE",
       headers: jsonHeaders(),
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ password, otpCode }),
       handleUnauthorized: false,
     });
   },

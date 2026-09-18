@@ -8,12 +8,15 @@ import { useStudents } from "@features/students/hooks/useStudents";
 import { PrimaryButton } from "@components/ui/Button";
 import ErrorMsg from "@components/ui/ErrorMsg";
 import { StudentTableSkeleton } from "@components/ui/LoadingSkeleton";
-import { UserRoundPlus } from "lucide-react";
+import { FileUp, UserRoundPlus } from "lucide-react";
+import { useState } from "react";
+import ImportStudentsModal from "@features/students/components/ImportStudentsModal";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function StudentInfo() {
   const navigate = useNavigate();
+  const [importOpen, setImportOpen] = useState(false);
 
   const {
     loading,
@@ -31,6 +34,7 @@ export default function StudentInfo() {
     totalPages,
     goToPage,
     handleExport,
+    refetch,
   } = useStudents();
 
   const handlePageChange = useCallback(
@@ -68,12 +72,20 @@ export default function StudentInfo() {
             Student Records
           </h1>
 
-          <PrimaryButton
-            icon={<UserRoundPlus className="h-5 w-5" />}
-            label="Add Student"
-            ariaLabel="Add New Student"
-            onClick={() => navigate("/student-add")}
-          />
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <PrimaryButton
+              icon={<FileUp className="h-5 w-5" />}
+              label="Import CSV"
+              ariaLabel="Import Students from CSV"
+              onClick={() => setImportOpen(true)}
+            />
+            <PrimaryButton
+              icon={<UserRoundPlus className="h-5 w-5" />}
+              label="Add Student"
+              ariaLabel="Add New Student"
+              onClick={() => navigate("/student-add")}
+            />
+          </div>
         </header>
 
         {notice && <ErrorMsg message={notice} onClose={() => setNotice("")} />}
@@ -137,6 +149,12 @@ export default function StudentInfo() {
           </div>
         </section>
       </div>
+      {importOpen && (
+        <ImportStudentsModal
+          onCancel={() => setImportOpen(false)}
+          onImported={() => refetch()}
+        />
+      )}
     </main>
   );
 }

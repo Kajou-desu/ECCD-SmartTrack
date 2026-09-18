@@ -129,6 +129,29 @@ export function useAlbumsState() {
         [albums, queryClient, showToast],
     );
 
+    const updateAlbum = useCallback(
+        async (albumId, data) => {
+            const current = getAlbumById(albumId);
+            if (!current) return { success: false, error: "Album not found." };
+
+            try {
+                const updated = await apiClient.updateAlbum(albumId, data);
+                setAlbums((items) =>
+                    items.map((album) =>
+                        String(album.id) === String(albumId) ? { ...album, ...updated } : album,
+                    ),
+                );
+                queryClient.invalidateQueries({ queryKey: ["albums", "teacher"] });
+                showToast("success", `"${updated.title}" album was updated.`);
+                return { success: true, album: updated };
+            } catch (err) {
+                showToast("error", err.message || "Failed to update album.");
+                throw err;
+            }
+        },
+        [getAlbumById, queryClient, showToast],
+    );
+
     const deleteAlbum = useCallback(
         (albumId) => {
             const album = getAlbumById(albumId);
@@ -319,6 +342,7 @@ export function useAlbumsState() {
         filteredAlbums,
         getAlbumById,
         createAlbum,
+        updateAlbum,
         deleteAlbum,
         addPhotos,
         deletePhoto,

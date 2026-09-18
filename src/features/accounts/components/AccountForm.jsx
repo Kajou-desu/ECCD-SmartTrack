@@ -44,6 +44,7 @@ export default function AccountForm({
   message,
   isEdit = false,
   assignableRoles,
+  students = [],
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -132,34 +133,56 @@ export default function AccountForm({
         </select>
       </FormField>
 
-      {isEdit && (
-        <>
-          <FormField label="Contact Phone" required>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={onChange}
-              placeholder="Input phone number"
-              className={inputClass}
-              autoComplete="tel"
-              required
-            />
-          </FormField>
+      <FormField label="Contact Phone" required>
+        <input
+          type="tel"
+          name="phone"
+          value={formData.phone}
+          onChange={onChange}
+          placeholder="Input phone number"
+          className={inputClass}
+          autoComplete="tel"
+          required
+        />
+      </FormField>
 
-          <FormField label="Home Address" required>
-            <textarea
-              name="address"
-              value={formData.address}
-              onChange={onChange}
-              placeholder="Input address"
-              rows={3}
-              className={`${inputClass} resize-none`}
-              autoComplete="street-address"
-              required
-            />
-          </FormField>
-        </>
+      <FormField label="Home Address" required>
+        <textarea
+          name="address"
+          value={formData.address}
+          onChange={onChange}
+          placeholder="Input address"
+          rows={3}
+          className={`${inputClass} resize-none`}
+          autoComplete="street-address"
+          required
+        />
+      </FormField>
+
+      {(normalizeRole(formData.role) === "Parent" ||
+        normalizeRole(formData.role) === "Guardian") && (
+        <FormField label="Connect Student">
+          <select
+            name="studentIds"
+            value={formData.studentIds?.[0] ?? ""}
+            onChange={(event) =>
+              onChange({
+                target: {
+                  name: "studentIds",
+                  value: event.target.value ? [event.target.value] : [],
+                },
+              })
+            }
+            className={inputClass}
+          >
+            <option value="">Select a student</option>
+            {students.map((student) => (
+              <option key={student.id} value={student.id}>
+                {student.name} ({student.studentCode || student.id})
+              </option>
+            ))}
+          </select>
+        </FormField>
       )}
 
       <StatusMessage message={message} />

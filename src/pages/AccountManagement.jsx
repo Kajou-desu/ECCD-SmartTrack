@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useAuth } from "@hooks/useAuth";
+import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import useAccounts from "@features/accounts/hooks/useAccounts";
 import AccountSection from "@features/accounts/components/AccountSection";
 import AccountViewModal from "@features/accounts/components/AccountViewModal";
@@ -56,6 +57,8 @@ function EmptyAccounts({ onCreate }) {
 export default function AccountsManagement() {
   const { user } = useAuth();
   const assignableRoles = getAssignableRoles(user?.role);
+  const { data: studentData } = useStudentsQuery();
+  const students = studentData?.students ?? studentData ?? [];
 
   const {
     accounts,
@@ -151,6 +154,7 @@ export default function AccountsManagement() {
       phone: account.phone || "",
       address: account.address || "",
       role: account.role || "Parent",
+      studentIds: account.studentIds ?? account.children?.map((child) => child.id) ?? [],
     });
     setEditMessage(null);
     setUpdateConfirmOpen(false);
@@ -290,6 +294,17 @@ export default function AccountsManagement() {
           />
 
           <AccountSection
+            title="Enrolled Guardians"
+            icon={Users}
+            badgeClass="bg-purple-50 text-purple-600"
+            data={groupedAccounts.guardians}
+            onView={setViewAccount}
+            onEdit={openEdit}
+            onDelete={openDelete}
+            disabled={mutating}
+          />
+
+          <AccountSection
             title="Enrolled Parents"
             icon={Users}
             badgeClass="bg-emerald-50 text-emerald-600"
@@ -312,6 +327,7 @@ export default function AccountsManagement() {
           onCancel={closeCreate}
           submitLabel="Create Account"
           assignableRoles={assignableRoles}
+          students={students}
         />
       )}
 
@@ -333,6 +349,7 @@ export default function AccountsManagement() {
           submitLabel="Review Update"
           isEdit
           assignableRoles={assignableRoles}
+          students={students}
         />
       )}
 

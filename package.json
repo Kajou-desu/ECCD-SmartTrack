@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@babel/parser": "^8.0.5",
     "@hookform/resolvers": "^3.1.0",
     "@tailwindcss/vite": "^4.2.4",
     "@tanstack/react-query": "^5.102.8",
@@ -31,5 +32,18 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "vite": "^8.0.10"
-  }
+  },
+  "description": "A classroom management system for Early Childhood Care and Development (ECCD) centers, with separate portals for teachers/admins and parents.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kajou-desu/ECCD-SmartTrack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kajou-desu/ECCD-SmartTrack/issues"
+  },
+  "homepage": "https://github.com/Kajou-desu/ECCD-SmartTrack#readme"
 }
