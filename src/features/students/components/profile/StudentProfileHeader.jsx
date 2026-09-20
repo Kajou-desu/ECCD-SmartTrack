@@ -1,5 +1,6 @@
 import calculateAge from "@utils/calculateAge";
 import formatDate from "@utils/formatDate";
+import { formatStudentCode } from "@features/students/utils/studentCode.js";
 
 function getStatusBadgeClass(status) {
   const normalized = String(status ?? "").toLowerCase();
@@ -44,7 +45,7 @@ export default function StudentProfileHeader({ student, headerAction }) {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <InfoItem label="Student ID" value={student.studentCode || `ECCD-2026-${student.id}` || "N/A"} />
+            <InfoItem label="Student ID" value={formatStudentCode(student)} />
             <InfoItem label="Session" value={student.session || "N/A"} />
             <InfoItem label="Teacher" value={student.teacher || "N/A"} />
             <InfoItem

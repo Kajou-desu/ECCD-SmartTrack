@@ -1,4 +1,5 @@
 import { Eye, Pencil } from "lucide-react";
+import { formatStudentCode } from "@features/students/utils/studentCode.js";
 
 export default function StudentMobileList({ students = [], onView, onEdit }) {
   if (!students || students.length === 0) {
@@ -14,8 +15,7 @@ export default function StudentMobileList({ students = [], onView, onEdit }) {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate font-semibold text-gray-800">{s.name}</p>
-              <p className="mt-1 text-xs text-gray-500">ID: {s.id} • {s.session === "afternoon" ? "PM" : "AM"}</p>
-              <p className="text-xs text-gray-500">{s.studentCode || `ECCD-2026-${s.id}`}</p>
+              <p className="mt-1 text-xs text-gray-500">{formatStudentCode(s)} • {s.session === "afternoon" ? "PM" : "AM"}</p>
               <p className="mt-2 text-xs text-gray-600">Guardian: {s.guardianName} • {s.guardianPhone}</p>
             </div>
 

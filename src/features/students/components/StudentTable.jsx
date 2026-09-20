@@ -1,4 +1,5 @@
 import { Eye, Pencil } from "lucide-react";
+import { formatStudentCode } from "@features/students/utils/studentCode.js";
 
 export default function StudentTable({ students, onView, onEdit }) {
   if (!students || students.length === 0) {
@@ -33,7 +34,7 @@ export default function StudentTable({ students, onView, onEdit }) {
 
                   <div className="min-w-0">
                     <p className="truncate font-bold text-gray-800">{student.name}</p>
-                    <p className="text-xs text-gray-500">ID: {student.id}</p>
+                    <p className="text-xs text-gray-500">{formatStudentCode(student)}</p>
                   </div>
                 </div>
               </td>

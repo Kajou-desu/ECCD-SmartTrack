@@ -14,7 +14,7 @@ export function DailyThemeCard() {
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-2xl flex h-full min-h-50 items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="w-full flex h-full min-h-50 items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm">
         <p className="text-sm text-gray-500">Loading today's theme...</p>
       </div>
     );
@@ -22,7 +22,7 @@ export function DailyThemeCard() {
 
   if (isError || !theme) {
     return (
-      <div className="w-full max-w-2xl flex h-full min-h-50 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="w-full flex h-full min-h-50 flex-col items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white shadow-sm">
         <p className="text-sm text-gray-500">Unable to load today's theme.</p>
         <button
           type="button"
@@ -36,7 +36,7 @@ export function DailyThemeCard() {
   }
 
   return (
-    <div className="w-full max-w-2xl h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <div className="w-full h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <div className="flex flex-col md:flex-row h-full">
         {/* Right Panel */}
         <div className="flex min-w-45 flex-col items-center justify-center bg-[#e5eeff] p-8">

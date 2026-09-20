@@ -1,3 +1,5 @@
+import { formatStudentCode } from "@features/students/utils/studentCode.js";
+
 export default function ChildOverviewCard({ child }) {
   return (
     <div className="bg-linear-to-r from-orange-50 to-orange-100 rounded-3xl border border-orange-200 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
@@ -14,7 +16,7 @@ export default function ChildOverviewCard({ child }) {
               <p className="text-xs uppercase font-semibold text-gray-600">
                 Student ID
               </p>
-              <p className="font-medium text-orange-700">{child.id}</p>
+              <p className="font-medium text-orange-700">{formatStudentCode(child)}</p>
             </div>
             <div>
               <p className="text-xs uppercase font-semibold text-gray-600">
