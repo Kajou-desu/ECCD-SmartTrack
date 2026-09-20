@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../config/api.js";
+import { compressImage, compressImages } from "../utils/compressImage.js";
 
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 const MAX_RETRIES = 3;
@@ -180,7 +181,7 @@ export const apiClient = {
 
   async uploadFiles(files, endpoint) {
     const formData = new FormData();
-    files.forEach((file) => formData.append("files", file));
+    (await compressImages(files)).forEach((file) => formData.append("files", file));
 
     return fetchWithRetry(`${API_BASE_URL}${endpoint}`, {
       method: "POST",
@@ -346,7 +347,7 @@ export const apiClient = {
    */
   async addAlbumPhotos(albumId, files) {
     const formData = new FormData();
-    files.forEach((file) => formData.append("photos", file));
+    (await compressImages(files)).forEach((file) => formData.append("photos", file));
 
     return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}/photos`, {
       method: "POST",
@@ -383,7 +384,7 @@ export const apiClient = {
     const { file, ...fields } = materialData;
     const formData = new FormData();
     Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
-    if (file instanceof File) formData.append("file", file);
+    if (file instanceof File) formData.append("file", await compressImage(file));
 
     return fetchWithRetry(`${API_BASE_URL}/api/materials`, {
       method: "POST",
@@ -400,7 +401,7 @@ export const apiClient = {
     const { file, ...fields } = materialData;
     const formData = new FormData();
     Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
-    if (file instanceof File) formData.append("file", file);
+    if (file instanceof File) formData.append("file", await compressImage(file));
 
     return fetchWithRetry(`${API_BASE_URL}/api/materials/${id}`, {
       method: "PUT",
@@ -438,7 +439,7 @@ export const apiClient = {
     const formData = new FormData();
     formData.append("materialId", materialId);
     formData.append("studentId", studentId);
-    formData.append("file", file);
+    formData.append("file", await compressImage(file));
 
     return fetchWithRetry(`${API_BASE_URL}/api/submissions`, {
       method: "POST",
@@ -454,7 +455,7 @@ export const apiClient = {
    */
   async uploadStudentDocuments(studentId, files) {
     const formData = new FormData();
-    files.forEach((file) => formData.append("documents", file));
+    (await compressImages(files)).forEach((file) => formData.append("documents", file));
 
     return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/documents`, {
       method: "POST",
@@ -515,6 +516,9 @@ export const apiClient = {
       method: "PUT",
       headers: jsonHeaders(),
       body: JSON.stringify(payload),
+      // A wrong current password comes back as a 401; that must show as a
+      // form error, not sign the user out (same as changeMyPassword).
+      handleUnauthorized: false,
     });
   },
 
@@ -524,7 +528,7 @@ export const apiClient = {
    */
   async uploadMyProfilePhoto(file) {
     const formData = new FormData();
-    formData.append("photo", file);
+    formData.append("photo", await compressImage(file));
 
     return fetchWithRetry(`${API_BASE_URL}/api/profile/me/photo`, {
       method: "POST",

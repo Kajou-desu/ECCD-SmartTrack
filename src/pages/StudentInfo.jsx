@@ -11,6 +11,7 @@ import { StudentTableSkeleton } from "@components/ui/LoadingSkeleton";
 import { FileUp, UserRoundPlus } from "lucide-react";
 import { useState } from "react";
 import ImportStudentsModal from "@features/students/components/ImportStudentsModal";
+import { formatStudentCode } from "@features/students/utils/studentCode.js";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -118,7 +119,7 @@ export default function StudentInfo() {
           <div className="block sm:hidden">
             <StudentMobileList
               students={paginatedStudents}
-              onView={(id) => navigate(`/student/${id}`)}
+              onView={(id) => navigate(`/student/${formatStudentCode({ id })}`)}
               onEdit={(id) => navigate(`/student/${id}/edit`)}
             />
           </div>
@@ -126,7 +127,7 @@ export default function StudentInfo() {
           <div className="hidden sm:block">
             <StudentTable
               students={paginatedStudents}
-              onView={(id) => navigate(`/student/${id}`)}
+              onView={(id) => navigate(`/student/${formatStudentCode({ id })}`)}
               onEdit={(id) => navigate(`/student/${id}/edit`)}
             />
           </div>

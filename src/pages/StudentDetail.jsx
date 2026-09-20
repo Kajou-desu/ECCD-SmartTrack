@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useStudentProfileQuery } from "@features/students/hooks/useStudentProfileQuery.js";
 import { apiClient } from "@api/client.js";
+import { parseStudentCode } from "@features/students/utils/studentCode.js";
 import StudentProfileHeader from "@features/students/components/profile/StudentProfileHeader";
 import GuardianContactsCard from "@features/students/components/profile/GuardianContactsCard";
 import MedicalNotesCard from "@features/students/components/profile/MedicalNotesCard";
@@ -15,10 +16,36 @@ import ErrorMsg from "@components/ui/ErrorMsg";
 import { ArrowLeft } from "lucide-react";
 
 export default function StudentDetail() {
-  const { studentId } = useParams();
+  const { studentId: studentCode } = useParams();
+
+  // The URL must be a student code (ECCD-2026-<number>). Anything else —
+  // including a bare numeric id — is rejected here, before any request is made.
+  const studentId = parseStudentCode(studentCode);
+  if (studentId === null) return <StudentNotFound />;
+
   // key forces a clean remount per student, so loading/profile/activeModal
   // reset naturally instead of needing manual reset logic in an effect.
-  return <StudentDetailView key={studentId} studentId={studentId} />;
+  // studentId below is the numeric id the API (and every child component) uses.
+  return <StudentDetailView key={studentCode} studentId={studentId} />;
+}
+
+function StudentNotFound() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-[calc(100vh-70px)] bg-[#f8f9ff] p-4 sm:p-6 lg:p-8">
+      <button
+        onClick={() => navigate("/student-info")}
+        className="cursor-pointer flex items-center gap-2 text-[#C2570C] hover:text-orange-700 font-semibold mb-4 transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
+      >
+        <ArrowLeft size={20} />
+        <span>Back</span>
+      </button>
+      <div className="bg-white rounded-3xl p-8 border border-gray-200 text-center">
+        <p className="text-gray-600">Student not found</p>
+      </div>
+    </div>
+  );
 }
 
 function StudentDetailView({ studentId }) {
@@ -68,22 +95,7 @@ function StudentDetailView({ studentId }) {
     );
   }
 
-  if (!profile) {
-    return (
-      <div className="min-h-[calc(100vh-70px)] bg-[#f8f9ff] p-4 sm:p-6 lg:p-8">
-        <button
-          onClick={() => navigate("/student-info")}
-          className="cursor-pointer flex items-center gap-2 text-[#C2570C] hover:text-orange-700 font-semibold mb-4 transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
-        >
-          <ArrowLeft size={20} />
-          <span>Back</span>
-        </button>
-        <div className="bg-white rounded-3xl p-8 border border-gray-200 text-center">
-          <p className="text-gray-600">Student not found</p>
-        </div>
-      </div>
-    );
-  }
+  if (!profile) return <StudentNotFound />;
 
   const { student, guardians, medical, documents } = profile;
 

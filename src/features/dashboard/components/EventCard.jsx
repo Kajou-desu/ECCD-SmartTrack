@@ -3,6 +3,16 @@ import { CalendarFold, Cake } from "lucide-react";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { HOLIDAYS } from "@constants/holidays.js";
 
+// Neutral avatar used when a student has no photo. Inlined rather than
+// fetched from a placeholder service: every dashboard load would otherwise
+// send a request to a third party for a list of children's birthdays.
+const AVATAR_PLACEHOLDER =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" fill="#e5e7eb"/><circle cx="20" cy="15" r="7" fill="#9ca3af"/><path d="M6 40c0-9 6-14 14-14s14 5 14 14z" fill="#9ca3af"/></svg>',
+  );
+
+
 export function EventCard({ showBirthdays = true }) {
   const [selectedEvent, setSelectedEvent] = useState("birthdays");
   const { data } = useStudentsQuery();
@@ -78,7 +88,7 @@ export function EventCard({ showBirthdays = true }) {
                 className="flex items-center gap-4 rounded-lg bg-orange-50 p-3 transition-colors duration-200 hover:bg-orange-100"
               >
                 <img
-                  src={birthday.photo || "https://placehold.co/40x40"}
+                  src={birthday.photo || AVATAR_PLACEHOLDER}
                   alt={birthday.name}
                   className="h-10 w-10 shrink-0 rounded-full object-cover"
                 />

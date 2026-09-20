@@ -22,6 +22,7 @@ export default function ProfileSettings({ onNotify }) {
   });
 
   const [profileEditMode, setProfileEditMode] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
@@ -62,8 +63,17 @@ export default function ProfileSettings({ onNotify }) {
     }));
   };
 
+  // The email is where password-reset codes are sent, so the server asks for
+  // the current password before changing it.
+  const emailChanged =
+    profile.email.trim().toLowerCase() !== (user.email ?? "").trim().toLowerCase();
+
   const handleProfileSave = async () => {
     if (saving) return;
+    if (emailChanged && !currentPassword) {
+      onNotify?.("error", "Enter your current password to change your email.");
+      return;
+    }
     setSaving(true);
 
     try {
@@ -73,7 +83,9 @@ export default function ProfileSettings({ onNotify }) {
         lastName: profile.lastName.trim(),
         email: profile.email.trim(),
         phone: profile.phone.trim() || undefined,
+        ...(emailChanged && { currentPassword }),
       });
+      setCurrentPassword("");
       updateUser({
         name: updated.name,
         firstName: updated.firstName,
@@ -286,6 +298,23 @@ export default function ProfileSettings({ onNotify }) {
                 />
               </div>
 
+              {emailChanged && (
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="profile-current-password" className="text-sm font-bold text-gray-800">
+                    Current password
+                  </label>
+                  <input
+                    id="profile-current-password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Required to change your email"
+                    className="border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-1 focus:ring-[#C2570C] transition"
+                  />
+                </div>
+              )}
+
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="profile-phone" className="text-sm font-bold text-gray-800">
                   Phone
@@ -319,6 +348,7 @@ export default function ProfileSettings({ onNotify }) {
                   type="button"
                   onClick={() => {
                     setProfileEditMode(false);
+                    setCurrentPassword("");
                     setProfile({
                       firstName: user.firstName ?? "",
                       middleName: user.middleName ?? "",
