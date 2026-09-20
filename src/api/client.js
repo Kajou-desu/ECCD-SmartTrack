@@ -300,6 +300,30 @@ export const apiClient = {
   },
 
   /**
+   * Live attendance session (Start/Stop Attendance in the header). The server
+   * decides the session's date and owner; nothing is sent in the body.
+   * All three resolve to { session: {...} | null }.
+   */
+  async getAttendanceSession(options = {}) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/current`, {
+      method: "GET",
+      ...options,
+    });
+  },
+
+  async startAttendanceSession() {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/start`, {
+      method: "POST",
+    });
+  },
+
+  async stopAttendanceSession() {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/stop`, {
+      method: "POST",
+    });
+  },
+
+  /**
    * Fetch all photo albums (teacher + parent views share this list).
    * @returns {Promise<Array>} Array of album records
    */
