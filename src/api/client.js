@@ -324,6 +324,62 @@ export const apiClient = {
   },
 
   /**
+   * BLE attendance tags registered to a student (teacher/admin only). The tag's
+   * address is validated again on the server; a tag belongs to exactly one student.
+   */
+  async getStudentBleDevices(studentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/ble-devices`, { method: "GET" });
+  },
+
+  async addStudentBleDevice(studentId, deviceIdentifier) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/ble-devices`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ deviceIdentifier }),
+    });
+  },
+
+  async setStudentBleDeviceEnabled(studentId, deviceId, enabled) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/ble-devices/${deviceId}`, {
+      method: "PATCH",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ enabled }),
+    });
+  },
+
+  async removeStudentBleDevice(studentId, deviceId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/ble-devices/${deviceId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Everything the live monitor shows, in one call: verified/waiting students
+   * plus whether the door tag reader and face recognition are available.
+   */
+  async getAttendanceMonitor(options = {}) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/monitor`, {
+      method: "GET",
+      ...options,
+    });
+  },
+
+  /**
+   * Sends one camera frame (a JPEG Blob) for recognition. Only pixels go up —
+   * the server decides who is in the frame. Not retried (POST): the next frame
+   * supersedes a lost one.
+   */
+  async sendAttendanceFrame(blob, options = {}) {
+    const formData = new FormData();
+    formData.append("frame", blob, "frame.jpg");
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/frame`, {
+      method: "POST",
+      body: formData,
+      signal: options.signal,
+    });
+  },
+
+  /**
    * Fetch all photo albums (teacher + parent views share this list).
    * @returns {Promise<Array>} Array of album records
    */

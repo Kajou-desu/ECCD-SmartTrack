@@ -6,7 +6,7 @@ import Logo from "@assets/ECCDST_Logo.png";
 import { useNotifications } from "@hooks/useNotifications";
 import { Toast } from "@components/ui/Toast";
 import { useAttendanceSession } from "@features/smartAttendance/hooks/useAttendanceSession";
-import { CalendarDays, Bell, Play, Pause, Menu } from "lucide-react";
+import { CalendarDays, Bell, Play, Pause, Menu, ScanFace } from "lucide-react";
 
 export default function Header({
   reminder,
@@ -34,7 +34,10 @@ export default function Header({
     const wasRecording = isRecording;
     try {
       if (wasRecording) await stop();
-      else await start();
+      else {
+        await start();
+        navigate("/attendance/live"); // open the live monitor as soon as a session begins
+      }
       onToggleAttendance?.(!wasRecording);
     } catch (err) {
       console.error("Failed to toggle attendance session:", err);
@@ -120,6 +123,19 @@ export default function Header({
               </span>
             )}
           </button>
+
+          {/* Back to the live monitor while attendance is running */}
+          {isRecording && (
+            <button
+              type="button"
+              onClick={() => navigate("/attendance/live")}
+              aria-label="Open live attendance"
+              title="Live attendance"
+              className="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-orange-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2 cursor-pointer"
+            >
+              <ScanFace aria-hidden="true" className="h-5 w-5" />
+            </button>
+          )}
 
           {/* Divider - Hidden on mobile */}
           <div

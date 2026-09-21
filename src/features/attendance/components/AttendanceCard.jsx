@@ -42,7 +42,14 @@ export default function AttendanceCard({ record, onMarkStatus, isSaving }) {
           </p>
         </div>
 
-        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[status] || statusStyles.absent}`}>{statusLabel}</span>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[status] || statusStyles.absent}`}>{statusLabel}</span>
+          {record.verified && record.status === "present" && (
+            <span className="text-xs text-gray-500" title="Recorded automatically from the camera and the door tag reader">
+              Verified automatically
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="my-5 h-px bg-gray-200" />
