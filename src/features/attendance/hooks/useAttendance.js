@@ -84,7 +84,7 @@ export function useAttendance(initialDate) {
         return next;
       });
 
-      setAttendanceRecords((current) => current.map((record) => (record.id === id ? { ...record, status: nextStatus } : record)));
+      setAttendanceRecords((current) => current.map((record) => (record.id === id ? { ...record, status: nextStatus, verified: false } : record)));
 
       try {
         await apiClient.updateAttendance(id, selectedDate, nextStatus);

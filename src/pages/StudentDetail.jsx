@@ -10,6 +10,7 @@ import RequiredDocumentsCard from "@features/students/components/profile/Require
 import EditGuardiansModal from "@features/students/components/profile/EditGuardiansModal";
 import EditMedicalModal from "@features/students/components/profile/EditMedicalModal";
 import UploadDocumentModal from "@features/students/components/profile/UploadDocumentModal";
+import StudentBleDevicesCard from "@features/smartAttendance/components/StudentBleDevicesCard";
 import PageHeader from "@components/shared/PageHeader";
 import LoadingState from "@components/shared/LoadingState";
 import ErrorMsg from "@components/ui/ErrorMsg";
@@ -130,6 +131,10 @@ function StudentDetailView({ studentId }) {
           medical={medical}
           onEdit={() => setActiveModal("medical")}
         />
+      </div>
+
+      <div className="mt-8">
+        <StudentBleDevicesCard studentId={studentId} />
       </div>
 
       <div className="mt-8">

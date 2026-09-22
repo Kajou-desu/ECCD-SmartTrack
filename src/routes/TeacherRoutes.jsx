@@ -7,6 +7,7 @@ import { EventPhotosProvider } from "@features/eventPhotos/context/EventPhotosPr
 
 const Dashboard = lazy(() => import("@pages/Dashboard.jsx"));
 const Attendance = lazy(() => import("@pages/Attendance.jsx"));
+const AttendanceLive = lazy(() => import("@pages/AttendanceLive.jsx"));
 const StudentInfo = lazy(() => import("@pages/StudentInfo.jsx"));
 const StudentForm = lazy(() => import("@pages/StudentForm.jsx"));
 const StudentDetail = lazy(() => import("@pages/StudentDetail.jsx"));
@@ -26,6 +27,7 @@ export function TeacherRoutes() {
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/attendance" element={<Attendance />} />
+          <Route path="/attendance/live" element={<AttendanceLive />} />
           <Route path="/student-info" element={<StudentInfo />} />
           <Route path="/student-add" element={<StudentForm />} />
           <Route path="/student/:studentId/edit" element={<StudentForm />} />
