@@ -67,7 +67,7 @@ export default function Dashboard() {
               return (
                 <div
                   key={card.key}
-                  className={`lg:col-span-${card.colSpan} lg:min-h-0`}
+                  className={`h-full min-h-0 lg:col-span-${card.colSpan}`}
                 >
                   <Comp />
                 </div>

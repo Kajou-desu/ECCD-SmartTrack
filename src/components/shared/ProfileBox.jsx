@@ -21,15 +21,17 @@ export default function ProfileBox({
       aria-label={collapsed ? `${displayName}, ${displayRole}` : undefined}
       className={`
         flex min-h-16 w-full items-center rounded-2xl
-        border border-slate-200 bg-white p-3
-        text-left shadow-sm transition
-        hover:border-orange-300 hover:bg-orange-50
+        text-left transition
         focus-visible:outline-none
         focus-visible:ring-2
         focus-visible:ring-[#C2570C]
         focus-visible:ring-offset-2
         cursor-pointer
-        ${collapsed ? "justify-center" : "gap-3"}
+        ${
+          collapsed
+            ? "min-h-0 w-auto justify-center rounded-full border-0 bg-transparent p-0 shadow-none hover:border-transparent hover:bg-transparent"
+            : "gap-3 border border-slate-200 bg-white p-3 shadow-sm hover:border-orange-300 hover:bg-orange-50"
+        }
         ${className}
       `}
       {...buttonProps}
