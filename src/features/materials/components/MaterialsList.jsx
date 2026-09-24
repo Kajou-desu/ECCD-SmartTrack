@@ -10,6 +10,7 @@ export default function MaterialsList({
   onAddMaterial,
   onView,
   onUpload,
+  onViewWorks,
   onEdit,
   onDelete,
 }) {
@@ -34,6 +35,7 @@ export default function MaterialsList({
           material={material}
           onView={() => onView(material)}
           onUpload={() => onUpload(material)}
+          onViewWorks={() => onViewWorks(material)}
           onEdit={() => onEdit(material)}
           onDelete={() => onDelete(material)}
         />

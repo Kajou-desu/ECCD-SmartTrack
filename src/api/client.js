@@ -4,6 +4,7 @@ import { compressImage, compressImages } from "../utils/compressImage.js";
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
+const FILE_DOWNLOAD_TIMEOUT = 30000; // 30 seconds — files can be up to 10 MB
 let onUnauthorized = null;
 
 export function setUnauthorizedHandler(handler) {
@@ -497,6 +498,44 @@ export const apiClient = {
     return fetchWithRetry(`${API_BASE_URL}/api/materials/${id}`, {
       method: "DELETE",
     });
+  },
+
+  /**
+   * Every student's uploaded work for one material (teacher/admin only).
+   * @param {number|string} materialId
+   * @returns {Promise<{ material: { id, title, category }, submissions: Array<{
+   *   id, studentId, studentName, fileName, fileUrl, submittedAt }> }>}
+   */
+  async getMaterialSubmissions(materialId, options = {}) {
+    return fetchWithRetry(
+      `${API_BASE_URL}/api/materials/${encodeURIComponent(materialId)}/submissions`,
+      { method: "GET", ...options },
+    );
+  },
+
+  /**
+   * Downloads a file from one of the signed URLs the API hands out, as a Blob.
+   * A Blob (rather than pointing an <iframe>/<img> at the API) lets the page
+   * preview and save the file even though the API is a different origin, and
+   * tells us whether the file is gone. The URL's signature is the credential,
+   * so no auth header is sent (nor needed).
+   * @param {string} fileUrl
+   * @returns {Promise<Blob|null>} the file, or null if it no longer exists
+   */
+  async getFileBlob(fileUrl, { signal } = {}) {
+    const controller = new AbortController();
+    if (signal?.aborted) controller.abort();
+    else signal?.addEventListener("abort", () => controller.abort(), { once: true });
+    const timeoutId = setTimeout(() => controller.abort(), FILE_DOWNLOAD_TIMEOUT);
+
+    try {
+      const response = await fetch(fileUrl, { signal: controller.signal, credentials: "omit" });
+      if (response.status === 404) return null;
+      if (!response.ok) throw new ApiError("Something went wrong.", response.status);
+      return await response.blob();
+    } finally {
+      clearTimeout(timeoutId);
+    }
   },
 
   /**

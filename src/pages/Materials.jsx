@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   useMaterials,
   MATERIAL_MODAL,
@@ -13,6 +14,7 @@ import ErrorMsg from "@components/ui/ErrorMsg";
 import { Toast } from "@components/ui/Toast";
 
 export default function Materials() {
+  const navigate = useNavigate();
   const {
     materials,
     loading,
@@ -59,6 +61,9 @@ export default function Materials() {
             onAddMaterial={openCreateModal}
             onView={viewMaterial}
             onUpload={openUploadModal}
+            onViewWorks={(material) =>
+              navigate(`/learning-materials/${material.id}/submissions`)
+            }
             onEdit={openEditModal}
             onDelete={openDeleteModal}
           />

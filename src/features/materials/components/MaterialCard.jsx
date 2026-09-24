@@ -6,12 +6,14 @@ import {
   Upload,
   FileText,
   Calendar,
+  FolderOpen,
 } from "lucide-react";
 
 export default function LearningMaterialCard({
   material,
   onView,
   onUpload,
+  onViewWorks,
   onEdit,
   onDelete,
 }) {
@@ -83,6 +85,12 @@ export default function LearningMaterialCard({
             label="Upload Works"
             onClick={onUpload}
             ariaLabel={`Upload completed student work for ${material.title}`}
+          />
+
+          <SecondaryButton
+            icon={<FolderOpen className="h-5 w-5" aria-hidden="true" />}
+            label="Student Works"
+            onClick={onViewWorks}
           />
         </div>
       </div>
