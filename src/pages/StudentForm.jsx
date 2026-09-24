@@ -425,7 +425,6 @@ export default function StudentForm() {
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>
-                  <option value="prefer_not_to_say">Prefer not to say</option>
                 </select>
                 {form.touched.gender && form.errors.gender ? (
                   <p className="mt-1.5 text-xs text-red-600">{form.errors.gender}</p>
