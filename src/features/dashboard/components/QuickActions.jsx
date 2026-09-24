@@ -6,7 +6,7 @@ const ACTIONS = [
   { label: "Add Student", path: "/student-add", Icon: UserPlus },
   { label: "Attendance", path: "/attendance", Icon: ClipboardCheck },
   { label: "Calendar", path: "/calendar", Icon: CalendarDays },
-  { label: "Accounts", path: "/accounts", Icon: UsersRound },
+  { label: "Accounts", path: "/accounts-management", Icon: UsersRound },
 ];
 
 export function QuickActions() {

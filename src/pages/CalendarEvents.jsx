@@ -149,7 +149,7 @@ function AddEventModal({ onCancel, onCreated }) {
 export default function CalendarEvents() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 7));
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const [showAddEventModal, setShowAddEventModal] = useState(false);
 
   const monthKey = useMemo(() => {
@@ -226,8 +226,14 @@ export default function CalendarEvents() {
   };
 
   const getDayBorder = (day) => {
-    const today = currentDate.getDate();
-    if (day === today) return "ring-2 ring-orange-500";
+    const today = new Date();
+    if (
+      day === today.getDate() &&
+      currentDate.getMonth() === today.getMonth() &&
+      currentDate.getFullYear() === today.getFullYear()
+    ) {
+      return "ring-2 ring-orange-500";
+    }
     return "";
   };
 
