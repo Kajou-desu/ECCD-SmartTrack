@@ -42,9 +42,7 @@ export default function PhotoThumbnail({
         alt={altText}
         loading="lazy"
         onLoad={() => setIsLoaded(true)}
-        className={`h-full w-full object-cover transition-opacity duration-300 group-hover:scale-105 ${
-          isLoaded ? "opacity-100" : "opacity-0"
-        }`}
+        className="h-full w-full object-cover"
       />
 
       {onDelete && (

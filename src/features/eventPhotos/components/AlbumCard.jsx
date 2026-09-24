@@ -37,9 +37,7 @@ export default function AlbumCard({ album, onOpen, onDelete, onEdit }) {
               src={coverPhoto.url}
               alt={`Cover photo for ${album.title}`}
               onLoad={() => setIsCoverLoaded(true)}
-              className={`h-full w-full object-cover transition-opacity duration-300 ${
-                isCoverLoaded ? "opacity-100" : "opacity-0"
-              }`}
+              className="h-full w-full object-cover"
             />
           </>
         ) : (
