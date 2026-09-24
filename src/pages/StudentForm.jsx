@@ -51,7 +51,13 @@ const MAX_STUDENT_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        reject(new Error("Unable to preview the selected image."));
+        return;
+      }
+      resolve(reader.result);
+    };
     reader.onerror = () => reject(new Error("Unable to read the selected image."));
     reader.readAsDataURL(file);
   });

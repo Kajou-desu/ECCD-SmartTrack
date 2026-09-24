@@ -41,7 +41,9 @@ export async function compressImage(
   file,
   { maxDimension = MAX_IMAGE_DIMENSION, quality = IMAGE_QUALITY } = {},
 ) {
-  if (!(file instanceof File) || !COMPRESSIBLE_TYPES.has(file.type)) return file;
+  if (typeof File === "undefined" || !(file instanceof File) || !COMPRESSIBLE_TYPES.has(file.type)) {
+    return file;
+  }
   if (typeof createImageBitmap !== "function" || typeof document === "undefined") return file;
 
   let bitmap;
