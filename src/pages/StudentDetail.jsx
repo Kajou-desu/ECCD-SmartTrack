@@ -96,7 +96,7 @@ function StudentDetailView({ studentId }) {
     );
   }
 
-  if (!profile) return <StudentNotFound />;
+  if (!profile?.student) return <StudentNotFound />;
 
   const { student, guardians, medical, documents } = profile;
 

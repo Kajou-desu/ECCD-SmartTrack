@@ -16,7 +16,7 @@ function fromListField(list) {
 }
 
 export default function EditMedicalModal({
-  medical,
+  medical = {},
   onCancel,
   onSave,
   hideAccommodations = false,

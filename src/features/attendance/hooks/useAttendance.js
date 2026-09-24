@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 import { toDayKey } from "@utils/dateKeys.js";
 import { useAttendanceQuery } from "./useAttendanceQuery.js";
+import { normalizeAttendanceTime } from "../utils/attendanceFilters.js";
 
 export function useAttendance(initialDate) {
   const queryClient = useQueryClient();
@@ -43,7 +44,7 @@ export function useAttendance(initialDate) {
 
     return attendanceRecords.filter((record) => {
       const statusMatch = filterStatus === "all" || record.status === filterStatus;
-      const timeMatch = filterTime === "all" || String(record.session ?? "").toLowerCase() === filterTime;
+      const timeMatch = filterTime === "all" || normalizeAttendanceTime(record.session) === filterTime;
       const searchMatch = normalizedSearch === "" || String(record.name ?? "").toLowerCase().includes(normalizedSearch);
       return statusMatch && timeMatch && searchMatch;
     });

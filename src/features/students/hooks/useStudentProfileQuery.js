@@ -2,8 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 
 async function fetchStudentProfile(studentId) {
-    const data = await apiClient.getStudent(studentId);
-    return { profile: data ?? null };
+    const response = await apiClient.getStudent(studentId);
+    const data = response?.data ?? response;
+
+    if (!data) return { profile: null };
+    if (data.student) return { profile: data };
+
+    return { profile: { student: data } };
 }
 
 // Shared by the teacher StudentDetail page and the parent ParentStudentProfile

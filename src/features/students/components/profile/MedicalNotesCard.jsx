@@ -1,7 +1,7 @@
 import { AlertCircle, Pencil, Utensils, Accessibility } from "lucide-react";
 import MedicalCard from "./MedicalCard";
 
-export default function MedicalNotesCard({ medical, onEdit }) {
+export default function MedicalNotesCard({ medical = {}, onEdit }) {
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
       <div className="flex items-center justify-between gap-4 mb-6">
