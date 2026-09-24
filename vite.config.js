@@ -58,7 +58,11 @@ function cspPlugin(apiUrl) {
 
 export default defineConfig(({ mode }) => {
   // Same fallback as src/config/api.js.
-  const apiUrl = loadEnv(mode, __dirname, "VITE_").VITE_API_URL || "http://localhost:4000";
+  const apiUrl =
+    loadEnv(mode, __dirname, "VITE_").VITE_API_URL ||
+    (mode === "production"
+      ? "https://eccd-backend-production.up.railway.app"
+      : "http://localhost:4000");
 
   return {
   plugins: [react(), tailwindcss(), cspPlugin(apiUrl)],
