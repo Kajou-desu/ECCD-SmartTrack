@@ -1,12 +1,8 @@
-import { useState } from "react";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
-import useClickOutside from "@hooks/useClickOutside";
-import { useEscapeKey } from "@hooks/useEscapeKey";
 import formatDate from "@utils/formatDate";
 import {
   Pencil,
   Trash2,
-  MoreVertical,
   Upload,
   FileText,
   Calendar,
@@ -19,22 +15,6 @@ export default function LearningMaterialCard({
   onEdit,
   onDelete,
 }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const closeMenu = () => setIsMenuOpen(false);
-
-  const menuRef = useClickOutside(closeMenu, isMenuOpen);
-  useEscapeKey(closeMenu, isMenuOpen);
-
-  const handleMenuClick = (event) => {
-    event.stopPropagation();
-    setIsMenuOpen((current) => !current);
-  };
-
-  const runAndCloseMenu = (action) => () => {
-    closeMenu();
-    action();
-  };
-
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Material cover and quick actions. */}
@@ -52,44 +32,23 @@ export default function LearningMaterialCard({
           {material.category}
         </span>
 
-        <div ref={menuRef} className="absolute right-2 top-2">
+        <div className="absolute right-2 top-2 flex gap-1">
           <button
             type="button"
-            onClick={handleMenuClick}
-            aria-label={`Open actions for ${material.title}`}
-            aria-expanded={isMenuOpen}
-            aria-haspopup="menu"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg bg-white/80 text-slate-700 shadow-sm transition hover:bg-white hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            onClick={(event) => { event.stopPropagation(); onEdit(material); }}
+            aria-label={`Edit ${material.title}`}
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg bg-white/80 text-slate-700 shadow-sm transition hover:bg-orange-50 hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
           >
-            <MoreVertical size={18} aria-hidden="true" />
+            <Pencil size={16} aria-hidden="true" />
           </button>
-
-          {isMenuOpen && (
-            <div
-              role="menu"
-              className="absolute right-0 top-full z-30 mt-2 min-w-44 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
-            >
-              <button
-                type="button"
-                role="menuitem"
-                onClick={runAndCloseMenu(onEdit)}
-                className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-              >
-                <Pencil size={16} aria-hidden="true" />
-                Edit
-              </button>
-
-              <button
-                type="button"
-                role="menuitem"
-                onClick={runAndCloseMenu(onDelete)}
-                className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
-              >
-                <Trash2 size={16} aria-hidden="true" />
-                Delete
-              </button>
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={(event) => { event.stopPropagation(); onDelete(material); }}
+            aria-label={`Delete ${material.title}`}
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg bg-white/80 text-slate-700 shadow-sm transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+          >
+            <Trash2 size={16} aria-hidden="true" />
+          </button>
         </div>
       </div>
 

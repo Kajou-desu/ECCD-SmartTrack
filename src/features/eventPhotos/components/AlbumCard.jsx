@@ -48,12 +48,6 @@ export default function AlbumCard({ album, onOpen, onDelete, onEdit }) {
           </div>
         )}
 
-        {/* Category badge is the first identifying detail shown, ahead of
-            the secondary delete control. */}
-        <span className="absolute left-3 top-3 inline-block rounded-full bg-white/90 px-3 py-1 text-xs font-semibold tracking-wider text-slate-700 shadow-sm">
-          {album.category}
-        </span>
-
         {(onEdit || onDelete) && (
           <div className="absolute right-2 top-2 flex gap-1">
             {onEdit && (

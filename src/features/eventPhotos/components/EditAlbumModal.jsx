@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 
 export default function EditAlbumModal({ album, onCancel, onConfirm }) {
   const [title, setTitle] = useState(album.title || "");
-  const [category, setCategory] = useState(album.category || "Uncategorized");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -14,7 +13,7 @@ export default function EditAlbumModal({ album, onCancel, onConfirm }) {
     setSaving(true);
     setError("");
     try {
-      await onConfirm({ title: title.trim(), category });
+      await onConfirm({ title: title.trim() });
     } catch (err) {
       setError(err?.details?.message || err?.message || "Failed to update album.");
       setSaving(false);
@@ -28,10 +27,6 @@ export default function EditAlbumModal({ album, onCancel, onConfirm }) {
         <label className="block">
           <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">Album Name <span className="text-red-600">*</span></span>
           <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm" required />
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">Category</span>
-          <input value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm" />
         </label>
         {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
