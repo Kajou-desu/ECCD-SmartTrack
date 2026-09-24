@@ -528,6 +528,21 @@ export const apiClient = {
   },
 
   /**
+   * Upload/replace a student's profile picture.
+   * @param {number|string} studentId
+   * @param {File} file
+   */
+  async uploadStudentPhoto(studentId, file) {
+    const formData = new FormData();
+    formData.append("photo", await compressImage(file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/photo`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
    * Upload one or more documents to a student's profile.
    * @param {number|string} studentId
    * @param {File[]} files

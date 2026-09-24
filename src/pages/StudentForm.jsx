@@ -68,29 +68,46 @@ export default function StudentForm() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [photoError, setPhotoError] = useState("");
-  // Guardian info is required by the backend (see FormSection 03 below),
-  // but most students don't need a guardian distinct from their parents,
-  // so the section starts collapsed behind a button and only opens
-  // automatically once there's existing guardian data or a validation
-  // error on one of its required fields.
+  // The compressed File is kept separately from form.values.photo (a data URL
+  // used only for the live preview): the actual upload goes through the
+  // dedicated /api/students/:id/photo endpoint, sent as multipart after the
+  // student record itself is created/updated (a new student has no id yet).
+  const [photoFile, setPhotoFile] = useState(null);
+  // A guardian isn't required on its own — the record just needs at least
+  // one of mother/father/guardian name (see studentSchema.superRefine and
+  // buildCreateData on the backend) — but most students don't need a
+  // guardian distinct from their parents, so the section starts collapsed
+  // behind a button and only opens automatically once there's existing
+  // guardian data or a validation error on one of its fields.
   const [guardianOpen, setGuardianOpen] = useState(false);
 
   const handleStudentSubmit = useCallback(
     async (data) => {
       setSubmitError("");
 
+      // photo isn't sent to create/update — it's a preview data URL, not the
+      // file, and neither endpoint accepts it. The actual file goes through
+      // apiClient.uploadStudentPhoto once the student record has an id.
+      const studentFields = { ...data };
+      delete studentFields.photo;
       const payload = {
-        ...data,
+        ...studentFields,
         allergies: fromMedicalList(data.allergiesList),
         dietary: fromMedicalList(data.dietaryList),
         specialNotes: fromMedicalList(data.specialNotesList),
       };
 
       try {
+        let savedId = studentId;
         if (isEditing) {
           await apiClient.updateStudent(studentId, payload);
         } else {
-          await apiClient.createStudent(payload);
+          const created = await apiClient.createStudent(payload);
+          savedId = created.id;
+        }
+
+        if (photoFile) {
+          await apiClient.uploadStudentPhoto(savedId, photoFile);
         }
 
         // ["students"] is shared by the roster, the dashboard birthday widget,
@@ -106,7 +123,7 @@ export default function StudentForm() {
         setSubmitError(error?.message || "Unable to save student record.");
       }
     },
-    [isEditing, studentId, navigate, queryClient],
+    [isEditing, studentId, navigate, queryClient, photoFile],
   );
 
   const handleDeleteStudent = async () => {
@@ -150,6 +167,7 @@ export default function StudentForm() {
     try {
       const compressedFile = await compressImage(file);
       const photo = await readFileAsDataUrl(compressedFile);
+      setPhotoFile(compressedFile);
       setValues((previous) => ({ ...previous, photo }));
     } catch (error) {
       setPhotoError(error.message || "Unable to read the selected image.");
@@ -435,7 +453,6 @@ export default function StudentForm() {
                     onBlur={form.handleBlur}
                     error={form.touched.guardianName && form.errors.guardianName}
                     placeholder="Guardian's full name"
-                    required
                   />
 
                   <FormField
