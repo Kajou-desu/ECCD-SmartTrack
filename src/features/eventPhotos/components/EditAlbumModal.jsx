@@ -26,7 +26,7 @@ export default function EditAlbumModal({ album, onCancel, onConfirm }) {
       <form onSubmit={submit} className="space-y-4 p-5 sm:p-6">
         <h2 id="edit-album-title" className="text-lg font-bold text-slate-900">Edit Album</h2>
         <label className="block">
-          <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">Album Name</span>
+          <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">Album Name <span className="text-red-600">*</span></span>
           <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm" required />
         </label>
         <label className="block">

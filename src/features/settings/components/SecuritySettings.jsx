@@ -149,7 +149,7 @@ export default function SecuritySettings({ onNotify }) {
             htmlFor="current-password"
             className="block text-sm font-medium text-gray-700 mb-1.5"
           >
-            Current Password
+            Current Password <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <input
@@ -187,7 +187,7 @@ export default function SecuritySettings({ onNotify }) {
             htmlFor="new-password"
             className="block text-sm font-medium text-gray-700 mb-1.5"
           >
-            New Password
+            New Password <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <input
@@ -296,7 +296,7 @@ export default function SecuritySettings({ onNotify }) {
             htmlFor="confirm-password"
             className="block text-sm font-medium text-gray-700 mb-1.5"
           >
-            Confirm Password
+            Confirm Password <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <input

@@ -130,7 +130,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
               htmlFor="edit-material-title"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
-              Title
+              Title <span className="text-red-600">*</span>
             </label>
 
             <input
@@ -149,7 +149,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
               htmlFor="edit-material-category"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
-              Category
+              Category <span className="text-red-600">*</span>
             </label>
 
             <input
@@ -168,7 +168,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
               htmlFor="edit-material-description"
               className="mb-2 block text-sm font-semibold text-slate-700"
             >
-              Description
+              Description <span className="text-red-600">*</span>
             </label>
 
             <textarea
@@ -177,6 +177,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Enter material description"
               rows={4}
+              required
               className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
             />
           </div>

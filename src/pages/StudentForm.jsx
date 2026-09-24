@@ -15,6 +15,7 @@ import AddressFields from "@features/students/components/form/AddressFields";
 import ListField from "@features/students/components/form/ListField";
 import { combineAddress, splitAddress } from "@features/students/utils/address.js";
 import { toMedicalList, fromMedicalList } from "@features/students/utils/medicalList.js";
+import { compressImage } from "@utils/compressImage.js";
 
 const initialValues = {
   firstName: "",
@@ -28,27 +29,33 @@ const initialValues = {
   session: "morning",
   motherName: "",
   motherAddress: "",
-  motherAddressPurok: "",
-  motherAddressBarangay: "",
   motherPhone: "",
   motherEmail: "",
   fatherName: "",
   fatherAddress: "",
-  fatherAddressPurok: "",
-  fatherAddressBarangay: "",
   fatherPhone: "",
   fatherEmail: "",
   guardianName: "",
   guardianAddress: "",
-  guardianAddressPurok: "",
-  guardianAddressBarangay: "",
   guardianPhone: "",
   guardianEmail: "",
+  photo: "",
   allergiesList: [],
   dietaryList: [],
   specialNotesList: [],
   documents: [],
 };
+
+const MAX_STUDENT_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("Unable to read the selected image."));
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function StudentForm() {
   const { studentId } = useParams();
@@ -60,6 +67,7 @@ export default function StudentForm() {
   const [submitError, setSubmitError] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [photoError, setPhotoError] = useState("");
   // Guardian info is required by the backend (see FormSection 03 below),
   // but most students don't need a guardian distinct from their parents,
   // so the section starts collapsed behind a button and only opens
@@ -124,10 +132,32 @@ export default function StudentForm() {
 
   const { setValues } = form;
 
-  // Keeps a Purok/Barangay pair's combined "<field>Address" string (the
-  // value actually validated and sent to the API) in sync as either half
-  // changes. baseKey is "address", "motherAddress", "fatherAddress", or
-  // "guardianAddress".
+  const handlePhotoChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    setPhotoError("");
+
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Please select an image file.");
+      return;
+    }
+    if (file.size > MAX_STUDENT_PHOTO_SIZE_BYTES) {
+      setPhotoError("Student picture must be 5 MB or smaller.");
+      return;
+    }
+
+    try {
+      const compressedFile = await compressImage(file);
+      const photo = await readFileAsDataUrl(compressedFile);
+      setValues((previous) => ({ ...previous, photo }));
+    } catch (error) {
+      setPhotoError(error.message || "Unable to read the selected image.");
+    }
+  };
+
+  // Keeps the student's Purok/Barangay pair in sync with the address string
+  // validated and sent to the API.
   const handleAddressChange = (baseKey) => (event) => {
     const { name, value } = event.target;
     form.setValues((prev) => {
@@ -176,10 +206,6 @@ export default function StudentForm() {
         if (!isMounted) return;
 
         const studentAddr = splitAddress(student.address);
-        const motherAddr = splitAddress(student.motherAddress);
-        const fatherAddr = splitAddress(student.fatherAddress);
-        const guardianAddr = splitAddress(student.guardianAddress);
-
         setValues({
           firstName: student.firstName || "",
           middleName: student.middleName || "",
@@ -192,22 +218,17 @@ export default function StudentForm() {
           session: student.session || "morning",
           motherName: student.motherName || "",
           motherAddress: student.motherAddress || "",
-          motherAddressPurok: motherAddr.purok,
-          motherAddressBarangay: motherAddr.barangay,
           motherPhone: student.motherPhone || "",
           motherEmail: student.motherEmail || "",
           fatherName: student.fatherName || "",
           fatherAddress: student.fatherAddress || "",
-          fatherAddressPurok: fatherAddr.purok,
-          fatherAddressBarangay: fatherAddr.barangay,
           fatherPhone: student.fatherPhone || "",
           fatherEmail: student.fatherEmail || "",
           guardianName: student.guardianName || "",
           guardianAddress: student.guardianAddress || "",
-          guardianAddressPurok: guardianAddr.purok,
-          guardianAddressBarangay: guardianAddr.barangay,
           guardianPhone: student.guardianPhone || "",
           guardianEmail: student.guardianEmail || "",
+          photo: student.photo || "",
           allergiesList: toMedicalList(student.allergies),
           dietaryList: toMedicalList(student.dietary),
           specialNotesList: toMedicalList(student.specialNotes),
@@ -239,8 +260,7 @@ export default function StudentForm() {
     form.values.guardianName ||
       form.values.guardianPhone ||
       form.values.guardianEmail ||
-      form.values.guardianAddressPurok ||
-      form.values.guardianAddressBarangay,
+      form.values.guardianAddress,
   );
   const showGuardianForm = guardianOpen || hasGuardianInfo;
 
@@ -385,8 +405,6 @@ export default function StudentForm() {
                 errors={form.errors}
                 onChange={form.handleChange}
                 onBlur={form.handleBlur}
-                onAddressChange={handleAddressChange("motherAddress")}
-                onAddressBlur={handleAddressBlur("motherAddress")}
               />
 
               <ContactSection
@@ -397,8 +415,6 @@ export default function StudentForm() {
                 errors={form.errors}
                 onChange={form.handleChange}
                 onBlur={form.handleBlur}
-                onAddressChange={handleAddressChange("fatherAddress")}
-                onAddressBlur={handleAddressBlur("fatherAddress")}
               />
             </div>
           </FormSection>
@@ -431,7 +447,6 @@ export default function StudentForm() {
                     onBlur={form.handleBlur}
                     error={form.touched.guardianPhone && form.errors.guardianPhone}
                     placeholder="0912-345-6789"
-                    required
                   />
 
                   <FormField
@@ -447,15 +462,14 @@ export default function StudentForm() {
                 </div>
 
                 <div className="mt-4">
-                  <AddressFields
+                  <FormField
                     label="Guardian Address"
-                    purokName="guardianAddressPurok"
-                    barangayName="guardianAddressBarangay"
-                    purokValue={form.values.guardianAddressPurok}
-                    barangayValue={form.values.guardianAddressBarangay}
-                    onChange={handleAddressChange("guardianAddress")}
-                    onBlur={handleAddressBlur("guardianAddress")}
+                    name="guardianAddress"
+                    value={form.values.guardianAddress}
+                    onChange={form.handleChange}
+                    onBlur={form.handleBlur}
                     error={form.touched.guardianAddress && form.errors.guardianAddress}
+                    placeholder="Guardian's full address"
                   />
                 </div>
               </>
@@ -513,6 +527,45 @@ export default function StudentForm() {
 
           <FormSection
             number="05"
+            title="Student Picture"
+            description="Upload a clear picture of the student when available."
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              {form.values.photo ? (
+                <img
+                  src={form.values.photo}
+                  alt="Student preview"
+                  className="h-28 w-28 rounded-2xl border border-slate-200 object-cover"
+                />
+              ) : (
+                <div className="flex h-28 w-28 items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-center text-xs text-slate-500">
+                  No picture
+                </div>
+              )}
+
+              <div>
+                <label
+                  htmlFor="studentPhoto"
+                  className="inline-flex cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#C2570C] hover:text-[#C2570C]"
+                >
+                  {form.values.photo ? "Replace Picture" : "Upload Picture"}
+                </label>
+                <input
+                  id="studentPhoto"
+                  name="photo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  className="sr-only"
+                />
+                <p className="mt-2 text-xs text-slate-500">JPG, PNG, or WEBP up to 5 MB.</p>
+                {photoError ? <p role="alert" className="mt-1 text-xs text-red-600">{photoError}</p> : null}
+              </div>
+            </div>
+          </FormSection>
+
+          <FormSection
+            number="06"
             title="Documents"
             description="Upload supporting student documents when available."
           >

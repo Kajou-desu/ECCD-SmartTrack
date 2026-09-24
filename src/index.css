@@ -3,3 +3,8 @@
 html {
   font-size: 12px;
 }
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}

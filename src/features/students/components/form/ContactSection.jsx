@@ -1,5 +1,4 @@
 import FormField from "./FormField";
-import AddressFields from "./AddressFields";
 
 export default function ContactSection({
   title,
@@ -9,8 +8,6 @@ export default function ContactSection({
   errors,
   onChange,
   onBlur,
-  onAddressChange,
-  onAddressBlur,
 }) {
   const fieldName = (field) => `${prefix}${field}`;
   const addressKey = fieldName("Address");
@@ -54,15 +51,14 @@ export default function ContactSection({
           />
         </div>
 
-        <AddressFields
+        <FormField
           label="Address"
-          purokName={fieldName("AddressPurok")}
-          barangayName={fieldName("AddressBarangay")}
-          purokValue={values[fieldName("AddressPurok")]}
-          barangayValue={values[fieldName("AddressBarangay")]}
-          onChange={onAddressChange}
-          onBlur={onAddressBlur}
+          name={addressKey}
+          value={values[addressKey]}
+          onChange={onChange}
+          onBlur={onBlur}
           error={touched[addressKey] && errors[addressKey]}
+          placeholder={`${title}'s full address`}
         />
       </div>
     </div>

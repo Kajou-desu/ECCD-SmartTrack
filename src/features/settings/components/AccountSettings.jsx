@@ -80,13 +80,14 @@ function DeleteAccountModal({ onCancel, onDeleted }) {
         )}
 
         <label htmlFor="delete-account-password" className="mt-4 block text-xs font-bold uppercase tracking-wide text-gray-500">
-          Password
+          Password <span className="text-red-500">*</span>
         </label>
         <input
           id="delete-account-password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
           className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
           placeholder="Enter your password"
         />

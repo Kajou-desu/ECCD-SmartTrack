@@ -51,7 +51,7 @@ function AddEventModal({ onCancel, onCreated }) {
         <div className="mt-4 space-y-3">
           <div>
             <label htmlFor="event-title" className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">
-              Title
+              Title <span className="text-red-600">*</span>
             </label>
             <input
               id="event-title"
@@ -66,7 +66,7 @@ function AddEventModal({ onCancel, onCreated }) {
 
           <div>
             <label htmlFor="event-date" className="block text-xs font-bold uppercase tracking-wide text-gray-500 mb-1">
-              Date
+              Date <span className="text-red-600">*</span>
             </label>
             <input
               id="event-date"

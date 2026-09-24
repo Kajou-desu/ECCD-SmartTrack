@@ -6,11 +6,24 @@ export const studentSchema = z.object({
   lastName: z.string().trim().min(1, "Last name is required"),
   birthday: z.string().trim().min(1, "Birthday is required"),
   address: z.string().trim().min(5, "Address must be at least 5 characters"),
-  guardianName: z.string().trim().min(2, "Guardian name is required"),
-  guardianPhone: z.string().trim().min(7, "Guardian phone must be at least 7 digits"),
+  motherName: z.string().trim().optional(),
+  fatherName: z.string().trim().optional(),
+  guardianName: z.string().trim().optional(),
+  guardianPhone: z.string().trim().refine(
+    (value) => !value || value.length >= 7,
+    "Guardian phone must be at least 7 digits",
+  ).optional(),
   allergies: z.string().optional(),
   dietary: z.string().optional(),
   specialNotes: z.string().optional(),
   session: z.enum(["morning", "afternoon"]).optional(),
-  // allow additional fields (parents, documents) but validate common ones
-}).partial().passthrough();
+  // Allow additional fields (parents, documents) while keeping the core fields required.
+}).passthrough().superRefine((student, context) => {
+  if (!student.motherName && !student.fatherName && !student.guardianName) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["guardianName"],
+      message: "At least one parent or guardian name is required",
+    });
+  }
+});

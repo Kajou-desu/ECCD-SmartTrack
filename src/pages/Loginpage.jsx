@@ -241,13 +241,14 @@ export default function Login() {
                   htmlFor="login-email"
                   className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
                 >
-                  Email Address
+                  Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="login-email"
                   type="email"
                   placeholder="Email Address"
                   {...register("email")}
+                  required
                   className={`w-full p-3 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition ${
                     errors.email
                       ? "border-red-500 focus:ring-red-500/40 focus:border-red-500"
@@ -266,7 +267,7 @@ export default function Login() {
                   htmlFor="login-password"
                   className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
                 >
-                  Password
+                  Password <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -275,6 +276,7 @@ export default function Login() {
                     name="current"
                     placeholder="Password"
                     {...register("password")}
+                    required
                     className={`w-full p-3 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition ${
                       errors.password
                         ? "border-red-500 focus:ring-red-500/40 focus:border-red-500"
@@ -338,7 +340,7 @@ export default function Login() {
                   htmlFor="forgot-email"
                   className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
                 >
-                  Account Email Address
+                  Account Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="forgot-email"
@@ -381,13 +383,14 @@ export default function Login() {
                   htmlFor="reset-otp"
                   className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5 text-center"
                 >
-                  6-Digit Verification Code
+                  6-Digit Verification Code <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="reset-otp"
                   type="text"
                   maxLength={6}
                   {...resetRegister("otpCode")}
+                  required
                   placeholder="Enter OTP Code"
                   className={`w-full p-3 bg-slate-50 border rounded-xl text-center tracking-[10px] text-xl font-black text-slate-800 focus:outline-none focus:ring-2 transition ${
                     resetErrors.otpCode
@@ -407,13 +410,14 @@ export default function Login() {
                   htmlFor="reset-email"
                   className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
                 >
-                  Email Address
+                  Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="reset-email"
                   type="email"
                   placeholder="Email Address"
                   {...resetRegister("email")}
+                  required
                   className={`w-full p-3 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition ${
                     resetErrors.email
                       ? "border-red-500 focus:ring-red-500/40 focus:border-red-500"
@@ -432,13 +436,14 @@ export default function Login() {
                   htmlFor="reset-new-password"
                   className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
                 >
-                  New Password
+                  New Password <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="reset-new-password"
                   type="password"
                   placeholder="Enter new password"
                   {...resetRegister("newPassword")}
+                  required
                   className={`w-full p-3 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition ${
                     resetErrors.newPassword
                       ? "border-red-500 focus:ring-red-500/40 focus:border-red-500"
@@ -457,13 +462,14 @@ export default function Login() {
                   htmlFor="reset-confirm-password"
                   className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
                 >
-                  Confirm New Password
+                  Confirm New Password <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="reset-confirm-password"
                   type="password"
                   placeholder="Re-enter new password"
                   {...resetRegister("confirmPassword")}
+                  required
                   className={`w-full p-3 bg-slate-50 border rounded-xl focus:outline-none focus:ring-2 transition ${
                     resetErrors.confirmPassword
                       ? "border-red-500 focus:ring-red-500/40 focus:border-red-500"
