@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Modal from "@components/ui/Modal";
 import { Plus } from "lucide-react";
@@ -74,6 +74,7 @@ export default function StudentForm() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [photoError, setPhotoError] = useState("");
+  const photoRequestRef = useRef(0);
   // The compressed File is kept separately from form.values.photo (a data URL
   // used only for the live preview): the actual upload goes through the
   // dedicated /api/students/:id/photo endpoint, sent as multipart after the
@@ -159,9 +160,10 @@ export default function StudentForm() {
     const file = event.target.files?.[0];
     event.target.value = "";
     setPhotoError("");
+    const requestId = ++photoRequestRef.current;
 
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
+    if (typeof file.type !== "string" || !file.type.startsWith("image/")) {
       setPhotoError("Please select an image file.");
       return;
     }
@@ -173,12 +175,18 @@ export default function StudentForm() {
     try {
       const compressedFile = await compressImage(file);
       const photo = await readFileAsDataUrl(compressedFile);
+      if (requestId !== photoRequestRef.current) return;
       setPhotoFile(compressedFile);
       setValues((previous) => ({ ...previous, photo }));
     } catch (error) {
+      if (requestId !== photoRequestRef.current) return;
       setPhotoError(error.message || "Unable to read the selected image.");
     }
   };
+
+  useEffect(() => () => {
+    photoRequestRef.current += 1;
+  }, []);
 
   // Keeps the student's Purok/Barangay pair in sync with the address string
   // validated and sent to the API.
