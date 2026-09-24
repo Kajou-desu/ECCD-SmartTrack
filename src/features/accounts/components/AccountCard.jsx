@@ -18,6 +18,8 @@ export default function AccountCard({
   onView,
   onEdit,
   onDelete,
+  canModify,
+  canDelete,
   disabled = false,
 }) {
   const address = account?.address?.trim();
@@ -83,6 +85,8 @@ export default function AccountCard({
           onView={onView}
           onEdit={onEdit}
           onDelete={onDelete}
+          canModify={canModify}
+          canDelete={canDelete}
           disabled={disabled}
         />
       </div>

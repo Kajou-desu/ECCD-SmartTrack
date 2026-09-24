@@ -41,6 +41,21 @@ export function getAccountId(account) {
     return account?._id || account?.id || account?.userId || null;
 }
 
+export function canModifyAccount(account, actingUser) {
+    if (actingUser?.role === "Admin") return true;
+
+    const accountId = getAccountId(account);
+    const actingUserId = getAccountId(actingUser);
+
+    return accountId === actingUserId || ["Parent", "Guardian"].includes(account?.role);
+}
+
+export function canDeleteAccount(account, actingUser) {
+    return getAccountId(account) !== getAccountId(actingUser) && (
+        actingUser?.role === "Admin" || ["Parent", "Guardian"].includes(account?.role)
+    );
+}
+
 export function getFirstName(account) {
     return account?.firstName || account?.firstname || account?.name || "";
 }

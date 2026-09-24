@@ -25,6 +25,8 @@ import {
   getAccountId,
   getAccountName,
   getAssignableRoles,
+  canModifyAccount,
+  canDeleteAccount,
 } from "@features/accounts/utils/accountUtils.js";
 
 function EmptyAccounts({ onCreate }) {
@@ -59,6 +61,7 @@ export default function AccountsManagement() {
   const assignableRoles = getAssignableRoles(user?.role);
   const { data: studentData } = useStudentsQuery();
   const students = studentData?.students ?? studentData ?? [];
+  const canModify = (account) => canModifyAccount(account, user);
 
   const {
     accounts,
@@ -279,6 +282,8 @@ export default function AccountsManagement() {
             onView={setViewAccount}
             onEdit={openEdit}
             onDelete={openDelete}
+            canModifyAccount={canModify}
+            canDeleteAccount={(account) => canDeleteAccount(account, user)}
             disabled={mutating}
           />
 
@@ -290,6 +295,8 @@ export default function AccountsManagement() {
             onView={setViewAccount}
             onEdit={openEdit}
             onDelete={openDelete}
+            canModifyAccount={canModify}
+            canDeleteAccount={(account) => canDeleteAccount(account, user)}
             disabled={mutating}
           />
 
@@ -301,6 +308,8 @@ export default function AccountsManagement() {
             onView={setViewAccount}
             onEdit={openEdit}
             onDelete={openDelete}
+            canModifyAccount={canModify}
+            canDeleteAccount={(account) => canDeleteAccount(account, user)}
             disabled={mutating}
           />
 
@@ -312,6 +321,8 @@ export default function AccountsManagement() {
             onView={setViewAccount}
             onEdit={openEdit}
             onDelete={openDelete}
+            canModifyAccount={canModify}
+            canDeleteAccount={(account) => canDeleteAccount(account, user)}
             disabled={mutating}
           />
         </div>

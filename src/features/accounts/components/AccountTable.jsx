@@ -18,6 +18,8 @@ export default function AccountTable({
   onView,
   onEdit,
   onDelete,
+  canModifyAccount,
+  canDeleteAccount,
   disabled = false,
 }) {
   return (
@@ -91,6 +93,8 @@ export default function AccountTable({
                       onView={onView}
                       onEdit={onEdit}
                       onDelete={onDelete}
+                      canModify={canModifyAccount(account)}
+                      canDelete={canDeleteAccount(account)}
                       disabled={disabled}
                     />
                   </div>

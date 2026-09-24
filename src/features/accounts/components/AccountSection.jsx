@@ -10,6 +10,8 @@ export default function AccountSection({
   onView,
   onEdit,
   onDelete,
+  canModifyAccount,
+  canDeleteAccount,
   disabled = false,
 }) {
   if (!data.length) return null;
@@ -40,6 +42,8 @@ export default function AccountSection({
             onView={onView}
             onEdit={onEdit}
             onDelete={onDelete}
+            canModify={canModifyAccount(account)}
+            canDelete={canDeleteAccount(account)}
             disabled={disabled}
           />
         ))}
@@ -50,6 +54,8 @@ export default function AccountSection({
         onView={onView}
         onEdit={onEdit}
         onDelete={onDelete}
+        canModifyAccount={canModifyAccount}
+        canDeleteAccount={canDeleteAccount}
         disabled={disabled}
       />
     </section>
