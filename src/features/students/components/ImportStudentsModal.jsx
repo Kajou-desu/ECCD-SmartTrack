@@ -3,7 +3,7 @@ import Modal from "@components/ui/Modal";
 import { Loader2, Upload } from "lucide-react";
 import { apiClient } from "@api/client.js";
 
-const REQUIRED = ["firstName", "lastName", "birthday", "address", "guardianName", "guardianPhone"];
+const REQUIRED = ["firstName", "lastName", "birthday", "gender", "address", "guardianName", "guardianPhone"];
 
 function parseCsv(text) {
   const rows = [];

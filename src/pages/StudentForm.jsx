@@ -23,6 +23,7 @@ const initialValues = {
   lastName: "",
   suffix: "",
   birthday: "",
+  gender: "",
   address: "",
   addressPurok: "",
   addressBarangay: "",
@@ -244,6 +245,7 @@ export default function StudentForm() {
           lastName: student.lastName || "",
           suffix: student.suffix || "",
           birthday: student.birthday || "",
+          gender: student.gender || "",
           address: student.address || "",
           addressPurok: studentAddr.purok,
           addressBarangay: studentAddr.barangay,
@@ -401,6 +403,34 @@ export default function StudentForm() {
                 error={form.touched.birthday && form.errors.birthday}
                 required
               />
+
+              <div>
+                <label htmlFor="gender" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">
+                  Gender
+                  <span className="text-red-500"> *</span>
+                </label>
+                <select
+                  id="gender"
+                  name="gender"
+                  value={form.values.gender}
+                  onChange={form.handleChange}
+                  onBlur={form.handleBlur}
+                  className={`w-full rounded-xl border bg-white px-3 py-3 text-sm text-slate-800 outline-none transition ${
+                    form.touched.gender && form.errors.gender
+                      ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                      : "border-slate-300 focus:border-[#C2570C] focus:ring-2 focus:ring-[#C2570C]/15"
+                  }`}
+                >
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+                {form.touched.gender && form.errors.gender ? (
+                  <p className="mt-1.5 text-xs text-red-600">{form.errors.gender}</p>
+                ) : null}
+              </div>
             </div>
 
             <div className="mt-4">

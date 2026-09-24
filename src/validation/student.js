@@ -5,6 +5,10 @@ export const studentSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
   lastName: z.string().trim().min(1, "Last name is required"),
   birthday: z.string().trim().min(1, "Birthday is required"),
+  gender: z.enum(["male", "female", "other", "prefer_not_to_say"], {
+    required_error: "Gender is required",
+    invalid_type_error: "Gender is required",
+  }),
   address: z.string().trim().min(5, "Address must be at least 5 characters"),
   motherName: z.string().trim().optional(),
   fatherName: z.string().trim().optional(),
