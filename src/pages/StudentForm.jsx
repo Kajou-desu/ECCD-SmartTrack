@@ -40,7 +40,6 @@ const initialValues = {
   guardianAddress: "",
   guardianPhone: "",
   guardianEmail: "",
-  photo: "",
   allergiesList: [],
   dietaryList: [],
   specialNotesList: [],
@@ -76,11 +75,11 @@ export default function StudentForm() {
   const [deleting, setDeleting] = useState(false);
   const [photoError, setPhotoError] = useState("");
   const photoRequestRef = useRef(0);
-  // The compressed File is kept separately from form.values.photo (a data URL
-  // used only for the live preview): the actual upload goes through the
-  // dedicated /api/students/:id/photo endpoint, sent as multipart after the
-  // student record itself is created/updated (a new student has no id yet).
+  // The compressed File is kept separate from the live preview URL: the actual
+  // upload is sent through the dedicated /api/students/:id/photo endpoint after
+  // the student record itself is created or updated.
   const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState("");
   // A guardian isn't required on its own — the record just needs at least
   // one of mother/father/guardian name (see studentSchema.superRefine and
   // buildCreateData on the backend) — but most students don't need a
@@ -93,9 +92,8 @@ export default function StudentForm() {
     async (data) => {
       setSubmitError("");
 
-      // photo isn't sent to create/update — it's a preview data URL, not the
-      // file, and neither endpoint accepts it. The actual file goes through
-      // apiClient.uploadStudentPhoto once the student record has an id.
+      // The student record payload does not include the uploaded file. The file
+      // is sent separately through the dedicated photo upload endpoint.
       const studentFields = { ...data };
       delete studentFields.photo;
       const documents = Array.isArray(studentFields.documents)
@@ -167,29 +165,39 @@ export default function StudentForm() {
 
   const handlePhotoChange = async (event) => {
     const file = event.target.files?.[0];
-    event.target.value = "";
-    setPhotoError("");
     const requestId = ++photoRequestRef.current;
 
-    if (!file) return;
-    if (typeof file.type !== "string" || !file.type.startsWith("image/")) {
-      setPhotoError("Please select an image file.");
+    if (!file) {
+      event.target.value = "";
       return;
     }
+
+    setPhotoError("");
+
+    if (typeof file.type !== "string" || !file.type.startsWith("image/")) {
+      setPhotoError("Please select an image file.");
+      event.target.value = "";
+      return;
+    }
+
     if (file.size > MAX_STUDENT_PHOTO_SIZE_BYTES) {
       setPhotoError("Student picture must be 5 MB or smaller.");
+      event.target.value = "";
       return;
     }
 
     try {
       const compressedFile = await compressImage(file);
-      const photo = await readFileAsDataUrl(compressedFile);
+      const preview = await readFileAsDataUrl(compressedFile);
       if (requestId !== photoRequestRef.current) return;
+
       setPhotoFile(compressedFile);
-      setValues((previous) => ({ ...previous, photo }));
+      setPhotoPreview(preview);
     } catch (error) {
       if (requestId !== photoRequestRef.current) return;
-      setPhotoError(error.message || "Unable to read the selected image.");
+      setPhotoError(error?.message || "Unable to read the selected image.");
+    } finally {
+      event.target.value = "";
     }
   };
 
@@ -270,12 +278,12 @@ export default function StudentForm() {
           guardianAddress: student.guardianAddress || "",
           guardianPhone: student.guardianPhone || "",
           guardianEmail: student.guardianEmail || "",
-          photo: student.photo || "",
           allergiesList: toMedicalList(student.allergies),
           dietaryList: toMedicalList(student.dietary),
           specialNotesList: toMedicalList(student.specialNotes),
           documents: Array.isArray(student.documents) ? student.documents : [],
         });
+        setPhotoPreview(student.photo || "");
       } catch (error) {
         console.error(error);
 
@@ -599,9 +607,9 @@ export default function StudentForm() {
             description="Upload a clear picture of the student when available."
           >
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              {form.values.photo ? (
+              {photoPreview ? (
                 <img
-                  src={form.values.photo}
+                  src={photoPreview}
                   alt="Student preview"
                   className="h-28 w-28 rounded-2xl border border-slate-200 object-cover"
                 />
@@ -616,7 +624,7 @@ export default function StudentForm() {
                   htmlFor="studentPhoto"
                   className="inline-flex cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#C2570C] hover:text-[#C2570C]"
                 >
-                  {form.values.photo ? "Replace Picture" : "Upload Picture"}
+                  {photoPreview ? "Replace Picture" : "Upload Picture"}
                 </label>
                 <input
                   id="studentPhoto"
