@@ -1,10 +1,12 @@
 import SubmissionActionsMenu from "@features/materials/components/SubmissionActionsMenu";
 import SubmissionFileViewer from "@features/materials/components/SubmissionFileViewer";
 import { FILE_STATUS, useSubmissionFile } from "@features/materials/hooks/useSubmissionFile";
+import formatStudentName from "@utils/formatStudentName.js";
 
 export default function SubmissionPreview({ submission }) {
   const file = useSubmissionFile(submission.fileUrl);
   const isReady = file.status === FILE_STATUS.READY;
+  const displayName = formatStudentName(submission.studentName);
 
   // Saved from the already-downloaded blob: the `download` attribute is
   // ignored for cross-origin URLs, but works for a same-origin blob: URL.
@@ -23,16 +25,16 @@ export default function SubmissionPreview({ submission }) {
 
   return (
     <section
-      aria-label={`${submission.studentName}'s submitted work`}
-      className="relative flex min-h-[600px] flex-col rounded-3xl border border-slate-100 bg-white shadow-sm lg:col-span-2"
+      aria-label={`${displayName}'s submitted work`}
+      className="relative flex min-h-150 flex-col rounded-3xl border border-slate-100 bg-white shadow-sm lg:col-span-2"
     >
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 p-6">
         <h2 className="truncate text-lg font-bold text-slate-900">
-          {submission.studentName}
+          {displayName}
         </h2>
 
         <SubmissionActionsMenu
-          studentName={submission.studentName}
+          studentName={displayName}
           disabled={!isReady}
           onDownload={handleDownload}
           onViewFile={handleViewFile}

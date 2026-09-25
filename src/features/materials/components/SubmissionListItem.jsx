@@ -1,7 +1,9 @@
 import { FileSearch } from "lucide-react";
 import { formatSubmittedAt, getFileBadge } from "@features/materials/utils/submissions";
+import formatStudentName from "@utils/formatStudentName.js";
 
 export default function SubmissionListItem({ submission, isActive, onSelect }) {
+  const displayName = formatStudentName(submission.studentName);
   const { label, isPdf } = getFileBadge(submission.fileName);
   const badgeColor = isPdf
     ? "border-rose-500 text-rose-500"
@@ -12,7 +14,7 @@ export default function SubmissionListItem({ submission, isActive, onSelect }) {
       type="button"
       onClick={() => onSelect(submission.id)}
       aria-current={isActive ? "true" : undefined}
-      aria-label={`Preview ${submission.studentName}'s work`}
+      aria-label={`Preview ${displayName}'s work`}
       className={`flex w-full cursor-pointer items-center gap-4 rounded-xl border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-orange-400 ${
         isActive
           ? "border-orange-200 bg-[#fef2e6] shadow-sm"
@@ -29,7 +31,7 @@ export default function SubmissionListItem({ submission, isActive, onSelect }) {
 
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-bold text-slate-900">
-          {submission.studentName}
+          {displayName}
         </span>
         <span className="mt-0.5 block text-xs text-slate-500">
           Submitted: {formatSubmittedAt(submission.submittedAt)}

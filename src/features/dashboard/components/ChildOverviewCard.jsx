@@ -1,4 +1,5 @@
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
+import formatStudentName from "@utils/formatStudentName.js";
 
 export default function ChildOverviewCard({ child }) {
   return (
@@ -6,11 +7,11 @@ export default function ChildOverviewCard({ child }) {
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
         <img
           src={child.photo}
-          alt={child.name}
+          alt={formatStudentName(child)}
           className="w-24 h-24 rounded-2xl object-cover shrink-0"
         />
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-gray-800">{child.name}</h2>
+          <h2 className="text-2xl font-bold text-gray-800">{formatStudentName(child)}</h2>
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-xs uppercase font-semibold text-gray-600">

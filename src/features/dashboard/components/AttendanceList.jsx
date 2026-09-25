@@ -1,3 +1,5 @@
+import formatStudentName from "@utils/formatStudentName.js";
+
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toDayKey } from "@utils/dateKeys.js";
@@ -110,7 +112,7 @@ function AttendanceListItem({ attendance }) {
   return (
     <div
       role="listitem"
-      aria-label={`Present: ${attendance.name}, ${
+      aria-label={`Present: ${formatStudentName(attendance)}, ${
         attendance.arrivedAt
           ? new Date(attendance.arrivedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
           : "time not recorded"
@@ -127,7 +129,7 @@ function AttendanceListItem({ attendance }) {
         </div>
 
         <p className="min-w-0 truncate text-sm font-medium text-gray-800 transition-colors group-hover:text-green-700">
-          {attendance.name}
+          {formatStudentName(attendance)}
         </p>
 
         <span className="sr-only">Present</span>

@@ -1,3 +1,5 @@
+import formatStudentName from "@utils/formatStudentName.js";
+
 import { Loader2 } from "lucide-react";
 
 import { normalizeRole } from "../utils/accountUtils.js";
@@ -179,7 +181,7 @@ export default function AccountForm({
             <option value="">Select a student</option>
             {students.map((student) => (
               <option key={student.id} value={student.id}>
-                {student.name} ({formatStudentCode(student)})
+                {formatStudentName(student)} ({formatStudentCode(student)})
               </option>
             ))}
           </select>

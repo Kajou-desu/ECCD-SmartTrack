@@ -1,3 +1,5 @@
+import formatStudentName from "@utils/formatStudentName.js";
+
 import { CircleCheck, Clock } from "lucide-react";
 import { formatArrivalTime, statusLabel } from "../utils/attendanceMonitor.js";
 
@@ -28,7 +30,7 @@ export default function AttendanceStudentList({ students = [], counts }) {
             return (
               <li key={student.studentId} className="flex items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-gray-800">{student.name}</p>
+                  <p className="truncate font-medium text-gray-800">{formatStudentName(student)}</p>
                   {student.verifiedAt && (
                     <p className="text-xs text-gray-500">Arrived at {formatArrivalTime(student.verifiedAt)}</p>
                   )}

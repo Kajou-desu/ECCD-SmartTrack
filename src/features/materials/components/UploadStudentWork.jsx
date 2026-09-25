@@ -4,6 +4,7 @@ import { apiClient } from "@api/client.js";
 import Modal from "@components/ui/Modal";
 import { isAllowedStudentWorkFile, isFileSizeValid, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
 import { Loader2, Upload, X } from "lucide-react";
+import formatStudentName from "@utils/formatStudentName.js";
 
 export default function UploadStudentWork({ material, onClose, onSuccess }) {
   const [studentQuery, setStudentQuery] = useState("");
@@ -40,7 +41,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
 
   const handleSelectStudent = (student) => {
     setSelectedStudent(student);
-    setStudentQuery(`${student.name} (${student.id})`);
+    setStudentQuery(`${formatStudentName(student)} (${student.id})`);
     setShowSuggestions(false);
   };
 
@@ -85,7 +86,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
         file: selectedFile,
       });
       onSuccess(
-        `"${selectedFile.name}" was uploaded for ${selectedStudent.name}.`,
+        `"${selectedFile.name}" was uploaded for ${formatStudentName(selectedStudent)}.`,
       );
     } catch (err) {
       setSubmitError(err.message || "Failed to upload the file. Please try again.");
@@ -170,7 +171,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
                   className="flex w-full cursor-pointer flex-col px-4 py-3 text-left transition hover:bg-orange-50 focus:bg-orange-50 focus:outline-none"
                 >
                   <span className="text-sm font-semibold text-slate-800">
-                    {student.name}
+                    {formatStudentName(student)}
                   </span>
 
                   <span className="mt-0.5 text-xs text-slate-500">
@@ -192,7 +193,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
               role="status"
               className="mt-2 text-xs font-medium text-green-700"
             >
-              Selected: {selectedStudent.name}
+              Selected: {formatStudentName(selectedStudent)}
             </p>
           ) : (
             <p className="mt-2 text-xs text-slate-500">

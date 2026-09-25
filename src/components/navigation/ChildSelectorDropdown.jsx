@@ -3,6 +3,7 @@ import useClickOutside from "@hooks/useClickOutside";
 import { useEscapeKey } from "@hooks/useEscapeKey";
 import { useParentChild } from "@hooks/useParentChild";
 import { ChevronDown, User } from "lucide-react";
+import formatStudentName from "@utils/formatStudentName.js";
 
 export default function ChildSelectorDropdown() {
   const { availableChildren, selectedChild, setSelectedChildId } =
@@ -24,7 +25,7 @@ export default function ChildSelectorDropdown() {
     return (
       <div className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-700">
         <User className="h-4 w-4 text-[#C2570C]" aria-hidden="true" />
-        {selectedChild.name}
+        {formatStudentName(selectedChild)}
       </div>
     );
   }
@@ -36,12 +37,12 @@ export default function ChildSelectorDropdown() {
         onClick={() => setIsMenuOpen((current) => !current)}
         aria-expanded={isMenuOpen}
         aria-haspopup="menu"
-        aria-label={`Viewing ${selectedChild.name}. Switch child`}
+        aria-label={`Viewing ${formatStudentName(selectedChild)}. Switch child`}
         className="cursor-pointer flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-[#C2570C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2570C] focus-visible:ring-offset-2"
       >
         <User className="h-4 w-4 text-[#C2570C]" aria-hidden="true" />
         <span className="max-w-32 truncate sm:max-w-none">
-          {selectedChild.name}
+          {formatStudentName(selectedChild)}
         </span>
         <ChevronDown
           className={`h-4 w-4 shrink-0 transition-transform ${isMenuOpen ? "rotate-180" : ""}`}
@@ -71,7 +72,7 @@ export default function ChildSelectorDropdown() {
                   : "text-slate-700"
               }`}
             >
-              {child.name}
+              {formatStudentName(child)}
               {child.id === selectedChild.id && (
                 <span className="text-xs uppercase text-slate-400">
                   Viewing

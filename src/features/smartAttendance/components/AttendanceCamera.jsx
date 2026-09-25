@@ -1,3 +1,5 @@
+import formatStudentName from "@utils/formatStudentName.js";
+
 import { useState } from "react";
 import { Camera, CameraOff, CircleCheck, Clock, SwitchCamera } from "lucide-react";
 import ErrorMsg from "@components/ui/ErrorMsg";
@@ -21,7 +23,7 @@ function FaceBox({ face, frame }) {
       {face.student && tone.Icon && (
         <span className={`absolute inset-x-0 bottom-0 flex items-center gap-1 truncate px-1.5 py-0.5 text-xs font-semibold ${tone.label}`}>
           <tone.Icon className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{face.student.name}</span>
+          <span className="truncate">{formatStudentName(face.student)}</span>
         </span>
       )}
     </div>

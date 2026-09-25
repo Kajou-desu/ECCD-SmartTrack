@@ -1,5 +1,6 @@
 import { Eye, Pencil } from "lucide-react";
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
+import formatStudentName from "@utils/formatStudentName.js";
 
 export default function StudentTable({ students, onView, onEdit }) {
   if (!students || students.length === 0) {
@@ -33,7 +34,7 @@ export default function StudentTable({ students, onView, onEdit }) {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate font-bold text-gray-800">{student.name}</p>
+                    <p className="truncate font-bold text-gray-800">{formatStudentName(student)}</p>
                     <p className="text-xs text-gray-500">{formatStudentCode(student)}</p>
                   </div>
                 </div>
@@ -64,8 +65,8 @@ export default function StudentTable({ students, onView, onEdit }) {
 
               <td className="p-4">
                 <div className="flex items-center gap-4 text-[#C2570C]">
-                  <button type="button" onClick={() => onView(student.id)} className="cursor-pointer transition hover:text-orange-800" aria-label={`View ${student.name}`} title="View student details"><Eye className="h-5 w-5" /></button>
-                  <button type="button" onClick={() => onEdit(student.id)} className="cursor-pointer transition hover:text-orange-800" aria-label={`Edit ${student.name}`} title="Edit student information"><Pencil className="h-5 w-5" /></button>
+                  <button type="button" onClick={() => onView(student.id)} className="cursor-pointer transition hover:text-orange-800" aria-label={`View ${formatStudentName(student)}`} title="View student details"><Eye className="h-5 w-5" /></button>
+                  <button type="button" onClick={() => onEdit(student.id)} className="cursor-pointer transition hover:text-orange-800" aria-label={`Edit ${formatStudentName(student)}`} title="Edit student information"><Pencil className="h-5 w-5" /></button>
                 </div>
               </td>
             </tr>

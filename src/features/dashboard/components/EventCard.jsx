@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CalendarFold, Cake } from "lucide-react";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { HOLIDAYS } from "@constants/holidays.js";
+import formatStudentName from "@utils/formatStudentName.js";
 
 // Neutral avatar used when a student has no photo. Inlined rather than
 // fetched from a placeholder service: every dashboard load would otherwise
@@ -23,7 +24,7 @@ export function EventCard({ showBirthdays = true }) {
   const birthdays = students
     .map((student) => ({
       id: student.id,
-      name: student.name,
+      name: formatStudentName(student),
       date: student.birthday,
       photo: student.photo,
     }))

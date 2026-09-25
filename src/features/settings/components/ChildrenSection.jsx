@@ -1,3 +1,5 @@
+import formatStudentName from "@utils/formatStudentName.js";
+
 import { useState } from "react";
 import { Heart, Plus, Trash2 } from "lucide-react";
 
@@ -109,7 +111,7 @@ export default function ChildrenSection() {
               className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
             >
               <div>
-                <p className="font-medium text-gray-800">{child.name}</p>
+                <p className="font-medium text-gray-800">{formatStudentName(child)}</p>
                 <p className="text-sm text-gray-600">{child.session}</p>
                 {child.schoolId && (
                   <p className="text-xs text-gray-500">ID: {child.schoolId}</p>
@@ -117,7 +119,7 @@ export default function ChildrenSection() {
               </div>
               <button
                 onClick={() => handleRemoveChild(child.id)}
-                aria-label={`Remove ${child.name}`}
+                aria-label={`Remove ${formatStudentName(child)}`}
                 className="text-red-600 hover:text-red-800 transition"
               >
                 <Trash2 className="h-5 w-5" />

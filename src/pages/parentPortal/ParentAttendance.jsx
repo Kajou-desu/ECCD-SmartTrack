@@ -12,6 +12,7 @@ import {
 } from "@features/attendance/components/ParentAttendanceStates";
 import { toMonthKey } from "@utils/dateKeys";
 import { Calendar, TrendingUp, AlertCircle, Users } from "lucide-react";
+import formatStudentName from "@utils/formatStudentName.js";
 
 export default function ParentAttendance() {
   const { selectedChild } = useParentChild();
@@ -67,14 +68,14 @@ export default function ParentAttendance() {
     <div className="min-h-[calc(100vh-70px)] flex flex-col gap-6 bg-[#f8f9ff] p-6">
       <PageHeader
         title="Attendance Record"
-        subtitle={`Monitor ${selectedChild.name}'s attendance throughout the month`}
+        subtitle={`Monitor ${formatStudentName(selectedChild)}'s attendance throughout the month`}
       />
 
       {status === "loading" && <AttendanceLoadingState />}
       {status === "error" && <AttendanceErrorState onRetry={retry} />}
       {status === "empty" && (
         <AttendanceEmptyState
-          childName={selectedChild.name}
+          childName={formatStudentName(selectedChild)}
           monthName={monthName}
         />
       )}
@@ -118,7 +119,7 @@ export default function ParentAttendance() {
             />
             <ParentRecentLogs
               logs={attendance.logs}
-              childName={selectedChild.name}
+              childName={formatStudentName(selectedChild)}
               monthName={monthName}
             />
           </div>

@@ -1,5 +1,7 @@
+import formatStudentName from "@utils/formatStudentName.js";
+
 export default function AttendanceCard({ record, onMarkStatus, isSaving }) {
-  const studentName = record.name || "Unknown Student";
+  const studentName = formatStudentName(record) || "Unknown Student";
   const status = record.status || "absent";
   const initial = studentName.charAt(0).toUpperCase();
 

@@ -15,6 +15,7 @@ import {
 import StatCard from "@components/shared/StatCard";
 import { LOCATION_CONFIG } from "@constants/location";
 import { TrendingUp, BookUser, CalendarDays, Award, Users } from "lucide-react";
+import formatStudentName from "@utils/formatStudentName.js";
 
 export default function ParentDashboard() {
   const { user } = useAuth();
@@ -62,7 +63,7 @@ export default function ParentDashboard() {
         greeting={greeting}
         firstName={firstName}
         currentDateTime={currentDateTime}
-        subtitle={`Here's ${selectedChild.name}'s progress at ${LOCATION_CONFIG.name}`}
+        subtitle={`Here's ${formatStudentName(selectedChild)}'s progress at ${LOCATION_CONFIG.name}`}
       />
 
       <ChildOverviewCard child={selectedChild} />
@@ -70,7 +71,7 @@ export default function ParentDashboard() {
       {status === "loading" && <ProgressLoadingState />}
       {status === "error" && <ProgressErrorState onRetry={retry} />}
       {status === "empty" && (
-        <ProgressEmptyState childName={selectedChild.name} />
+        <ProgressEmptyState childName={formatStudentName(selectedChild)} />
       )}
 
       {status === "success" && progress && (
