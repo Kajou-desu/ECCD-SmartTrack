@@ -36,10 +36,18 @@ export function useParentAlbumsState() {
 
     const dismissError = useCallback(() => setDismissed(true), []);
 
-    // Only show albums that include the currently selected child.
+    // Shared classroom albums are intentionally not child-scoped in the backend
+    // contract. Keep albums visible when no per-child linkage metadata exists;
+    // only apply the child filter when an album explicitly carries childIds.
     const childAlbums = useMemo(() => {
         if (!selectedChildId) return albums;
-        return albums.filter((album) => album.childIds?.includes(selectedChildId));
+
+        return albums.filter((album) => {
+            if (!Array.isArray(album.childIds) || album.childIds.length === 0) {
+                return true;
+            }
+            return album.childIds.includes(selectedChildId);
+        });
     }, [albums, selectedChildId]);
 
     const filteredAlbums = useMemo(() => {
