@@ -98,6 +98,10 @@ export default function StudentForm() {
       // apiClient.uploadStudentPhoto once the student record has an id.
       const studentFields = { ...data };
       delete studentFields.photo;
+      const documents = Array.isArray(studentFields.documents)
+        ? studentFields.documents.filter((file) => file instanceof File)
+        : [];
+      delete studentFields.documents;
       const payload = {
         ...studentFields,
         allergies: fromMedicalList(data.allergiesList),
@@ -116,6 +120,10 @@ export default function StudentForm() {
 
         if (photoFile) {
           await apiClient.uploadStudentPhoto(savedId, photoFile);
+        }
+
+        if (documents.length > 0) {
+          await apiClient.uploadStudentDocuments(savedId, documents);
         }
 
         // ["students"] is shared by the roster, the dashboard birthday widget,
