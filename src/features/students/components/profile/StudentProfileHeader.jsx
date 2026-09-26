@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { UserRound } from "lucide-react";
+import {
+  CalendarDays,
+  ClipboardList,
+  GraduationCap,
+  MapPin,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
 import formatDate from "@utils/formatDate";
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
 
@@ -14,10 +21,13 @@ export default function StudentProfileHeader({ student, headerAction }) {
   const [photoFailed, setPhotoFailed] = useState(false);
 
   return (
-    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-      <div className="flex flex-col items-start gap-6 sm:flex-row sm:gap-8">
-        <div className="shrink-0">
-          <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border-2 border-gray-100 bg-orange-50 text-orange-700 shadow-md sm:h-32 sm:w-32">
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_14px_40px_-24px_rgba(15,23,42,0.45)]">
+      <div className="h-2 bg-[#C2570C]" aria-hidden="true" />
+      <div className="p-5 sm:p-7 lg:p-8">
+        <div className="flex flex-col items-start gap-6 md:flex-row md:gap-7">
+          <div className="relative shrink-0">
+            <div className="absolute -inset-1 rounded-[1.25rem] bg-orange-100" aria-hidden="true" />
+            <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-orange-50 text-orange-700 shadow-sm sm:h-32 sm:w-32">
             {student.photo && !photoFailed ? (
               <img
                 src={student.photo}
@@ -28,62 +38,73 @@ export default function StudentProfileHeader({ student, headerAction }) {
             ) : (
               <UserRound size={42} aria-label="No student photo" />
             )}
+            </div>
           </div>
-        </div>
 
-        <div className="w-full min-w-0 flex-1">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="w-full min-w-0 flex-1">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <h2 className="truncate text-2xl font-bold text-gray-800 sm:text-3xl">
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#C2570C]">
+                Student profile
+              </p>
+              <h2 className="truncate text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
                 {student.name}
               </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                {student.school || "N/A"}
-              </p>
+              <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
+                <GraduationCap size={16} className="shrink-0 text-slate-400" />
+                <span className="truncate">{student.school || "School not assigned"}</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 sm:pt-1">
               <span
-                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm ${getStatusBadgeClass(
-                  student.status,
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold capitalize shadow-sm ${getStatusBadgeClass(
+                    student.status,
                 )}`}
               >
                 {student.status || "N/A"}
               </span>
               {headerAction}
             </div>
-          </div>
+            </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <InfoItem label="Student ID" value={formatStudentCode(student)} />
-            <InfoItem label="Session" value={student.session || "N/A"} />
-            <InfoItem label="Teacher" value={student.teacher || "N/A"} />
-            <InfoItem label="Gender" value={student.gender || "N/A"} />
+            <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <InfoItem icon={ClipboardList} label="Student ID" value={formatStudentCode(student)} />
+            <InfoItem icon={UsersRound} label="Session" value={student.session || "N/A"} />
+            <InfoItem icon={GraduationCap} label="Teacher" value={student.teacher || "N/A"} />
+            <InfoItem icon={UserRound} label="Gender" value={student.gender || "N/A"} />
             <InfoItem
+              icon={CalendarDays}
               label="Birthday"
               value={student.birthday ? formatDate(student.birthday) : "N/A"}
             />
-            <InfoItem label="Address" value={student.address || "N/A"} />
+            <InfoItem icon={MapPin} label="Address" value={student.address || "N/A"} />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-function InfoItem({ label, value }) {
+function InfoItem({ icon: Icon, label, value }) {
   const displayValue = value ?? "N/A";
   return (
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-widest text-gray-500">
-        {label}
-      </p>
-      <p
-        className="mt-2 truncate font-medium text-gray-800 hover:text-clip"
-        title={String(displayValue)}
-      >
-        {displayValue}
-      </p>
+    <div className="flex min-w-0 items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/80 px-3.5 py-3">
+      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-[#C2570C] shadow-sm">
+        <Icon size={16} aria-hidden="true" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+          {label}
+        </p>
+        <p
+          className="mt-1 truncate text-sm font-semibold text-slate-800 hover:text-clip"
+          title={String(displayValue)}
+        >
+          {displayValue}
+        </p>
+      </div>
     </div>
   );
 }

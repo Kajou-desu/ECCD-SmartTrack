@@ -8,15 +8,17 @@ export default function MedicalNotesCard({ medical = {}, onEdit }) {
         <h2 className="text-xl font-bold text-gray-800">
           Medical & Special Notes
         </h2>
-        <button
-          type="button"
-          onClick={onEdit}
-          className="flex items-center gap-2 cursor-pointer text-[#C2570C] hover:text-orange-700 font-semibold text-sm transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
-          aria-label="Edit Medical Notes"
-        >
-          <Pencil size={18} />
-          <span>Edit Details</span>
-        </button>
+        {onEdit ? (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="flex items-center gap-2 cursor-pointer text-[#C2570C] hover:text-orange-700 font-semibold text-sm transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
+            aria-label="Edit Medical Notes"
+          >
+            <Pencil size={18} />
+            <span>Edit Details</span>
+          </button>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-5">
