@@ -4,6 +4,7 @@ import { canManageAccounts } from "@auth/permissions.js";
 import { useAuth } from "@hooks/useAuth.js";
 import logo from "@assets/ECCDST_Logo.png";
 import ProfileBox from "../shared/ProfileBox.jsx";
+import LogoutConfirmModal from "../shared/LogoutConfirmModal.jsx";
 
 import {
   PanelLeftClose,
@@ -62,6 +63,7 @@ export default function Sidebar({
   onToggleCollapse,
 }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -136,8 +138,13 @@ export default function Sidebar({
     navigate("/settings");
   };
 
-  const handleLogout = () => {
+  const handleLogoutRequest = () => {
     setIsProfileMenuOpen(false);
+    setIsLogoutConfirmOpen(true);
+  };
+
+  const handleLogout = () => {
+    setIsLogoutConfirmOpen(false);
     logout();
     navigate("/login", { replace: true });
   };
@@ -292,7 +299,7 @@ export default function Sidebar({
                 <button
                   type="button"
                   role="menuitem"
-                  onClick={handleLogout}
+                  onClick={handleLogoutRequest}
                   className="mt-3 flex min-h-11 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-800
                     transition hover:border-red-300 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
                 >
@@ -304,6 +311,13 @@ export default function Sidebar({
           </div>
         </div>
       </aside>
+
+      {isLogoutConfirmOpen && (
+        <LogoutConfirmModal
+          onCancel={() => setIsLogoutConfirmOpen(false)}
+          onConfirm={handleLogout}
+        />
+      )}
     </>
   );
 }

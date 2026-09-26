@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@hooks/useAuth";
 import logo from "@assets/ECCDST_Logo.png";
 import ProfileBox from "../shared/ProfileBox";
+import LogoutConfirmModal from "../shared/LogoutConfirmModal";
 
 import {
   PanelLeftClose,
@@ -56,6 +57,7 @@ export default function ParentSidebar({
 }) {
   const [internalCollapsed, setInternalCollapsed] = useState(true);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
   const isCollapsed =
     typeof collapsed === "boolean" ? collapsed : internalCollapsed;
@@ -94,8 +96,13 @@ export default function ParentSidebar({
   /*
    * Logout.
    */
-  const handleLogout = () => {
+  const handleLogoutRequest = () => {
     closeProfileMenu();
+    setIsLogoutConfirmOpen(true);
+  };
+
+  const handleLogout = () => {
+    setIsLogoutConfirmOpen(false);
     logout();
     navigate("/login", { replace: true });
   };
@@ -331,7 +338,7 @@ export default function ParentSidebar({
                 <button
                   type="button"
                   role="menuitem"
-                  onClick={handleLogout}
+                  onClick={handleLogoutRequest}
                   className="mt-3 flex min-h-11 w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-800 transition hover:border-red-300 hover:bg-red-50
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                 >
@@ -343,6 +350,13 @@ export default function ParentSidebar({
           </div>
         </div>
       </aside>
+
+      {isLogoutConfirmOpen && (
+        <LogoutConfirmModal
+          onCancel={() => setIsLogoutConfirmOpen(false)}
+          onConfirm={handleLogout}
+        />
+      )}
     </>
   );
 }
