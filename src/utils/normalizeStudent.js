@@ -23,12 +23,18 @@ export function normalizeSession(session) {
 
 export function normalizeStudent(student, guardians = []) {
     const guardian = guardians?.[0];
+    const primaryContact = [
+        { name: student.guardianName, phone: student.guardianPhone },
+        { name: student.motherName, phone: student.motherPhone },
+        { name: student.fatherName, phone: student.fatherPhone },
+        { name: guardian?.name, phone: guardian?.phone },
+    ].find((contact) => contact.name || contact.phone) ?? {};
     return {
         ...student,
         age: student.age ?? calculateAge(student.birthday),
         status: normalizeStatus(student.status),
         session: normalizeSession(student.session),
-        guardianName: student.guardianName ?? guardian?.name ?? "N/A",
-        guardianPhone: student.guardianPhone ?? guardian?.phone ?? "N/A",
+        guardianName: primaryContact.name ?? "N/A",
+        guardianPhone: primaryContact.phone ?? "N/A",
     };
 }

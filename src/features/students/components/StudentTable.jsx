@@ -16,7 +16,7 @@ export default function StudentTable({ students, onView, onEdit }) {
           <tr className="border-b-2 border-gray-300 text-xs font-bold uppercase tracking-wider text-gray-500">
             <th className="p-4">Student Name</th>
             <th className="p-4">Session</th>
-            <th className="p-4">Age</th>
+            <th className="p-4">Gender</th>
             <th className="p-4">Guardian Contact</th>
             <th className="p-4">Address</th>
             <th className="p-4">Status</th>
@@ -47,7 +47,7 @@ export default function StudentTable({ students, onView, onEdit }) {
               </td>
 
               <td className="p-4">
-                <span className="rounded-full bg-teal-100 px-3 py-1 text-sm font-medium text-teal-800">{student.age === "N/A" ? "N/A" : `${student.age} years old`}</span>
+                <span className="rounded-full bg-teal-100 px-3 py-1 text-sm font-medium text-teal-800">{student.gender || "N/A"}</span>
               </td>
 
               <td className="p-4 text-sm text-gray-600">

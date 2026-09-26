@@ -16,7 +16,9 @@ async function fetchStudentProfile(studentId) {
             phone: data.motherPhone,
             email: data.motherEmail,
             address: data.motherAddress,
-            isPrimary: Boolean(data.motherName),
+            isPrimary: data.primaryGuardianType
+                ? data.primaryGuardianType === "Mother"
+                : Boolean(data.motherName),
         },
         {
             id: `${data.id}-father`,
@@ -25,7 +27,9 @@ async function fetchStudentProfile(studentId) {
             phone: data.fatherPhone,
             email: data.fatherEmail,
             address: data.fatherAddress,
-            isPrimary: !data.motherName && Boolean(data.fatherName),
+            isPrimary: data.primaryGuardianType
+                ? data.primaryGuardianType === "Father"
+                : !data.motherName && Boolean(data.fatherName),
         },
         {
             id: `${data.id}-guardian`,
@@ -34,7 +38,9 @@ async function fetchStudentProfile(studentId) {
             phone: data.guardianPhone,
             email: data.guardianEmail,
             address: data.guardianAddress,
-            isPrimary: !data.motherName && !data.fatherName && Boolean(data.guardianName),
+            isPrimary: data.primaryGuardianType
+                ? data.primaryGuardianType === "Legal Guardian"
+                : !data.motherName && !data.fatherName && Boolean(data.guardianName),
         },
     ].filter((guardian) => guardian.name);
 

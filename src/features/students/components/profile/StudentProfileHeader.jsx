@@ -1,4 +1,5 @@
-import calculateAge from "@utils/calculateAge";
+import { useState } from "react";
+import { UserRound } from "lucide-react";
 import formatDate from "@utils/formatDate";
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
 
@@ -10,15 +11,24 @@ function getStatusBadgeClass(status) {
 }
 
 export default function StudentProfileHeader({ student, headerAction }) {
+  const [photoFailed, setPhotoFailed] = useState(false);
+
   return (
     <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
       <div className="flex flex-col items-start gap-6 sm:flex-row sm:gap-8">
         <div className="shrink-0">
-          <img
-            src={student.photo}
-            alt={`${student.name}'s profile`}
-            className="h-28 w-28 rounded-2xl border-2 border-gray-100 object-cover shadow-md sm:h-32 sm:w-32"
-          />
+          <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border-2 border-gray-100 bg-orange-50 text-orange-700 shadow-md sm:h-32 sm:w-32">
+            {student.photo && !photoFailed ? (
+              <img
+                src={student.photo}
+                alt={`${student.name}'s profile`}
+                onError={() => setPhotoFailed(true)}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <UserRound size={42} aria-label="No student photo" />
+            )}
+          </div>
         </div>
 
         <div className="w-full min-w-0 flex-1">
@@ -48,14 +58,7 @@ export default function StudentProfileHeader({ student, headerAction }) {
             <InfoItem label="Student ID" value={formatStudentCode(student)} />
             <InfoItem label="Session" value={student.session || "N/A"} />
             <InfoItem label="Teacher" value={student.teacher || "N/A"} />
-            <InfoItem
-              label="Age"
-              value={
-                student.birthday
-                  ? `${calculateAge(student.birthday)} Years Old`
-                  : "N/A"
-              }
-            />
+            <InfoItem label="Gender" value={student.gender || "N/A"} />
             <InfoItem
               label="Birthday"
               value={student.birthday ? formatDate(student.birthday) : "N/A"}

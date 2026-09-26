@@ -17,7 +17,8 @@ export default function StudentMobileList({ students = [], onView, onEdit }) {
             <div className="min-w-0">
               <p className="truncate font-semibold text-gray-800">{formatStudentName(s)}</p>
               <p className="mt-1 text-xs text-gray-500">{formatStudentCode(s)} • {s.session === "afternoon" ? "PM" : "AM"}</p>
-              <p className="mt-2 text-xs text-gray-600">Guardian: {s.guardianName} • {s.guardianPhone}</p>
+              <p className="mt-2 text-xs text-gray-600">Gender: {s.gender || "N/A"}</p>
+              <p className="mt-1 text-xs text-gray-600">Guardian: {s.guardianName || "N/A"} • {s.guardianPhone || "N/A"}</p>
             </div>
 
             <div className="flex shrink-0 items-start gap-2">

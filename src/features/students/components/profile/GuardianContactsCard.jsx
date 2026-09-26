@@ -16,13 +16,15 @@ export default function GuardianContactsCard({ guardians, onEdit }) {
 
   const hasLegalGuardian = legalGuardians.length > 0;
 
-  const primaryGuardian = hasLegalGuardian
-    ? legalGuardians[0]
-    : (guardians?.find((guardian) => guardian.isPrimary) ?? guardians?.[0]);
+  const primaryGuardian =
+    guardians?.find((guardian) => guardian.isPrimary) ??
+    (hasLegalGuardian ? legalGuardians[0] : guardians?.[0]);
 
   // Only show a separate Legal Guardians row when there are two of them;
   // a single legal guardian's info already replaces the Primary Guardian card above.
-  const showLegalGuardiansRow = legalGuardians.length === 2;
+  const showLegalGuardiansRow =
+    legalGuardians.length === 2 ||
+    (legalGuardians.length === 1 && primaryGuardian?.type !== LEGAL_GUARDIAN_TYPE);
 
   return (
     <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">

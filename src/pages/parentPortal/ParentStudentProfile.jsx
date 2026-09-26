@@ -1,12 +1,9 @@
-import { useState } from "react";
 import { useStudentProfileQuery } from "@features/students/hooks/useStudentProfileQuery.js";
 import { useParentChild } from "@hooks/useParentChild";
 import StudentProfileHeader from "@features/students/components/profile/StudentProfileHeader";
 import GuardianContactsCard from "@features/students/components/profile/GuardianContactsCard";
 import MedicalNotesCard from "@features/students/components/profile/MedicalNotesCard";
 import RequiredDocumentsCard from "@features/students/components/profile/RequiredDocumentsCard";
-import EditMedicalModal from "@features/students/components/profile/EditMedicalModal";
-import UploadDocumentModal from "@features/students/components/profile/UploadDocumentModal";
 import LoadingState from "@components/shared/LoadingState";
 import { Users, FileQuestion } from "lucide-react";
 
@@ -39,14 +36,7 @@ function ParentStudentProfileView({ selectedChild }) {
   const { data: queryData, isLoading, isError, refetch } = useStudentProfileQuery(
     selectedChild.id,
   );
-  const [profile, setProfile] = useState(null);
-  const [initialized, setInitialized] = useState(false);
-  const [activeModal, setActiveModal] = useState(null); // "medical" | "upload" | null
-
-  if (queryData && !initialized) {
-    setInitialized(true);
-    setProfile(queryData.profile);
-  }
+  const profile = queryData?.profile;
 
   const loading = isLoading;
 
@@ -104,49 +94,12 @@ function ParentStudentProfileView({ selectedChild }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
         <GuardianContactsCard guardians={guardians} />
-        <MedicalNotesCard
-          medical={medical}
-          onEdit={() => setActiveModal("medical")}
-        />
+        <MedicalNotesCard medical={medical} />
       </div>
 
       <div className="mt-8">
-        <RequiredDocumentsCard
-          documents={documents}
-          onUpload={() => setActiveModal("upload")}
-          onRemove={(docId) => {
-            setProfile((current) => ({
-              ...current,
-              documents: current.documents.filter((doc) => doc.id !== docId),
-            }));
-          }}
-        />
+        <RequiredDocumentsCard documents={documents} />
       </div>
-
-      {activeModal === "medical" && (
-        <EditMedicalModal
-          medical={medical}
-          hideAccommodations
-          onCancel={() => setActiveModal(null)}
-          onSave={(updatedMedical) => {
-            setProfile((current) => ({ ...current, medical: updatedMedical }));
-            setActiveModal(null);
-          }}
-        />
-      )}
-
-      {activeModal === "upload" && (
-        <UploadDocumentModal
-          onCancel={() => setActiveModal(null)}
-          onSave={(newDocument) => {
-            setProfile((current) => ({
-              ...current,
-              documents: [...(current.documents ?? []), newDocument],
-            }));
-            setActiveModal(null);
-          }}
-        />
-      )}
     </div>
   );
 }

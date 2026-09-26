@@ -16,15 +16,17 @@ export default function RequiredDocumentsCard({
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h2 className="text-xl font-bold text-gray-800">Required Documents</h2>
-        <button
-          type="button"
-          onClick={onUpload}
-          className="flex items-center gap-2 cursor-pointer text-[#C2570C] hover:text-orange-700 font-semibold text-sm transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
-          aria-label="Upload documents"
-        >
-          <Upload size={18} />
-          <span>Upload Documents</span>
-        </button>
+        {onUpload ? (
+          <button
+            type="button"
+            onClick={onUpload}
+            className="flex items-center gap-2 cursor-pointer text-[#C2570C] hover:text-orange-700 font-semibold text-sm transition-colors px-3 py-2 rounded-lg hover:bg-orange-50"
+            aria-label="Upload documents"
+          >
+            <Upload size={18} />
+            <span>Upload Documents</span>
+          </button>
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -34,7 +36,7 @@ export default function RequiredDocumentsCard({
               key={doc.id}
               document={doc}
               onView={setViewingDocument}
-              onRemove={setDeletingDocument}
+              onRemove={onRemove ? setDeletingDocument : undefined}
             />
           ))
         ) : (
@@ -52,7 +54,7 @@ export default function RequiredDocumentsCard({
         />
       )}
 
-      {deletingDocument && (
+      {onRemove && deletingDocument && (
         <DeleteDocumentModal
           document={deletingDocument}
           onCancel={() => setDeletingDocument(null)}

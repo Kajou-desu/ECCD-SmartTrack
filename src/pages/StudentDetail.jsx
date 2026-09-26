@@ -171,11 +171,21 @@ function StudentDetailView({ studentId }) {
           guardians={guardians}
           onCancel={() => setActiveModal(null)}
           onSave={(updatedGuardians) => {
-            setProfile((current) => ({
-              ...current,
-              guardians: updatedGuardians,
-            }));
-            setActiveModal(null);
+            const primaryGuardian = updatedGuardians.find((guardian) => guardian.isPrimary);
+            const primaryGuardianType = primaryGuardian?.type ?? null;
+            apiClient
+              .updateStudent(studentId, { primaryGuardianType })
+              .then(() => {
+                setProfile((current) => ({
+                  ...current,
+                  guardians: updatedGuardians,
+                  student: { ...current.student, primaryGuardianType },
+                }));
+                setActiveModal(null);
+              })
+              .catch((error) => {
+                setDocError(error.message || "Failed to save the primary guardian. Please try again.");
+              });
           }}
         />
       )}

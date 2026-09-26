@@ -66,12 +66,12 @@ export function useStudents({ itemsPerPage = ITEMS_PER_PAGE } = {}) {
         try {
             const escapeCsv = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
             const rows = filteredStudents.map((student) =>
-                [student.name, student.session === "morning" ? "AM" : "PM", student.age, student.guardianName, student.guardianPhone, student.address, student.status]
+                [student.name, student.session === "morning" ? "AM" : "PM", student.gender, student.guardianName, student.guardianPhone, student.address, student.status]
                     .map(escapeCsv)
                     .join(","),
             );
 
-            const csv = ["Name,Session,Age,Guardian,Phone,Address,Status", ...rows].join("\n");
+            const csv = ["Name,Session,Gender,Guardian,Phone,Address,Status", ...rows].join("\n");
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");

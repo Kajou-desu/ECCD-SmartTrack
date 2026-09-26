@@ -22,17 +22,19 @@ export default function DocumentCard({ document, onView, onRemove }) {
         </div>
       </button>
 
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          onRemove(document);
-        }}
-        aria-label={`Remove document: ${document.name}`}
-        className="absolute top-1/2 right-2 -translate-y-1/2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-      >
-        <Trash2 size={16} />
-      </button>
+      {onRemove ? (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onRemove(document);
+          }}
+          aria-label={`Remove document: ${document.name}`}
+          className="absolute top-1/2 right-2 -translate-y-1/2 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+        >
+          <Trash2 size={16} />
+        </button>
+      ) : null}
     </div>
   );
 }
