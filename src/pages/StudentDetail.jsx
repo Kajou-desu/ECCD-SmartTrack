@@ -11,6 +11,7 @@ import EditGuardiansModal from "@features/students/components/profile/EditGuardi
 import EditMedicalModal from "@features/students/components/profile/EditMedicalModal";
 import UploadDocumentModal from "@features/students/components/profile/UploadDocumentModal";
 import StudentBleDevicesCard from "@features/smartAttendance/components/StudentBleDevicesCard";
+import StudentEnrollmentPhotosCard from "@features/smartAttendance/components/StudentEnrollmentPhotosCard";
 import PageHeader from "@components/shared/PageHeader";
 import LoadingState from "@components/shared/LoadingState";
 import ErrorMsg from "@components/ui/ErrorMsg";
@@ -135,6 +136,10 @@ function StudentDetailView({ studentId }) {
 
       <div className="mt-8">
         <StudentBleDevicesCard studentId={studentId} />
+      </div>
+
+      <div className="mt-8">
+        <StudentEnrollmentPhotosCard studentId={studentId} />
       </div>
 
       <div className="mt-8">

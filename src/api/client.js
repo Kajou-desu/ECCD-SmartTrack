@@ -598,6 +598,25 @@ export const apiClient = {
   },
 
   /**
+   * Replace a student's face-recognition enrollment photos (1-8 photos).
+   * This REPLACES the student's whole enrollment set, not adds to it.
+   * Requires guardian consent to already be in place — this call does not
+   * track or verify consent itself.
+   * @param {number|string} studentId
+   * @param {File[]} files
+   * @returns {Promise<{studentId: number, photosReceived: number, enrolled: boolean}>}
+   */
+  async uploadEnrollmentPhotos(studentId, files) {
+    const formData = new FormData();
+    (await compressImages(files)).forEach((file) => formData.append("photos", file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/enrollment-photos`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
    * Delete a single document from a student's profile.
    * @param {number|string} studentId
    * @param {number|string} documentId
