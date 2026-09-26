@@ -65,7 +65,7 @@ export default function AttendanceLive() {
 
   if (!isActive) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         {header}
         <section className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
           <h2 className="text-lg font-semibold text-gray-800">Attendance isn't running</h2>
@@ -84,7 +84,7 @@ export default function AttendanceLive() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {header}
       <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
 

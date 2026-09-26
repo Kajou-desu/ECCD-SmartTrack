@@ -471,7 +471,7 @@ export default function StudentForm() {
           <FormSection
             number="02"
             title="Parent Information"
-            description="Contact details for the student's parents."
+            description="Contact details for the student's parents. If an email matches an existing Parent or Guardian account, that account is linked to this student automatically."
           >
             <div className="grid gap-5 lg:grid-cols-2">
               <ContactSection
@@ -499,7 +499,7 @@ export default function StudentForm() {
           <FormSection
             number="03"
             title="Guardian Information"
-            description="Provide the details of the student's primary responsible adult. If both parents are present, enter the primary parent. If only one parent is present, enter that parent. If neither parent is present, enter the student's legal guardian."
+            description="Provide the details of the student's primary responsible adult. If both parents are present, enter the primary parent. If only one parent is present, enter that parent. If neither parent is present, enter the student's legal guardian. A guardian email that matches an existing Guardian account is linked automatically."
           >
             {showGuardianForm ? (
               <>

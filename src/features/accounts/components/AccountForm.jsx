@@ -1,5 +1,6 @@
 import formatStudentName from "@utils/formatStudentName.js";
 
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { normalizeRole } from "../utils/accountUtils.js";
@@ -34,6 +35,72 @@ function StatusMessage({ message }) {
     >
       {message.text}
     </div>
+  );
+}
+
+// Checkbox group so one Parent/Guardian can be connected to several students.
+// Toggling only touches the clicked id, so selections hidden by the search
+// filter are kept.
+function StudentPicker({ students, selectedIds, onChange }) {
+  const [query, setQuery] = useState("");
+  const selected = new Set(selectedIds.map(Number));
+  const needle = query.trim().toLowerCase();
+  const visible = needle
+    ? students.filter((student) =>
+        `${formatStudentName(student)} ${formatStudentCode(student)}`.toLowerCase().includes(needle),
+      )
+    : students;
+
+  const toggle = (id) => {
+    const next = new Set(selected);
+    if (!next.delete(id)) next.add(id);
+    onChange({ target: { name: "studentIds", value: [...next] } });
+  };
+
+  return (
+    <fieldset>
+      <legend className="mb-1 block text-[10px] font-black uppercase tracking-wide text-slate-400">
+        Connect Students
+      </legend>
+
+      <input
+        type="search"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={(event) => event.key === "Enter" && event.preventDefault()}
+        placeholder="Search students"
+        aria-label="Search students"
+        className={inputClass}
+      />
+
+      <div className="mt-2 max-h-56 space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
+        {visible.length === 0 && (
+          <p className="px-2 py-2 text-[11px] text-slate-500">No students found.</p>
+        )}
+
+        {visible.map((student) => (
+          <label
+            key={student.id}
+            className="flex cursor-pointer items-start gap-3 rounded-lg px-2 py-2 hover:bg-white"
+          >
+            <input
+              type="checkbox"
+              checked={selected.has(Number(student.id))}
+              onChange={() => toggle(Number(student.id))}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-blue-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+            />
+            <span className="min-w-0">
+              <span className="block text-xs font-semibold text-slate-800">{formatStudentName(student)}</span>
+              <span className="block text-[11px] text-slate-500">{formatStudentCode(student)}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+
+      <p aria-live="polite" className="mt-1 text-[11px] text-slate-500">
+        {selected.size} selected
+      </p>
+    </fieldset>
   );
 }
 
@@ -124,7 +191,16 @@ export default function AccountForm({
         <select
           name="role"
           value={normalizeRole(formData.role)}
-          onChange={onChange}
+          onChange={(event) => {
+            onChange(event);
+            // Leaving Parent/Guardian: clear the (now-hidden) picker's
+            // selection too, so a stale, non-empty studentIds array doesn't
+            // ride along on this same submit and get rejected by the
+            // backend's "only Parent/Guardian can be connected" check.
+            if (!["Parent", "Guardian"].includes(normalizeRole(event.target.value))) {
+              onChange({ target: { name: "studentIds", value: [] } });
+            }
+          }}
           className={inputClass}
           required
         >
@@ -164,28 +240,11 @@ export default function AccountForm({
 
       {(normalizeRole(formData.role) === "Parent" ||
         normalizeRole(formData.role) === "Guardian") && (
-        <FormField label="Connect Student">
-          <select
-            name="studentIds"
-            value={formData.studentIds?.[0] ?? ""}
-            onChange={(event) =>
-              onChange({
-                target: {
-                  name: "studentIds",
-                  value: event.target.value ? [event.target.value] : [],
-                },
-              })
-            }
-            className={inputClass}
-          >
-            <option value="">Select a student</option>
-            {students.map((student) => (
-              <option key={student.id} value={student.id}>
-                {formatStudentName(student)} ({formatStudentCode(student)})
-              </option>
-            ))}
-          </select>
-        </FormField>
+        <StudentPicker
+          students={students}
+          selectedIds={formData.studentIds ?? []}
+          onChange={onChange}
+        />
       )}
 
       <StatusMessage message={message} />
