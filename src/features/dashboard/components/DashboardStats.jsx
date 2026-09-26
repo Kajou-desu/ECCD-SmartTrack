@@ -32,7 +32,7 @@ export const STAT_CARDS = [
     label: "School Days",
     color: "bg-orange-100 text-orange-600",
     // static value fallback
-    value: "60",
+    value: "200",
   },
 ];
 
