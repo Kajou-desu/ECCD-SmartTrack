@@ -3,8 +3,10 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useParentAlbumsState } from "@features/eventPhotos/hooks/useParentAlbumsState";
 
-const mockGetAlbums = vi.fn();
-const mockUseParentChild = vi.fn();
+const { mockGetAlbums, mockUseParentChild } = vi.hoisted(() => ({
+  mockGetAlbums: vi.fn(),
+  mockUseParentChild: vi.fn(),
+}));
 
 vi.mock("@api/client.js", () => ({
   apiClient: { getAlbums: mockGetAlbums },
