@@ -2,56 +2,22 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
+import { useConsumeLocationState } from "@hooks/useConsumeLocationState";
 import Modal from "@components/ui/Modal";
 import ErrorMsg from "@components/ui/ErrorMsg";
-import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
-import { HOLIDAYS } from "@constants/holidays.js";
-import formatStudentName from "@utils/formatStudentName.js";
-import {
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 async function fetchEvents(monthKey) {
   return apiClient.getEvents(monthKey);
 }
 
-const EVENT_CATEGORIES = ["Holiday", "Birthday", "Event"];
-const MONTH_ABBREVIATIONS = [
-  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
-];
+const EVENT_CATEGORIES = ["Holiday", "Birthday", "Others"];
 
-function getBirthdayMonthAndDay(birthday) {
-  if (typeof birthday === "string") {
-    const dateOnlyMatch = birthday.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (dateOnlyMatch) {
-      return { month: Number(dateOnlyMatch[2]), day: Number(dateOnlyMatch[3]) };
-    }
-  }
-
-  const parsedBirthday = new Date(birthday);
-  if (Number.isNaN(parsedBirthday.getTime())) return null;
-  return { month: parsedBirthday.getMonth() + 1, day: parsedBirthday.getDate() };
-}
-
-function formatEventDate(dateKey) {
-  return new Date(`${dateKey}T00:00:00`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  });
-}
-
-function AddEventModal({ eventToEdit, onCancel, onSaved }) {
-  const [title, setTitle] = useState(eventToEdit?.title ?? "");
-  const [date, setDate] = useState(eventToEdit?.dateKey ?? "");
-  const [category, setCategory] = useState(eventToEdit?.legend ?? "Holiday");
-  const [description, setDescription] = useState(eventToEdit?.description ?? "");
+function AddEventModal({ onCancel, onCreated }) {
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [category, setCategory] = useState("Holiday");
+  const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -63,32 +29,24 @@ function AddEventModal({ eventToEdit, onCancel, onSaved }) {
     setError("");
 
     try {
-      const payload = {
+      await apiClient.createEvent({
         title: title.trim(),
         date,
         category,
         description: description.trim() || undefined,
-      };
-      if (eventToEdit) {
-        await apiClient.updateEvent(eventToEdit.id, payload);
-      } else {
-        await apiClient.createEvent(payload);
-      }
-      onSaved();
+      });
+      onCreated();
     } catch (err) {
-      setError(
-        err?.details?.message ||
-          `Failed to ${eventToEdit ? "update" : "add"} event. Please try again.`,
-      );
+      setError(err?.details?.message || "Failed to add event. Please try again.");
       setSaving(false);
     }
   };
 
   return (
-    <Modal onClose={onCancel} labelledBy="event-form-title">
+    <Modal onClose={onCancel} labelledBy="add-event-title">
       <form onSubmit={handleSubmit} className="p-6">
-        <h2 id="event-form-title" className="text-lg font-bold text-gray-900">
-          {eventToEdit ? "Edit Event" : "Add Event"}
+        <h2 id="add-event-title" className="text-lg font-bold text-gray-900">
+          Add Event
         </h2>
 
         <div className="mt-4 space-y-3">
@@ -174,13 +132,13 @@ function AddEventModal({ eventToEdit, onCancel, onSaved }) {
             disabled={!title.trim() || !date || saving}
             className="cursor-pointer rounded-lg bg-[#C2570C] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#a94709] disabled:cursor-not-allowed disabled:opacity-50"
           >
-              {saving ? (
+            {saving ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 size={14} className="animate-spin" />
-                  {eventToEdit ? "Saving..." : "Adding..."}
+                Adding...
               </span>
             ) : (
-                eventToEdit ? "Save Changes" : "Add Event"
+              "Add Event"
             )}
           </button>
         </div>
@@ -189,82 +147,14 @@ function AddEventModal({ eventToEdit, onCancel, onSaved }) {
   );
 }
 
-function EventDetailsModal({ details, onClose }) {
-  return (
-    <Modal onClose={onClose} labelledBy="event-details-title">
-      <div className="p-6">
-        <h2 id="event-details-title" className="text-lg font-bold text-gray-900">
-          Events for {details.date}
-        </h2>
-
-        {details.events.length ? (
-          <div className="mt-4 space-y-3">
-            {details.events.map((event, index) => (
-              <article
-                key={event.id ?? `${event.dateKey}-${index}`}
-                className="rounded-lg border border-gray-200 p-4"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="font-semibold text-gray-900">
-                    {event.title || event.legend}
-                  </h3>
-                  <span
-                    className={`shrink-0 rounded px-2 py-1 text-xs font-semibold ${getLegendBadgeClasses(
-                      event.legend,
-                    )}`}
-                  >
-                    {event.legend}
-                  </span>
-                </div>
-                {event.description && (
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">
-                    {event.description}
-                  </p>
-                )}
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-gray-600">No events scheduled.</p>
-        )}
-
-        <div className="mt-6 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
-function getLegendBadgeClasses(legend) {
-  switch (legend) {
-    case "Today":
-      return "bg-orange-200 text-orange-700";
-    case "Holiday":
-      return "bg-green-200 text-green-700";
-    case "Birthday":
-      return "bg-red-200 text-red-700";
-    default:
-      return "bg-blue-200 text-blue-700";
-  }
-}
-
 export default function CalendarEvents() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [showAddEventModal, setShowAddEventModal] = useState(false);
-  const [eventToEdit, setEventToEdit] = useState(null);
-  const [eventToDelete, setEventToDelete] = useState(null);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState("");
-  const [eventDetails, setEventDetails] = useState(null);
+  const shouldOpenAddEvent = useConsumeLocationState("openAddEvent");
+  const [showAddEventModal, setShowAddEventModal] = useState(
+    () => shouldOpenAddEvent === true,
+  );
 
   const monthKey = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -276,9 +166,8 @@ export default function CalendarEvents() {
     queryKey: ["events", monthKey],
     queryFn: () => fetchEvents(monthKey),
   });
-  const { data: studentsData, isLoading: studentsLoading } = useStudentsQuery();
 
-  const loading = isLoading || studentsLoading;
+  const loading = isLoading;
   const [dismissedMonth, setDismissedMonth] = useState(null);
   const showError = isError && dismissedMonth !== monthKey;
 
@@ -323,17 +212,11 @@ export default function CalendarEvents() {
     if (["birthday", "birthday event"].includes(value)) {
       return "Birthday";
     }
-    if (["event", "others"].includes(value)) {
-      return "Event";
-    }
-    return "Event";
+    return "Others";
   };
 
   const getDayColor = (day) => {
-    const dateKey = `${monthKey}-${String(day).padStart(2, "0")}`;
-    const status =
-      eventLogs.find((event) => event.dateKey === dateKey)?.legend ??
-      attendanceData?.daily?.[day];
+    const status = attendanceData?.daily?.[day];
     if (!status) return "bg-gray-50 text-gray-500";
     if (status === "Today")
       return "bg-orange-100 text-orange-700 border border-orange-300";
@@ -341,8 +224,8 @@ export default function CalendarEvents() {
       return "bg-green-100 text-green-700 border border-green-300";
     if (status === "Birthday")
       return "bg-red-100 text-red-700 border border-red-300";
-    if (status === "Event")
-      return "bg-blue-100 text-blue-700 border border-blue-300";
+    if (status === "Others")
+      return "bg-gray-100 text-gray-700 border border-gray-300";
     return "bg-gray-100 text-gray-600";
   };
 
@@ -358,6 +241,19 @@ export default function CalendarEvents() {
     return "";
   };
 
+  const getLegendBadgeClasses = (legend) => {
+    switch (legend) {
+      case "Today":
+        return "bg-orange-200 text-orange-700";
+      case "Holiday":
+        return "bg-green-200 text-green-700";
+      case "Birthday":
+        return "bg-red-200 text-red-700";
+      default:
+        return "bg-gray-200 text-gray-700";
+    }
+  };
+
   const getLegendCardClasses = (legend) => {
     switch (legend) {
       case "Today":
@@ -367,94 +263,24 @@ export default function CalendarEvents() {
       case "Birthday":
         return "bg-red-50 border-red-200";
       default:
-        return "bg-blue-50 border-blue-200";
+        return "bg-gray-50 border-gray-200";
     }
   };
 
   const eventLogs = useMemo(() => {
-    const year = Number(monthKey.slice(0, 4));
-    const month = Number(monthKey.slice(5, 7));
-    const savedEvents = (attendanceData?.logs ?? []).map((log) => ({
-      ...log,
-      legend: normalizeEventLegend(log.status),
-    }));
-    const holidayEvents = HOLIDAYS
-      .filter((holiday) => MONTH_ABBREVIATIONS[month - 1] === holiday.month)
-      .map((holiday) => {
-        const dateKey = `${monthKey}-${holiday.day}`;
-        return {
-          title: holiday.name,
-          dateKey,
-          date: formatEventDate(dateKey),
-          time: "---",
-          status: "Holiday",
-          legend: "Holiday",
-        };
-      });
-    const birthdayEvents = (studentsData?.students ?? []).flatMap((student) => {
-      const birthday = getBirthdayMonthAndDay(student.birthday);
-      if (!birthday || birthday.month !== month) return [];
-      if (new Date(year, month - 1, birthday.day).getMonth() !== month - 1) {
-        return [];
+    if (!attendanceData) return [];
+    return (attendanceData.logs ?? []).reduce((acc, log) => {
+      const legend = normalizeEventLegend(log.status);
+      if (!acc.some((item) => item.legend === legend)) {
+        acc.push({
+          date: log.date,
+          time: log.time,
+          legend,
+        });
       }
-
-      const dateKey = `${monthKey}-${String(birthday.day).padStart(2, "0")}`;
-      return [{
-        title: `${formatStudentName(student)}'s Birthday`,
-        dateKey,
-        date: formatEventDate(dateKey),
-        time: "---",
-        status: "Birthday",
-        legend: "Birthday",
-      }];
-    });
-
-    return [...savedEvents, ...holidayEvents, ...birthdayEvents].sort((a, b) =>
-      a.dateKey.localeCompare(b.dateKey),
-    );
-  }, [attendanceData, monthKey, studentsData]);
-
-  const showDayDetails = (day) => {
-    const dateKey = `${monthKey}-${String(day).padStart(2, "0")}`;
-    const date = new Date(`${dateKey}T00:00:00`).toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
-    setEventDetails({
-      date,
-      events: eventLogs.filter((event) => event.dateKey === dateKey),
-    });
-  };
-
-  const showLogDetails = (event) => {
-    setEventDetails({ date: event.date, events: [event] });
-  };
-
-  const closeEventForm = () => {
-    setShowAddEventModal(false);
-    setEventToEdit(null);
-  };
-
-  const saveEvent = () => {
-    queryClient.invalidateQueries({ queryKey: ["events"] });
-    closeEventForm();
-  };
-
-  const removeEvent = async () => {
-    if (!eventToDelete || deleting) return;
-    setDeleting(true);
-    setDeleteError("");
-    try {
-      await apiClient.deleteEvent(eventToDelete.id);
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      setEventToDelete(null);
-    } catch (err) {
-      setDeleteError(err?.details?.message || "Failed to delete event. Please try again.");
-    } finally {
-      setDeleting(false);
-    }
-  };
+      return acc;
+    }, []);
+  }, [attendanceData]);
 
   const days = [];
   for (let i = 0; i < firstDay; i++) {
@@ -534,23 +360,18 @@ export default function CalendarEvents() {
 
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-2">
-            {days.map((day, idx) =>
-              day ? (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => showDayDetails(day)}
-                  aria-label={`Show events for ${monthName} ${day}`}
-                  className={`aspect-square flex items-center justify-center rounded-lg font-semibold text-sm transition cursor-pointer ${getDayColor(
-                    day,
-                  )} ${getDayBorder(day)} hover:shadow-md`}
-                >
-                  {day}
-                </button>
-              ) : (
-                <div key={idx} className="aspect-square bg-transparent" />
-              ),
-            )}
+            {days.map((day, idx) => (
+              <div
+                key={idx}
+                className={`aspect-square flex items-center justify-center rounded-lg font-semibold text-sm transition ${
+                  day
+                    ? `${getDayColor(day)} ${getDayBorder(day)} hover:shadow-md`
+                    : "bg-transparent"
+                }`}
+              >
+                {day || ""}
+              </div>
+            ))}
           </div>
 
           {/* Legend */}
@@ -572,8 +393,8 @@ export default function CalendarEvents() {
                 <span className="text-xs text-gray-600">Birthday</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-100 rounded border border-blue-300"></div>
-                <span className="text-xs text-gray-600">Event</span>
+                <div className="w-4 h-4 bg-gray-100 rounded border border-gray-300"></div>
+                <span className="text-xs text-gray-600">Others</span>
               </div>
             </div>
           </div>
@@ -594,67 +415,29 @@ export default function CalendarEvents() {
           <div className="space-y-3">
             {eventLogs.map((log, idx) => (
               <div
-                key={log.id ?? `${log.dateKey}-${idx}`}
-                className={`flex items-start gap-2 p-3 rounded-lg border transition hover:shadow-sm ${getLegendCardClasses(
+                key={`${log.legend}-${idx}`}
+                className={`p-3 rounded-lg border transition ${getLegendCardClasses(
                   log.legend,
                 )}`}
               >
-                <button
-                  type="button"
-                  onClick={() => showLogDetails(log)}
-                  className="min-w-0 flex-1 cursor-pointer text-left"
-                  aria-label={`View ${log.title || log.legend} details`}
-                >
-                  <span className="flex items-start justify-between gap-2">
-                    <span className="min-w-0">
-                      <span className="block font-semibold text-gray-800 text-sm">
-                        {log.title || log.legend}
-                      </span>
-                      <span className="mt-1 block text-xs text-gray-600">
-                        {log.date}
-                      </span>
-                    </span>
-                    <span
-                      className={`shrink-0 text-xs font-semibold px-2 py-1 rounded ${getLegendBadgeClasses(
-                        log.legend,
-                      )}`}
-                    >
-                      {log.legend}
-                    </span>
-                  </span>
-                  {log.time !== "---" && (
-                    <span className="mt-2 block text-xs text-gray-600">
-                      <span className="font-medium">Time:</span> {log.time}
-                    </span>
-                  )}
-                </button>
-                {log.id && (
-                  <div className="flex shrink-0 items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEventToEdit(log);
-                        setShowAddEventModal(true);
-                      }}
-                      className="cursor-pointer rounded p-1.5 text-gray-600 transition hover:bg-white/70 hover:text-[#C2570C]"
-                      aria-label={`Edit ${log.title || "event"}`}
-                      title="Edit event"
-                    >
-                      <Pencil size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEventToDelete(log);
-                        setDeleteError("");
-                      }}
-                      className="cursor-pointer rounded p-1.5 text-red-600 transition hover:bg-white/70 hover:text-red-700"
-                      aria-label={`Delete ${log.title || "event"}`}
-                      title="Delete event"
-                    >
-                      <Trash2 size={15} />
-                    </button>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm">
+                      {log.date}
+                    </p>
                   </div>
+                  <span
+                    className={`text-xs font-semibold px-2 py-1 rounded ${getLegendBadgeClasses(
+                      log.legend,
+                    )}`}
+                  >
+                    {log.legend}
+                  </span>
+                </div>
+                {log.time !== "---" && (
+                  <p className="text-xs text-gray-600 mt-2">
+                    <span className="font-medium">Time:</span> {log.time}
+                  </p>
                 )}
               </div>
             ))}
@@ -662,57 +445,13 @@ export default function CalendarEvents() {
         </div>
       </div>
 
-      {(showAddEventModal || eventToEdit) && (
+      {showAddEventModal && (
         <AddEventModal
-          eventToEdit={eventToEdit}
-          onCancel={closeEventForm}
-          onSaved={saveEvent}
-        />
-      )}
-
-      {eventToDelete && (
-        <Modal
-          onClose={() => !deleting && setEventToDelete(null)}
-          labelledBy="delete-event-title"
-        >
-          <div className="p-6">
-            <h2 id="delete-event-title" className="text-lg font-bold text-gray-900">
-              Delete Event?
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              This will permanently delete “{eventToDelete.title || eventToDelete.legend}”.
-            </p>
-            {deleteError && (
-              <p role="alert" className="mt-3 text-sm text-red-600">
-                {deleteError}
-              </p>
-            )}
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setEventToDelete(null)}
-                disabled={deleting}
-                className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={removeEvent}
-                disabled={deleting}
-                className="cursor-pointer rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
-              >
-                {deleting ? "Deleting..." : "Delete Event"}
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {eventDetails && (
-        <EventDetailsModal
-          details={eventDetails}
-          onClose={() => setEventDetails(null)}
+          onCancel={() => setShowAddEventModal(false)}
+          onCreated={() => {
+            queryClient.invalidateQueries({ queryKey: ["events"] });
+            setShowAddEventModal(false);
+          }}
         />
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useConsumeLocationState } from "@hooks/useConsumeLocationState";
 import { useEventPhotos } from "@features/eventPhotos/hooks/useEventPhotos";
 import AlbumsToolbar from "@features/eventPhotos/components/AlbumsToolbar";
 import AlbumsList from "@features/eventPhotos/components/AlbumsList";
@@ -7,6 +8,7 @@ import AlbumsLoadingState from "@features/eventPhotos/components/AlbumsLoadingSt
 import CreateAlbumModal from "@features/eventPhotos/components/CreateAlbumModal";
 import EditAlbumModal from "@features/eventPhotos/components/EditAlbumModal";
 import DeleteAlbumConfirm from "@features/eventPhotos/components/DeleteAlbumConfirm";
+import AddPhotoModal from "@features/eventPhotos/components/AddPhotoModal";
 import ErrorMsg from "@components/ui/ErrorMsg";
 import { Toast } from "@components/ui/Toast";
 
@@ -15,6 +17,7 @@ const ALBUM_MODAL = {
   CREATE: "create",
   DELETE: "delete",
   EDIT: "edit",
+  ADD_PHOTO: "add_photo",
 };
 
 export default function EventPhotos() {
@@ -29,13 +32,17 @@ export default function EventPhotos() {
     setSearchQuery,
     filteredAlbums,
     createAlbum,
+    addPhotos,
     deleteAlbum,
     updateAlbum,
     toast,
     dismissToast,
   } = useEventPhotos();
 
-  const [modalType, setModalType] = useState(ALBUM_MODAL.NONE);
+  const shouldOpenAddPhoto = useConsumeLocationState("openAddPhoto");
+  const [modalType, setModalType] = useState(() =>
+    shouldOpenAddPhoto ? ALBUM_MODAL.ADD_PHOTO : ALBUM_MODAL.NONE,
+  );
   const [selectedAlbum, setSelectedAlbum] = useState(null);
 
   const closeModal = () => {
@@ -120,6 +127,15 @@ export default function EventPhotos() {
           album={selectedAlbum}
           onCancel={closeModal}
           onConfirm={handleConfirmDelete}
+        />
+      )}
+
+      {modalType === ALBUM_MODAL.ADD_PHOTO && (
+        <AddPhotoModal
+          albums={albums}
+          createAlbum={createAlbum}
+          addPhotos={addPhotos}
+          onClose={closeModal}
         />
       )}
 

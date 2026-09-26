@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useConsumeLocationState } from "@hooks/useConsumeLocationState";
 import {
   useMaterials,
   MATERIAL_MODAL,
@@ -15,6 +16,7 @@ import { Toast } from "@components/ui/Toast";
 
 export default function Materials() {
   const navigate = useNavigate();
+  const shouldOpenAdd = useConsumeLocationState("openAdd");
   const {
     materials,
     loading,
@@ -37,7 +39,9 @@ export default function Materials() {
     handleUploadSuccess,
     toast,
     dismissToast,
-  } = useMaterials();
+  } = useMaterials({
+    initialModalType: shouldOpenAdd ? MATERIAL_MODAL.CREATE : MATERIAL_MODAL.NONE,
+  });
 
   return (
     <main className="flex min-h-0 flex-1 flex-col bg-[#f8f9ff] p-4 sm:p-6">

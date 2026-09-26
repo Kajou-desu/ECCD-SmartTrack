@@ -11,7 +11,7 @@ export const MATERIAL_MODAL = {
   UPLOAD: "upload",
 };
 
-export function useMaterials() {
+export function useMaterials({ initialModalType = MATERIAL_MODAL.NONE } = {}) {
   const queryClient = useQueryClient();
 
   const { data: queryData, isLoading, isError, refetch } = useMaterialsQuery();
@@ -32,7 +32,7 @@ export function useMaterials() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [modalType, setModalType] = useState(MATERIAL_MODAL.NONE);
+  const [modalType, setModalType] = useState(initialModalType);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
 
   const [toast, setToast] = useState(null);
