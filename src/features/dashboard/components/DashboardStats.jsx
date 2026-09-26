@@ -2,6 +2,7 @@ import { UsersRound, UserCheck, UserX, CalendarDays } from "lucide-react";
 import { DailyThemeCard } from "./DailyThemeCard";
 import { AttendanceList } from "./AttendanceList";
 import { EventCard } from "./EventCard";
+import { SCHOOL_DAYS } from "@constants/schoolYear";
 
 // Stat card configuration.
 export const STAT_CARDS = [
@@ -31,8 +32,7 @@ export const STAT_CARDS = [
     Icon: CalendarDays,
     label: "School Days",
     color: "bg-orange-100 text-orange-600",
-    // static value fallback
-    value: "200",
+    value: String(SCHOOL_DAYS),
   },
 ];
 

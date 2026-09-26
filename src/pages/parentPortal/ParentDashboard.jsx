@@ -14,6 +14,7 @@ import {
 } from "@features/dashboard/components/ParentProgressStates";
 import StatCard from "@components/shared/StatCard";
 import { LOCATION_CONFIG } from "@constants/location";
+import { SCHOOL_DAYS } from "@constants/schoolYear";
 import { TrendingUp, BookUser, CalendarDays, Award, Users } from "lucide-react";
 import formatStudentName from "@utils/formatStudentName.js";
 
@@ -98,7 +99,7 @@ export default function ParentDashboard() {
             <StatCard
               Icon={CalendarDays}
               label="School Days"
-              value={String(progress.schoolDays)}
+              value={String(SCHOOL_DAYS)}
               color="bg-orange-100 text-orange-600"
             />
           </div>

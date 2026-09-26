@@ -1,0 +1,1 @@
+export const SCHOOL_DAYS = 200;
