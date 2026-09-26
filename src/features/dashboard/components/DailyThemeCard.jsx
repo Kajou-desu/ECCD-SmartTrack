@@ -1,16 +1,34 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
-import { ArrowRight, CircleCheck } from "lucide-react";
+import { ArrowRight, CircleCheck, Pencil } from "lucide-react";
+import EditDailyThemeModal from "./EditDailyThemeModal";
+import { Toast } from "@components/ui/Toast";
 
 async function fetchDailyTheme() {
   return apiClient.getDailyTheme();
 }
 
 export function DailyThemeCard() {
+  const queryClient = useQueryClient();
   const { data: theme, isLoading, isError, refetch } = useQuery({
     queryKey: ["dailyTheme"],
     queryFn: fetchDailyTheme,
   });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const handleSaveTheme = async (payload) => {
+    try {
+      await apiClient.saveDailyTheme(payload);
+      await queryClient.invalidateQueries({ queryKey: ["dailyTheme"] });
+      setIsEditing(false);
+      setToast({ type: "success", message: "Today's theme was saved." });
+    } catch (err) {
+      setToast({ type: "error", message: err.message || "Failed to save theme. Please try again." });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -55,10 +73,20 @@ export function DailyThemeCard() {
 
         {/* Left Panel */}
         <div className="flex flex-1 flex-col gap-4 p-6 min-h-0 overflow-y-auto">
-          <div className="self-start rounded-full bg-orange-100 px-3 py-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-[#C2570C]">
-              Today's Theme
-            </span>
+          <div className="flex items-center justify-between gap-2">
+            <div className="self-start rounded-full bg-orange-100 px-3 py-1">
+              <span className="text-xs font-semibold uppercase tracking-wide text-[#C2570C]">
+                Today's Theme
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-[#C2570C] transition hover:bg-orange-50"
+            >
+              <Pencil size={14} />
+              Edit
+            </button>
           </div>
           <div className="flex flex-col gap-2 my-auto">
             <h2 className="text-2xl font-bold text-gray-800">{theme.title}</h2>
@@ -86,6 +114,16 @@ export function DailyThemeCard() {
           </button>
         </div>
       </div>
+
+      {isEditing && (
+        <EditDailyThemeModal
+          theme={theme}
+          onCancel={() => setIsEditing(false)}
+          onConfirm={handleSaveTheme}
+        />
+      )}
+
+      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
     </div>
   );
 }

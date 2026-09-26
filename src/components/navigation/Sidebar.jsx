@@ -13,6 +13,7 @@ import {
   UserSquare,
   Users,
   LibraryBig,
+  Target,
   Images,
   Settings,
   Users2,
@@ -40,6 +41,11 @@ const NAV_ITEMS = [
     icon: LibraryBig,
     label: "Materials",
     href: "/learning-materials",
+  },
+  {
+    icon: Target,
+    label: "Weekly Goals",
+    href: "/weekly-goals",
   },
   {
     icon: Images,

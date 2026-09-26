@@ -801,6 +801,84 @@ export const apiClient = {
     });
   },
 
+  /**
+   * Create or update the lesson theme for a given date (defaults to today).
+   * @param {Object} payload
+   * @param {string} [payload.date] - "YYYY-MM-DD", defaults to today
+   * @param {string} payload.letter
+   * @param {string} payload.label
+   * @param {string} [payload.subtitle]
+   * @param {string} payload.title
+   * @param {string} [payload.description]
+   * @param {string[]} [payload.objectives]
+   */
+  async saveDailyTheme(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/dashboard/daily-theme`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
+   * This week's classroom goals for a session, each with every active
+   * student's progress.
+   * @param {string} [week] - "YYYY-MM-DD", any day in the target week
+   * @param {"morning"|"afternoon"} [session]
+   */
+  async getWeeklyGoals(week, session = "morning") {
+    const params = new URLSearchParams({ session });
+    if (week) params.set("week", week);
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals?${params.toString()}`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * @param {Object} payload
+   * @param {string} [payload.weekStart] - "YYYY-MM-DD", any day in the target week
+   * @param {"morning"|"afternoon"} payload.session
+   * @param {string} payload.title
+   * @param {string} [payload.description]
+   * @param {string} [payload.category]
+   */
+  async createWeeklyGoal(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** @param {number|string} goalId @param {Object} payload */
+  async updateWeeklyGoal(goalId, payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals/${goalId}`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** @param {number|string} goalId */
+  async deleteWeeklyGoal(goalId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals/${goalId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Bulk-grade students against a goal.
+   * @param {number|string} goalId
+   * @param {{studentId: number, progress: number, status: string}[]} updates
+   */
+  async updateGoalProgress(goalId, updates) {
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals/${goalId}/progress`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ updates }),
+    });
+  },
+
   /** Fetch notifications for the current user. */
   async getNotifications({ unreadOnly = false } = {}) {
     const params = new URLSearchParams();
