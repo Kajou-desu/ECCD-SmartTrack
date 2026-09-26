@@ -762,7 +762,7 @@ export const apiClient = {
    * @param {Object} payload
    * @param {string} payload.title
    * @param {string} payload.date - "YYYY-MM-DD"
-   * @param {"Holiday"|"Birthday"|"Others"} payload.category
+  * @param {"Holiday"|"Birthday"|"Event"} payload.category
    * @param {string} [payload.description]
    */
   async createEvent(payload) {
@@ -770,6 +770,20 @@ export const apiClient = {
       method: "POST",
       headers: jsonHeaders(),
       body: JSON.stringify(payload),
+    });
+  },
+
+  async updateEvent(id, payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/events/${id}`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async deleteEvent(id) {
+    return fetchWithRetry(`${API_BASE_URL}/api/events/${id}`, {
+      method: "DELETE",
     });
   },
 
