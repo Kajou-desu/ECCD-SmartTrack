@@ -50,6 +50,7 @@ export default function RequiredDocumentsCard({
       {viewingDocument && (
         <DocumentPreviewModal
           fileName={viewingDocument.name}
+          fileUrl={viewingDocument.url}
           onClose={() => setViewingDocument(null)}
         />
       )}

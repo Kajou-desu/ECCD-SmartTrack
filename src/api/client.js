@@ -5,6 +5,7 @@ const REQUEST_TIMEOUT = 10000; // 10 seconds
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
 const FILE_DOWNLOAD_TIMEOUT = 30000; // 30 seconds — files can be up to 10 MB
+const UPLOAD_TIMEOUT = 30000; // 30 seconds — FormData bodies (photos/documents) can be up to 10 MB each
 let onUnauthorized = null;
 
 export function setUnauthorizedHandler(handler) {
@@ -71,7 +72,12 @@ async function fetchWithTimeout(url, options = {}) {
       });
   }
 
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+  // Uploads (FormData bodies) can legitimately take longer than a plain JSON
+  // request — give them a longer fuse so a slow connection doesn't abort an
+  // upload that the server would otherwise have completed successfully.
+  const timeoutMs =
+    options.body instanceof FormData ? UPLOAD_TIMEOUT : REQUEST_TIMEOUT;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const token = getAuthToken();
