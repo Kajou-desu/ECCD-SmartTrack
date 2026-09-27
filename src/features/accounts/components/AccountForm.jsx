@@ -247,6 +247,19 @@ export default function AccountForm({
         />
       )}
 
+      {normalizeRole(formData.role) === "Teacher" && (
+        <FormField label="Center Location">
+          <input
+            type="text"
+            name="centerLocation"
+            value={formData.centerLocation ?? ""}
+            onChange={onChange}
+            placeholder="Which ECCD center this teacher is based at"
+            className={inputClass}
+          />
+        </FormField>
+      )}
+
       <StatusMessage message={message} />
 
       <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row">

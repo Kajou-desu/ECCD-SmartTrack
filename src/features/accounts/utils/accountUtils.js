@@ -6,6 +6,9 @@ export const INITIAL_FORM = {
     password: "",
     phone: "",
     address: "",
+    // Which ECCD center a Teacher account is based at; not shown/used for
+    // other roles.
+    centerLocation: "",
     role: "Parent",
     studentIds: [],
 };
@@ -18,6 +21,7 @@ export const INITIAL_EDIT_FORM = {
     email: "",
     phone: "",
     address: "",
+    centerLocation: "",
     role: "Parent",
     studentIds: [],
 };
@@ -136,6 +140,7 @@ export function createAccountPayload(formData) {
         firstName: formData.firstName.trim(),
         middleName: formData.middleName.trim(),
         lastName: formData.lastName.trim(),
+        centerLocation: (formData.centerLocation ?? "").trim(),
         role: normalizeRole(formData.role),
         studentIds: formData.studentIds ?? [],
     };
@@ -150,6 +155,7 @@ export function updateAccountPayload(formData) {
         email: formData.email.trim().toLowerCase(),
         phone: formData.phone.trim(),
         address: formData.address.trim(),
+        centerLocation: (formData.centerLocation ?? "").trim(),
         role: normalizeRole(formData.role),
         studentIds: formData.studentIds ?? [],
     };

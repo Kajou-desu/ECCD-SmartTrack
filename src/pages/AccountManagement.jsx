@@ -156,6 +156,7 @@ export default function AccountsManagement() {
       email: account.email || "",
       phone: account.phone || "",
       address: account.address || "",
+      centerLocation: account.centerLocation || "",
       role: account.role || "Parent",
       studentIds: account.studentIds ?? account.children?.map((child) => child.id) ?? [],
     });

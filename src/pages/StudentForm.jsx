@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Modal from "@components/ui/Modal";
 import { Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@hooks/useAuth";
 import { useFormValidation } from "@hooks/useFormValidation";
 import { studentSchema } from "@validation/student.js";
 import { apiClient } from "@api/client.js";
@@ -28,6 +29,10 @@ const initialValues = {
   addressPurok: "",
   addressBarangay: "",
   session: "morning",
+  // Only used/shown for an Admin (see TeacherSelector below) — a Teacher
+  // creating or editing a student always connects to themselves server-side,
+  // regardless of what (if anything) this field holds.
+  teacherId: "",
   motherName: "",
   motherAddress: "",
   motherPhone: "",
@@ -67,9 +72,14 @@ export default function StudentForm() {
   const { studentId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Admin";
   const isEditing = Boolean(studentId);
 
   const [loading, setLoading] = useState(isEditing);
+  // Admin-only teacher picker (TeacherSelector below); a Teacher always
+  // self-assigns server-side, so this list is only fetched/shown for Admin.
+  const [teachers, setTeachers] = useState([]);
   const [submitError, setSubmitError] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -100,6 +110,11 @@ export default function StudentForm() {
         ? studentFields.documents.filter((file) => file instanceof File)
         : [];
       delete studentFields.documents;
+      // teacherId is only ever meant to be set by an Admin (a Teacher always
+      // self-assigns server-side regardless of this field). Sending it as ""
+      // on every Teacher edit would otherwise still count as "changing" it
+      // and get rejected — see updateStudent on the backend.
+      if (!isAdmin) delete studentFields.teacherId;
       const payload = {
         ...studentFields,
         allergies: fromMedicalList(data.allergiesList),
@@ -137,7 +152,7 @@ export default function StudentForm() {
         setSubmitError(error?.message || "Unable to save student record.");
       }
     },
-    [isEditing, studentId, navigate, queryClient, photoFile],
+    [isEditing, studentId, navigate, queryClient, photoFile, isAdmin],
   );
 
   const handleDeleteStudent = async () => {
@@ -240,6 +255,29 @@ export default function StudentForm() {
     form.setValues((prev) => ({ ...prev, [key]: [...prev[key], ""] }));
   };
 
+  // Admin-only: the account directory doubles as the teacher picker's
+  // options list (TeacherSelector below). A Teacher never sees or needs
+  // this, since they always self-assign.
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    let isMounted = true;
+
+    apiClient
+      .getAccounts()
+      .then((accounts) => {
+        if (!isMounted) return;
+        setTeachers((accounts || []).filter((account) => account.role === "Teacher"));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAdmin]);
+
   useEffect(() => {
     if (!isEditing) return;
 
@@ -266,6 +304,7 @@ export default function StudentForm() {
           addressPurok: studentAddr.purok,
           addressBarangay: studentAddr.barangay,
           session: student.session || "morning",
+          teacherId: student.teacherId != null ? String(student.teacherId) : "",
           motherName: student.motherName || "",
           motherAddress: student.motherAddress || "",
           motherPhone: student.motherPhone || "",
@@ -466,6 +505,39 @@ export default function StudentForm() {
               value={form.values.session}
               onChange={form.handleChange}
             />
+
+            {/* Admin only: a Teacher adding a student is automatically the
+                assigned teacher, so there's nothing for them to pick here. */}
+            {isAdmin && (
+              <div className="mt-5">
+                <label htmlFor="teacherId" className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">
+                  Assigned Teacher
+                  <span className="text-red-500"> *</span>
+                </label>
+
+                <select
+                  id="teacherId"
+                  name="teacherId"
+                  value={form.values.teacherId}
+                  onChange={form.handleChange}
+                  required
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-800 outline-none transition focus:border-[#C2570C] focus:ring-2 focus:ring-[#C2570C]/15"
+                >
+                  <option value="" disabled>
+                    Select a teacher
+                  </option>
+                  {teachers.map((teacher) => {
+                    const teacherId = teacher.id ?? teacher._id;
+                    const name = `${teacher.lastName || ""}, ${teacher.firstName || ""}`.replace(/^,\s*|,\s*$/g, "").trim();
+                    return (
+                      <option key={teacherId} value={teacherId}>
+                        {name || teacher.email}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            )}
           </FormSection>
 
           <FormSection

@@ -102,6 +102,12 @@ export default function AccountViewModal({ account, onClose }) {
                 {account.address || "No address provided"}
               </span>
             </Detail>
+
+            {normalizeRole(account.role) === "Teacher" && (
+              <Detail label="Center Location" wide>
+                {account.centerLocation || "Not set"}
+              </Detail>
+            )}
           </div>
 
           <button
