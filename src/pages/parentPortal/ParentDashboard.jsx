@@ -2,6 +2,7 @@ import { useAuth } from "@hooks/useAuth";
 import { useParentChild } from "@hooks/useParentChild";
 import useDashboardGreeting from "@features/dashboard/hooks/useDashboardGreeting";
 import useParentProgress from "@features/dashboard/hooks/useParentProgress";
+import useParentAttendance from "@features/attendance/hooks/useParentAttendance";
 import DashboardHeader from "@features/dashboard/components/DashboardHeader";
 import ChildOverviewCard from "@features/dashboard/components/ChildOverviewCard";
 import WeeklyGoalsCard from "@features/dashboard/components/WeeklyGoalsCard";
@@ -17,10 +18,16 @@ import { LOCATION_CONFIG } from "@constants/location";
 import { SCHOOL_DAYS } from "@constants/schoolYear";
 import { TrendingUp, BookUser, CalendarDays, Award, Users } from "lucide-react";
 import formatStudentName from "@utils/formatStudentName.js";
+import { toMonthKey } from "@utils/dateKeys";
 
 export default function ParentDashboard() {
   const { user } = useAuth();
   const { selectedChild } = useParentChild();
+  const today = new Date();
+  const { data: attendance } = useParentAttendance(
+    selectedChild?.id,
+    toMonthKey(today),
+  );
   const { greeting, firstName, currentDateTime } = useDashboardGreeting(
     user?.name,
   );
@@ -29,6 +36,14 @@ export default function ParentDashboard() {
     data: progress,
     retry,
   } = useParentProgress(selectedChild?.id);
+  const todayAttendance = attendance?.logs?.find((log) => {
+    const logDate = new Date(log.date);
+    return (
+      logDate.getFullYear() === today.getFullYear() &&
+      logDate.getMonth() === today.getMonth() &&
+      logDate.getDate() === today.getDate()
+    );
+  });
 
   // No child linked to this account — clear empty state per instructions §1.2.
   if (!selectedChild) {
@@ -67,7 +82,10 @@ export default function ParentDashboard() {
         subtitle={`Here's ${formatStudentName(selectedChild)}'s progress at ${LOCATION_CONFIG.name}`}
       />
 
-      <ChildOverviewCard child={selectedChild} />
+      <ChildOverviewCard
+        child={selectedChild}
+        arrivalTime={todayAttendance?.arrivedAt}
+      />
 
       {status === "loading" && <ProgressLoadingState />}
       {status === "error" && <ProgressErrorState onRetry={retry} />}

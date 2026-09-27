@@ -82,6 +82,12 @@ export default function AlbumCard({ album, onOpen, onDelete, onEdit }) {
           {album.photos.length === 1 ? "" : "s"}
         </p>
 
+        {album.associationName && (
+          <p className="mt-1 line-clamp-1 text-sm font-medium text-orange-700">
+            {album.associationName}
+          </p>
+        )}
+
         {album.description && (
           <p className="mt-1 line-clamp-2 hidden text-sm text-slate-600 sm:block">
             {album.description}

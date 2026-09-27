@@ -54,7 +54,8 @@ export function DailyThemeCard() {
   }
 
   return (
-    <div className="w-full h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+    <>
+      <div className="w-full h-full overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <div className="flex flex-col md:flex-row h-full">
         {/* Right Panel */}
         <div className="flex min-w-45 flex-col items-center justify-center bg-[#e5eeff] p-8">
@@ -115,6 +116,8 @@ export function DailyThemeCard() {
         </div>
       </div>
 
+      </div>
+
       {isEditing && (
         <EditDailyThemeModal
           theme={theme}
@@ -124,6 +127,6 @@ export function DailyThemeCard() {
       )}
 
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
-    </div>
+    </>
   );
 }

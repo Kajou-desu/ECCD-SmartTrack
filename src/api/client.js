@@ -393,12 +393,17 @@ export const apiClient = {
   /**
    * Create a new (empty) photo album.
    * @param {string} title
+   * @param {{ type: "event" | "activity", id: number }} association
    */
-  async createAlbum(title) {
+  async createAlbum(title, association) {
     return fetchWithRetry(`${API_BASE_URL}/api/albums`, {
       method: "POST",
       headers: jsonHeaders(),
-      body: JSON.stringify({ title }),
+      body: JSON.stringify({
+        title,
+        associationType: association.type,
+        associationId: association.id,
+      }),
     });
   },
 
@@ -754,6 +759,13 @@ export const apiClient = {
   /** @param {string} monthKey e.g. "2026-08" */
   async getEvents(monthKey) {
     return fetchWithRetry(`${API_BASE_URL}/api/events?month=${monthKey}`, {
+      method: "GET",
+    });
+  },
+
+  /** List all events as options for album associations. */
+  async getEventOptions() {
+    return fetchWithRetry(`${API_BASE_URL}/api/events?all=true`, {
       method: "GET",
     });
   },

@@ -21,10 +21,10 @@ export default function GalleryHeader({
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          {/* Mobile-first priority: category badge, title, and date are
+          {/* Mobile-first priority: event/activity badge, title, and date are
               shown before the secondary "Add Photos" action. */}
           <span className="inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold tracking-wider text-orange-700">
-            {album.category}
+            {album.associationName || "No event or activity linked"}
           </span>
 
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">

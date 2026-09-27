@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { Plus } from "lucide-react";
+import AlbumAssociationSelect from "./AlbumAssociationSelect";
 
 // Resolving the target album by title (rather than the id captured at
 // selection time) sidesteps a race: a brand-new album is added to state
@@ -15,6 +16,7 @@ export default function AddPhotoModal({ albums, createAlbum, addPhotos, onClose 
   const [mode, setMode] = useState(albums.length > 0 ? "select" : "new");
   const [selectedAlbumId, setSelectedAlbumId] = useState(albums[0]?.id ?? "");
   const [newAlbumName, setNewAlbumName] = useState("");
+  const [association, setAssociation] = useState({ type: "event", id: "", name: "" });
   const [error, setError] = useState("");
   const pendingTitleRef = useRef(null);
 
@@ -29,7 +31,7 @@ export default function AddPhotoModal({ albums, createAlbum, addPhotos, onClose 
         return;
       }
 
-      const result = createAlbum(trimmedName);
+      const result = createAlbum(trimmedName, association);
 
       if (!result.success) {
         setError(result.error);
@@ -135,17 +137,20 @@ export default function AddPhotoModal({ albums, createAlbum, addPhotos, onClose 
           </label>
 
           {mode === "new" && (
-            <input
-              type="text"
-              value={newAlbumName}
-              onChange={(event) => {
-                setNewAlbumName(event.target.value);
-                setError("");
-              }}
-              placeholder="e.g. Field Trip 2026"
-              autoFocus
-              className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-            />
+            <div className="mt-2 space-y-4">
+              <input
+                type="text"
+                value={newAlbumName}
+                onChange={(event) => {
+                  setNewAlbumName(event.target.value);
+                  setError("");
+                }}
+                placeholder="e.g. Field Trip 2026"
+                autoFocus
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+              />
+              <AlbumAssociationSelect value={association} onChange={setAssociation} />
+            </div>
           )}
 
           {error && (

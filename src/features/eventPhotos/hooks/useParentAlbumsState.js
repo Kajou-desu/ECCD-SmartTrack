@@ -56,7 +56,7 @@ export function useParentAlbumsState() {
         if (!query) return childAlbums;
 
         return childAlbums.filter((album) =>
-            [album.title, album.category, album.description].some((value) =>
+            [album.title, album.associationName, album.description].some((value) =>
                 value?.toLowerCase().includes(query),
             ),
         );

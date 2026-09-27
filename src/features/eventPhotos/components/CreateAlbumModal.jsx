@@ -1,15 +1,17 @@
 import { useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
+import AlbumAssociationSelect from "./AlbumAssociationSelect";
 
 export default function CreateAlbumModal({ onCancel, onConfirm }) {
   const [name, setName] = useState("");
+  const [association, setAssociation] = useState({ type: "event", id: "", name: "" });
   const [error, setError] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const result = onConfirm(name);
+    const result = onConfirm(name, association);
 
     if (!result.success) {
       setError(result.error);
@@ -61,6 +63,10 @@ export default function CreateAlbumModal({ onCancel, onConfirm }) {
             required
             className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
           />
+
+          <div className="mt-5">
+            <AlbumAssociationSelect value={association} onChange={setAssociation} />
+          </div>
 
           {error && (
             <p role="alert" className="mt-2 text-xs text-red-600">

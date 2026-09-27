@@ -50,7 +50,6 @@ export default function ParentLayout() {
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <ParentHeader
-            reminder="Welcome to your parent portal. Stay updated on your child's progress."
             isSidebarOpen={isMobileSidebarOpen}
             onOpenSidebar={openMobileSidebar}
             mobileMenuButtonRef={mobileMenuButtonRef}

@@ -21,7 +21,7 @@ export default function StudentProfileHeader({ student, headerAction }) {
   const [photoFailed, setPhotoFailed] = useState(false);
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_14px_40px_-24px_rgba(15,23,42,0.45)]">
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm hover:shadow-md">
       <div className="h-2 bg-[#C2570C]" aria-hidden="true" />
       <div className="p-5 sm:p-7 lg:p-8">
         <div className="flex flex-col items-start gap-6 md:flex-row md:gap-7">

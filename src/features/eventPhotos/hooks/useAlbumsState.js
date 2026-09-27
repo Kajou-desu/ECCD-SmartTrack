@@ -68,7 +68,7 @@ export function useAlbumsState() {
         if (!query) return albums;
 
         return albums.filter((album) =>
-            [album.title, album.category, album.description].some((value) =>
+            [album.title, album.associationName, album.description].some((value) =>
                 value?.toLowerCase().includes(query),
             ),
         );
@@ -80,11 +80,18 @@ export function useAlbumsState() {
     );
 
     const createAlbum = useCallback(
-        (title) => {
+        (title, association) => {
             const trimmedTitle = title.trim();
 
             if (!trimmedTitle) {
                 return { success: false, error: "Album name is required." };
+            }
+
+            if (
+                !["event", "activity"].includes(association?.type) ||
+                !association.id
+            ) {
+                return { success: false, error: "Choose an event or activity for this album." };
             }
 
             const isDuplicate = albums.some(
@@ -100,7 +107,8 @@ export function useAlbumsState() {
             const optimisticAlbum = {
                 id: crypto.randomUUID(),
                 title: trimmedTitle,
-                category: "Uncategorized",
+                            association: { type: association.type, id: association.id, title: association.name },
+                            associationName: association.name,
                 description: "",
                 createdAt: new Date().toISOString(),
                 photos: [],
@@ -109,7 +117,7 @@ export function useAlbumsState() {
             setAlbums((current) => [optimisticAlbum, ...current]);
 
             apiClient
-                .createAlbum(trimmedTitle)
+                .createAlbum(trimmedTitle, association)
                 .then((saved) => {
                     setAlbums((current) =>
                         current.map((album) =>

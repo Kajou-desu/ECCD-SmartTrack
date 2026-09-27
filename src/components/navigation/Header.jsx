@@ -6,10 +6,11 @@ import Logo from "@assets/ECCDST_Logo.png";
 import { useNotifications } from "@hooks/useNotifications";
 import { Toast } from "@components/ui/Toast";
 import { useAttendanceSession } from "@features/smartAttendance/hooks/useAttendanceSession";
+import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
+import { useUpcomingReminders } from "@hooks/useUpcomingReminders.js";
 import { CalendarDays, Bell, Play, Pause, Menu, ScanFace } from "lucide-react";
 
 export default function Header({
-  reminder,
   isSidebarOpen,
   onOpenSidebar,
   onToggleAttendance,
@@ -17,6 +18,12 @@ export default function Header({
 }) {
   const navigate = useNavigate();
   const { unreadCount } = useNotifications();
+  const { data: studentsData } = useStudentsQuery();
+  const reminder =
+    useUpcomingReminders({
+      students: studentsData?.students,
+      includeEvents: true,
+    }) ?? "No birthdays, events, or holidays in the next 7 days.";
   // Whether attendance is running lives on the server (survives refresh,
   // shared across devices) rather than in local state.
   const {
