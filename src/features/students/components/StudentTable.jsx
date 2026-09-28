@@ -1,6 +1,7 @@
 import { Eye, Pencil } from "lucide-react";
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
 import formatStudentName from "@utils/formatStudentName.js";
+import StudentAvatar from "@features/students/components/StudentAvatar.jsx";
 
 export default function StudentTable({ students, onView, onEdit }) {
   if (!students || students.length === 0) {
@@ -29,9 +30,7 @@ export default function StudentTable({ students, onView, onEdit }) {
             <tr key={student.id} className="border-b border-gray-200 transition hover:bg-orange-50">
               <td className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200">
-                    <span className="font-bold text-gray-500">{(student.name || "").charAt(0).toUpperCase()}</span>
-                  </div>
+                  <StudentAvatar student={student} />
 
                   <div className="min-w-0">
                     <p className="truncate font-bold text-gray-800">{formatStudentName(student)}</p>

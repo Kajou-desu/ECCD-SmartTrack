@@ -1,6 +1,7 @@
 import { Eye, Pencil } from "lucide-react";
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
 import formatStudentName from "@utils/formatStudentName.js";
+import StudentAvatar from "@features/students/components/StudentAvatar.jsx";
 
 export default function StudentMobileList({ students = [], onView, onEdit }) {
   if (!students || students.length === 0) {
@@ -14,11 +15,14 @@ export default function StudentMobileList({ students = [], onView, onEdit }) {
       {students.map((s) => (
         <div key={s.id} className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
+            <div className="flex min-w-0 items-start gap-3">
+              <StudentAvatar student={s} />
+              <div className="min-w-0">
               <p className="truncate font-semibold text-gray-800">{formatStudentName(s)}</p>
               <p className="mt-1 text-xs text-gray-500">{formatStudentCode(s)} • {s.session === "afternoon" ? "PM" : "AM"}</p>
               <p className="mt-2 text-xs text-gray-600">Gender: {s.gender || "N/A"}</p>
               <p className="mt-1 text-xs text-gray-600">Guardian: {s.guardianName || "N/A"} • {s.guardianPhone || "N/A"}</p>
+              </div>
             </div>
 
             <div className="flex shrink-0 items-start gap-2">

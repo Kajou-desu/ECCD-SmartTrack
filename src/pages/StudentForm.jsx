@@ -694,18 +694,18 @@ export default function StudentForm() {
               <div>
                 <label
                   htmlFor="studentPhoto"
-                  className="inline-flex cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#C2570C] hover:text-[#C2570C]"
+                  className="relative inline-flex cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#C2570C] hover:text-[#C2570C] focus-within:ring-2 focus-within:ring-[#C2570C]"
                 >
                   {photoPreview ? "Replace Picture" : "Upload Picture"}
+                  <input
+                    id="studentPhoto"
+                    name="photo"
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  />
                 </label>
-                <input
-                  id="studentPhoto"
-                  name="photo"
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoChange}
-                  className="sr-only"
-                />
                 <p className="mt-2 text-xs text-slate-500">JPG, PNG, or WEBP up to 5 MB.</p>
                 {photoError ? <p role="alert" className="mt-1 text-xs text-red-600">{photoError}</p> : null}
               </div>

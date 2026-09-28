@@ -298,7 +298,7 @@ export default function ParentSidebar({
               collapsed={isMobileOpen ? false : isCollapsed}
               name={user?.name}
               role="Parent/Guardian"
-              avatarUrl={user?.avatarUrl}
+              avatarUrl={user?.profilePicture ?? user?.avatarUrl}
               onClick={toggleProfileMenu}
               aria-expanded={isProfileMenuOpen}
               aria-haspopup="menu"
@@ -315,7 +315,7 @@ export default function ParentSidebar({
                 <ProfileBox
                   name={user?.name}
                   role="Parent/Guardian"
-                  avatarUrl={user?.avatarUrl}
+                  avatarUrl={user?.profilePicture ?? user?.avatarUrl}
                   onClick={() => {}}
                   className="mb-4 cursor-default border-0 bg-slate-50 shadow-none hover:border-0 hover:bg-slate-50"
                   aria-hidden="true"

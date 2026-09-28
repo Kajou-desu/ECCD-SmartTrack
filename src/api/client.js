@@ -421,7 +421,13 @@ export const apiClient = {
     return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}`, {
       method: "PUT",
       headers: jsonHeaders(),
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        title: payload.title,
+        ...(payload.association && {
+          associationType: payload.association.type,
+          associationId: payload.association.id,
+        }),
+      }),
     });
   },
 

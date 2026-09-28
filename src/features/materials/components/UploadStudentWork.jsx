@@ -26,7 +26,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
     return students
       .filter((student) => {
         const studentName = student.name?.toLowerCase() || "";
-        const studentId = student.id?.toLowerCase() || "";
+        const studentId = String(student.id ?? "").toLowerCase();
 
         return studentName.includes(query) || studentId.includes(query);
       })

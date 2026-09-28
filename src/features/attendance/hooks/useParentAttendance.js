@@ -18,7 +18,8 @@ export default function useParentAttendance(childId, monthKey) {
     if (!childId) status = "error";
     else if (query.isPending) status = "loading";
     else if (query.isError) status = "error";
-    else status = query.data ? "success" : "empty";
+    else if (!query.data || (Array.isArray(query.data.logs) && query.data.logs.length === 0)) status = "empty";
+    else status = "success";
 
     return { status, data: query.data ?? null, retry: query.refetch };
 }

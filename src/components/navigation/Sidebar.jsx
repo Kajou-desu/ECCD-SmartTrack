@@ -262,7 +262,7 @@ export default function Sidebar({
               collapsed={isMobileOpen ? false : collapsed}
               name={user?.name}
               role={user?.role}
-              avatarUrl={user?.avatarUrl}
+              avatarUrl={user?.profilePicture ?? user?.avatarUrl}
               onClick={handleProfileMenu}
               aria-expanded={isProfileMenuOpen}
               aria-haspopup="menu"
@@ -283,7 +283,7 @@ export default function Sidebar({
                 <ProfileBox
                   name={user?.name}
                   role={user?.role}
-                  avatarUrl={user?.avatarUrl}
+                  avatarUrl={user?.profilePicture ?? user?.avatarUrl}
                   onClick={() => {}}
                   className="mb-4 cursor-default border-0 bg-slate-50 shadow-none hover:border-0 hover:bg-slate-50"
                   aria-hidden="true"

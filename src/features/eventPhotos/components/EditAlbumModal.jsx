@@ -1,19 +1,25 @@
 import { useState } from "react";
 import Modal from "@components/ui/Modal";
 import { Loader2 } from "lucide-react";
+import AlbumAssociationSelect from "./AlbumAssociationSelect";
 
 export default function EditAlbumModal({ album, onCancel, onConfirm }) {
   const [title, setTitle] = useState(album.title || "");
+  const [association, setAssociation] = useState(() => ({
+    type: album.association?.type ?? "event",
+    id: album.association ? String(album.association.id) : "",
+    name: album.association?.title ?? "",
+  }));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const submit = async (event) => {
     event.preventDefault();
-    if (!title.trim() || saving) return;
+    if (!title.trim() || !association.id || saving) return;
     setSaving(true);
     setError("");
     try {
-      await onConfirm({ title: title.trim() });
+      await onConfirm({ title: title.trim(), association });
     } catch (err) {
       setError(err?.details?.message || err?.message || "Failed to update album.");
       setSaving(false);
@@ -28,10 +34,11 @@ export default function EditAlbumModal({ album, onCancel, onConfirm }) {
           <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">Album Name <span className="text-red-600">*</span></span>
           <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm" required />
         </label>
+        <AlbumAssociationSelect value={association} onChange={setAssociation} />
         {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" onClick={onCancel} disabled={saving} className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold">Cancel</button>
-          <button type="submit" disabled={saving || !title.trim()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C2570C] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
+          <button type="submit" disabled={saving || !title.trim() || !association.id} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C2570C] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">
             {saving && <Loader2 size={15} className="animate-spin" />}
             {saving ? "Saving..." : "Save Changes"}
           </button>

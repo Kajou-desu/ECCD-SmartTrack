@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
-import { ArrowRight, CircleCheck, ExternalLink, Pencil } from "lucide-react";
+import { ArrowRight, CircleCheck, Pencil } from "lucide-react";
 import EditDailyThemeModal from "./EditDailyThemeModal";
 import { Toast } from "@components/ui/Toast";
 
@@ -94,17 +94,6 @@ export function DailyThemeCard() {
             <p className="text-sm leading-6 text-gray-600">
               {theme.description}
             </p>
-            {theme.material?.fileUrl && (
-              <a
-                href={theme.material.fileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#C2570C] hover:underline"
-              >
-                <ExternalLink size={15} />
-                Open activity: {theme.material.title}
-              </a>
-            )}
             <div className="space-y-3">
               {(theme.objectives ?? []).map((objective, idx) => (
                 <div key={idx} className="flex items-start gap-3">
@@ -114,16 +103,26 @@ export function DailyThemeCard() {
               ))}
             </div>
           </div>
-          <button
-            type="button"
-            disabled
-            title="Lesson details are coming soon"
-            aria-disabled="true"
-            className="flex w-full cursor-not-allowed items-center justify-start gap-2 rounded-lg bg-[#C2570C]/50 px-4 py-2.5 font-semibold text-white transition sm:w-auto"
-          >
-            <span className="text-sm">View Lesson (coming soon)</span>
-            <ArrowRight className="h-5 w-5" />
-          </button>
+          {theme.material?.fileUrl ? (
+            <a
+              href={theme.material.fileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex w-full items-center justify-start gap-2 rounded-lg bg-[#C2570C] px-4 py-2.5 font-semibold text-white transition hover:bg-[#a94709] sm:w-auto"
+            >
+              <span className="text-sm">View Lesson</span>
+              <ArrowRight className="h-5 w-5" />
+            </a>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="inline-flex w-full cursor-not-allowed items-center justify-start gap-2 rounded-lg bg-[#C2570C]/50 px-4 py-2.5 font-semibold text-white sm:w-auto"
+            >
+              <span className="text-sm">View Lesson</span>
+              <ArrowRight className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </div>
 

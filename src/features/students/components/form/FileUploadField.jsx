@@ -41,8 +41,8 @@ export default function FileUploadField({ name, value = [], onChange }) {
 
   return (
     <div>
-      <label htmlFor={name} className="flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center transition hover:border-[#C2570C]/50 hover:bg-orange-50/30">
-        <input id={name} type="file" name={name} multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={handleFileChange} className="sr-only" />
+      <label htmlFor={name} className="relative flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center transition hover:border-[#C2570C]/50 hover:bg-orange-50/30 focus-within:ring-2 focus-within:ring-[#C2570C]">
+        <input id={name} type="file" name={name} multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={handleFileChange} className="absolute inset-0 h-full w-full cursor-pointer opacity-0" />
 
         <svg className="mb-3 h-10 w-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16V4m0 0-4 4m4-4 4 4M4 20h16" />

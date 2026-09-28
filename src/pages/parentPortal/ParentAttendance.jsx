@@ -16,7 +16,7 @@ import formatStudentName from "@utils/formatStudentName.js";
 
 export default function ParentAttendance() {
   const { selectedChild } = useParentChild();
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 7));
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const monthKey = toMonthKey(currentDate);
   const monthName = currentDate.toLocaleString("en-US", {
     month: "long",

@@ -2,8 +2,6 @@ import { useState } from "react";
 import ProfileSettings from "@features/settings/components/ProfileSettings.jsx";
 import SecuritySettings from "@features/settings/components/SecuritySettings.jsx";
 import NotificationSettings from "@features/settings/components/NotificationSettings.jsx";
-import ChildrenSection from "@features/settings/components/ChildrenSection.jsx";
-import EmergencyContacts from "@features/settings/components/EmergencyContacts.jsx";
 import AccountSettings from "@features/settings/components/AccountSettings.jsx";
 import {
   UserRound,
@@ -11,8 +9,6 @@ import {
   Lock,
   CheckCircle,
   AlertCircle,
-  Heart,
-  Phone,
 } from "lucide-react";
 
 export default function ParentSettings() {
@@ -36,16 +32,6 @@ export default function ParentSettings() {
       icon: Bell,
     },
     {
-      id: "children",
-      label: "Children",
-      icon: Heart,
-    },
-    {
-      id: "emergency",
-      label: "Emergency Contacts",
-      icon: Phone,
-    },
-    {
       id: "account",
       label: "Account",
       icon: UserRound,
@@ -58,7 +44,7 @@ export default function ParentSettings() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Manage your profile, children, emergency contacts and security
+          Manage your profile, security, notifications and account
         </p>
       </div>
 
@@ -119,20 +105,6 @@ export default function ParentSettings() {
         <div className="w-full sm:mx-auto">
           {/* Notification Settings */}
           <NotificationSettings />
-        </div>
-      )}
-
-      {activeTab === "children" && (
-        <div className="w-full sm:max-w-3xl sm:mx-auto">
-          {/* Children Management */}
-          <ChildrenSection />
-        </div>
-      )}
-
-      {activeTab === "emergency" && (
-        <div className="w-full sm:max-w-3xl sm:mx-auto">
-          {/* Emergency Contacts */}
-          <EmergencyContacts />
         </div>
       )}
 

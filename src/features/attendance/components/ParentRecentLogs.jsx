@@ -56,6 +56,12 @@ export default function ParentRecentLogs({ logs, childName, monthName }) {
       <div className="space-y-3">
         {logs.map((log, idx) => {
           const { row, badge } = getLogStyles(log.status);
+          const time = log.time ?? (log.arrivedAt
+            ? new Date(log.arrivedAt).toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              })
+            : "---");
           return (
             <div
               key={idx}
@@ -71,9 +77,9 @@ export default function ParentRecentLogs({ logs, childName, monthName }) {
                   {log.status === "completed" ? "✓ Completed" : log.status}
                 </span>
               </div>
-              {log.time !== "---" && (
+              {time !== "---" && (
                 <p className="text-xs text-gray-600 mt-2">
-                  <span className="font-medium">Check-in:</span> {log.time}
+                  <span className="font-medium">Check-in:</span> {time}
                 </p>
               )}
             </div>
