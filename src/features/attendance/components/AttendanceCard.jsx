@@ -1,6 +1,8 @@
 import formatStudentName from "@utils/formatStudentName.js";
+import MarkDepartedButton from "./MarkDepartedButton";
+import { formatTime } from "../utils/attendanceDeparture.js";
 
-export default function AttendanceCard({ record, onMarkStatus, isSaving }) {
+export default function AttendanceCard({ record, onMarkStatus, onDepart, canDepart = false, isSaving }) {
   const studentName = formatStudentName(record) || "Unknown Student";
   const status = record.status || "absent";
   const initial = studentName.charAt(0).toUpperCase();
@@ -42,6 +44,9 @@ export default function AttendanceCard({ record, onMarkStatus, isSaving }) {
                 })}`
               : "Not arrived"}
           </p>
+          {record.status === "present" && record.departedAt && (
+            <p className="text-sm text-gray-500">Departed at {formatTime(record.departedAt)}</p>
+          )}
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-1">
@@ -63,6 +68,15 @@ export default function AttendanceCard({ record, onMarkStatus, isSaving }) {
           </button>
         ))}
       </div>
+
+      {canDepart && (
+        <MarkDepartedButton
+          studentName={studentName}
+          onDepart={() => onDepart(record.id)}
+          disabled={isSaving}
+          className="mt-2 w-full rounded-xl px-3 py-2.5 text-xs"
+        />
+      )}
     </article>
   );
 }

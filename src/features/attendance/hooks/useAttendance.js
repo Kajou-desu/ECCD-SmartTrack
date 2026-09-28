@@ -85,7 +85,7 @@ export function useAttendance(initialDate) {
         return next;
       });
 
-      setAttendanceRecords((current) => current.map((record) => (record.id === id ? { ...record, status: nextStatus, verified: false } : record)));
+      setAttendanceRecords((current) => current.map((record) => (record.id === id ? { ...record, status: nextStatus, verified: false, departedAt: null } : record)));
 
       try {
         await apiClient.updateAttendance(id, selectedDate, nextStatus);
@@ -100,6 +100,37 @@ export function useAttendance(initialDate) {
         if (!mountedRef.current) return;
         setAttendanceRecords(previousRecords);
         setError("Failed to save attendance. Your changes were not saved.");
+      } finally {
+        setSavingIds((current) => {
+          const next = new Set(current);
+          next.delete(id);
+          return next;
+        });
+      }
+    },
+    [savingIds, attendanceRecords, selectedDate, queryClient],
+  );
+
+  // Marks a present student departed (today only — the server rejects other
+  // days, and the button isn't offered for them). Same optimistic-update /
+  // rollback shape as handleStatusChange; the server also notifies the parents.
+  const handleDepart = useCallback(
+    async (id) => {
+      if (savingIds.has(id)) return;
+
+      const previousRecords = attendanceRecords;
+
+      setSavingIds((current) => new Set(current).add(id));
+      setAttendanceRecords((current) => current.map((record) => (record.id === id ? { ...record, departedAt: new Date().toISOString() } : record)));
+
+      try {
+        await apiClient.markDeparted(id);
+        queryClient.invalidateQueries({ queryKey: ["attendance", selectedDate] });
+      } catch (err) {
+        console.error("Failed to mark departed:", err);
+        if (!mountedRef.current) return;
+        setAttendanceRecords(previousRecords);
+        setError("Failed to mark departure. The student was not marked departed.");
       } finally {
         setSavingIds((current) => {
           const next = new Set(current);
@@ -148,6 +179,8 @@ export function useAttendance(initialDate) {
     setSelectedDate,
     savingIds,
     handleStatusChange,
+    handleDepart,
+    todayKey: toDayKey(),
     handleExport,
   };
 }

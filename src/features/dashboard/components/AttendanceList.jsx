@@ -2,8 +2,12 @@ import formatStudentName from "@utils/formatStudentName.js";
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toDayKey } from "@utils/dateKeys.js";
+import { apiClient } from "@api/client.js";
 import { useAttendanceQuery } from "@features/attendance/hooks/useAttendanceQuery.js";
+import MarkDepartedButton from "@features/attendance/components/MarkDepartedButton";
+import { canMarkDeparted, formatTime } from "@features/attendance/utils/attendanceDeparture.js";
 import { Check, ArrowRight } from "lucide-react";
 
 function getArrivalPeriod(arrivedAt) {
@@ -17,6 +21,15 @@ export function AttendanceList() {
   const today = useMemo(() => toDayKey(), []);
   const { data } = useAttendanceQuery(today);
   const records = useMemo(() => data?.records ?? [], [data]);
+
+  // This widget reads the shared ["attendance", today] cache, so refetching it
+  // is enough to show the new departure here (and on the Attendance page).
+  const queryClient = useQueryClient();
+  const departMutation = useMutation({
+    mutationFn: (studentId) => apiClient.markDeparted(studentId),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["attendance", today] }),
+  });
+  const departingId = departMutation.isPending ? departMutation.variables : null;
 
   // Filter attendance morning to afternoon
   const [selectedPeriod, setSelectedPeriod] = useState("am");
@@ -85,6 +98,12 @@ export function AttendanceList() {
         </div>
       </div>
 
+      {departMutation.isError && (
+        <p role="alert" className="shrink-0 text-xs text-red-600">
+          Couldn't mark the student departed. Please try again.
+        </p>
+      )}
+
       {/* Attendance item list */}
       <div
         className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-2 max-h-75 md:max-h-none
@@ -94,7 +113,13 @@ export function AttendanceList() {
       >
         {filteredData.length > 0 ? (
           filteredData.map((attendance) => (
-            <AttendanceListItem key={attendance.id} attendance={attendance} />
+            <AttendanceListItem
+              key={attendance.id}
+              attendance={attendance}
+              canDepart={canMarkDeparted(attendance, today, today)}
+              isDeparting={departingId === attendance.id}
+              onDepart={() => departMutation.mutate(attendance.id)}
+            />
           ))
         ) : (
           <div className="flex h-24 items-center justify-center">
@@ -108,7 +133,7 @@ export function AttendanceList() {
   );
 }
 
-function AttendanceListItem({ attendance }) {
+function AttendanceListItem({ attendance, canDepart, isDeparting, onDepart }) {
   return (
     <div
       role="listitem"
@@ -136,11 +161,24 @@ function AttendanceListItem({ attendance }) {
       </div>
 
       {/* Attendance Time */}
-      <p className="ml-2 shrink-0 whitespace-nowrap text-xs text-gray-500">
-        {attendance.arrivedAt
-          ? new Date(attendance.arrivedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
-          : "Not recorded"}
-      </p>
+      <div className="ml-2 flex shrink-0 flex-col items-end gap-1">
+        <p className="whitespace-nowrap text-xs text-gray-500">
+          {attendance.arrivedAt
+            ? new Date(attendance.arrivedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+            : "Not recorded"}
+        </p>
+        {attendance.departedAt && (
+          <p className="whitespace-nowrap text-xs text-gray-500">Departed {formatTime(attendance.departedAt)}</p>
+        )}
+        {canDepart && (
+          <MarkDepartedButton
+            studentName={formatStudentName(attendance)}
+            onDepart={onDepart}
+            disabled={isDeparting}
+            className="rounded-md px-2 py-1 text-xs"
+          />
+        )}
+      </div>
     </div>
   );
 }

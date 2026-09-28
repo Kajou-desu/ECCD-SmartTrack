@@ -289,6 +289,19 @@ export const apiClient = {
   },
 
   /**
+   * Mark a student as departed for TODAY. The server only allows this for a
+   * student who arrived today and hasn't already departed, and it notifies
+   * the student's parents/guardians (in-app, email, SMS).
+   * @param {number|string} studentId - Student ID
+   * @returns {Promise<Object>} Updated attendance record (with departedAt)
+   */
+  async markDeparted(studentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/${studentId}/depart`, {
+      method: "PATCH",
+    });
+  },
+
+  /**
    * Record attendance for multiple students (bulk operation)
    * @param {Array<Object>} attendanceData - Array of attendance records
    * @returns {Promise<Object>} Bulk operation result

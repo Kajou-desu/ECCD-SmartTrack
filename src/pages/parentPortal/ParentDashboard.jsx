@@ -85,6 +85,7 @@ export default function ParentDashboard() {
       <ChildOverviewCard
         child={selectedChild}
         arrivalTime={todayAttendance?.arrivedAt}
+        departedTime={todayAttendance?.departedAt}
       />
 
       {status === "loading" && <ProgressLoadingState />}
