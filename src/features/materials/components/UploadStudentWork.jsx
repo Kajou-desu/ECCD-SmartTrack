@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { apiClient } from "@api/client.js";
+import { useToast } from "@hooks/useToast.js";
 import Modal from "@components/ui/Modal";
 import { isAllowedStudentWorkFile, isFileSizeValid, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
 import { Loader2, Upload, X } from "lucide-react";
 import formatStudentName from "@utils/formatStudentName.js";
 
 export default function UploadStudentWork({ material, onClose, onSuccess }) {
+  const showToast = useToast();
   const [studentQuery, setStudentQuery] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -89,7 +91,9 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
         `"${selectedFile.name}" was uploaded for ${formatStudentName(selectedStudent)}.`,
       );
     } catch (err) {
-      setSubmitError(err.message || "Failed to upload the file. Please try again.");
+      const message = err.message || "Failed to upload the file. Please try again.";
+      setSubmitError(message);
+      showToast("error", message);
     } finally {
       setIsUploading(false);
     }

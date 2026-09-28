@@ -4,8 +4,10 @@ import { apiClient } from "@api/client.js";
 import { toDayKey } from "@utils/dateKeys.js";
 import { useAttendanceQuery } from "./useAttendanceQuery.js";
 import { normalizeAttendanceTime } from "../utils/attendanceFilters.js";
+import { useToast } from "@hooks/useToast.js";
 
 export function useAttendance(initialDate) {
+  const showToast = useToast();
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(initialDate || toDayKey());
 
@@ -78,6 +80,7 @@ export function useAttendance(initialDate) {
       if (savingIds.has(id)) return;
 
       const previousRecords = attendanceRecords;
+      const studentName = previousRecords.find((record) => record.id === id)?.name;
 
       setSavingIds((current) => {
         const next = new Set(current);
@@ -95,11 +98,13 @@ export function useAttendance(initialDate) {
         // there until the cache's staleTime naturally expires.
         queryClient.invalidateQueries({ queryKey: ["attendance", selectedDate] });
         queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
+        showToast("success", `${studentName || "Attendance"} status was updated.`);
       } catch (err) {
         console.error("Failed to update attendance:", err);
         if (!mountedRef.current) return;
         setAttendanceRecords(previousRecords);
         setError("Failed to save attendance. Your changes were not saved.");
+        showToast("error", "Failed to save attendance. Your changes were not saved.");
       } finally {
         setSavingIds((current) => {
           const next = new Set(current);
@@ -108,7 +113,7 @@ export function useAttendance(initialDate) {
         });
       }
     },
-    [savingIds, attendanceRecords, selectedDate, queryClient],
+    [savingIds, attendanceRecords, selectedDate, queryClient, showToast],
   );
 
   // Marks a present student departed (today only — the server rejects other
@@ -119,6 +124,7 @@ export function useAttendance(initialDate) {
       if (savingIds.has(id)) return;
 
       const previousRecords = attendanceRecords;
+      const studentName = previousRecords.find((record) => record.id === id)?.name;
 
       setSavingIds((current) => new Set(current).add(id));
       setAttendanceRecords((current) => current.map((record) => (record.id === id ? { ...record, departedAt: new Date().toISOString() } : record)));
@@ -126,11 +132,13 @@ export function useAttendance(initialDate) {
       try {
         await apiClient.markDeparted(id);
         queryClient.invalidateQueries({ queryKey: ["attendance", selectedDate] });
+        showToast("success", `${studentName || "Student"} was marked departed.`);
       } catch (err) {
         console.error("Failed to mark departed:", err);
         if (!mountedRef.current) return;
         setAttendanceRecords(previousRecords);
         setError("Failed to mark departure. The student was not marked departed.");
+        showToast("error", "Failed to mark departure. The student was not marked departed.");
       } finally {
         setSavingIds((current) => {
           const next = new Set(current);
@@ -139,7 +147,7 @@ export function useAttendance(initialDate) {
         });
       }
     },
-    [savingIds, attendanceRecords, selectedDate, queryClient],
+    [savingIds, attendanceRecords, selectedDate, queryClient, showToast],
   );
 
   const handleExport = useCallback(() => {
@@ -156,11 +164,13 @@ export function useAttendance(initialDate) {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      showToast("success", "Attendance data was exported.");
     } catch (err) {
       console.error("Failed to export attendance:", err);
       setError("Failed to export attendance data.");
+      showToast("error", "Failed to export attendance data.");
     }
-  }, [filteredRecords, selectedDate]);
+  }, [filteredRecords, selectedDate, showToast]);
 
   return {
     attendanceRecords,

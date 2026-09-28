@@ -2,6 +2,7 @@ import { useState } from "react";
 import Modal from "@components/ui/Modal";
 import { Loader2, Upload } from "lucide-react";
 import { apiClient } from "@api/client.js";
+import { useToast } from "@hooks/useToast.js";
 
 const REQUIRED = ["firstName", "lastName", "birthday", "gender", "address", "guardianName", "guardianPhone"];
 
@@ -46,6 +47,7 @@ function parseCsv(text) {
 }
 
 export default function ImportStudentsModal({ onCancel, onImported }) {
+  const showToast = useToast();
   const [rows, setRows] = useState([]);
   const [fileName, setFileName] = useState("");
   const [error, setError] = useState("");
@@ -74,9 +76,12 @@ export default function ImportStudentsModal({ onCancel, onImported }) {
     try {
       const result = await apiClient.importStudents(rows);
       onImported(result);
+      showToast("success", "Student import completed successfully.");
       onCancel();
     } catch (err) {
-      setError(err?.details?.message || "Student import failed.");
+      const message = err?.details?.message || "Student import failed.";
+      setError(message);
+      showToast("error", message);
       setLoading(false);
     }
   };

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { NotificationContext } from "./notificationContextObject";
+import { useToast } from "@hooks/useToast.js";
 import { apiClient } from "@api/client.js";
 import formatRelativeTime from "@utils/formatRelativeTime.js";
 
@@ -20,6 +21,7 @@ async function fetchNotifications() {
 }
 
 export function NotificationProvider({ children }) {
+  const showToast = useToast();
   const { data: queryData, isLoading, isError, refetch } = useQuery({
     queryKey: ["notifications"],
     queryFn: fetchNotifications,
@@ -52,6 +54,7 @@ export function NotificationProvider({ children }) {
 
     apiClient.markNotificationRead(id).catch((err) => {
       console.error("Failed to mark notification as read", err);
+      showToast("error", "Couldn't mark the notification as read. Please try again.");
       setNotifications((current) =>
         current.map((notification) =>
           notification.id === id ? { ...notification, unread: true } : notification,
@@ -68,6 +71,7 @@ export function NotificationProvider({ children }) {
 
     apiClient.markAllNotificationsRead().catch((err) => {
       console.error("Failed to mark all notifications as read", err);
+      showToast("error", "Couldn't mark notifications as read. Please try again.");
       setNotifications(previous);
     });
   };
@@ -79,6 +83,7 @@ export function NotificationProvider({ children }) {
     apiClient.dismissAllNotifications().catch((err) => {
       console.error("Failed to clear notifications", err);
       setNotifications(previous);
+      showToast("error", "Couldn't clear notifications. Please try again.");
     });
   };
 
@@ -89,6 +94,7 @@ export function NotificationProvider({ children }) {
     apiClient.dismissNotification(id).catch((err) => {
       console.error("Failed to dismiss notification", err);
       setNotifications(previous);
+      showToast("error", "Couldn't dismiss the notification. Please try again.");
     });
   };
 

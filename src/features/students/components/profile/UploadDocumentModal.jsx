@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { apiClient } from "@api/client.js";
+import { useToast } from "@hooks/useToast.js";
 import {
   isAllowedStudentWorkFile,
   isPdfFile,
@@ -13,6 +14,7 @@ import { Loader2, FileText, X } from "lucide-react";
 import DocumentPreviewModal from "./DocumentPreviewModal";
 
 export default function UploadDocumentModal({ studentId, onCancel, onSave }) {
+  const showToast = useToast();
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [fileError, setFileError] = useState("");
@@ -71,7 +73,9 @@ export default function UploadDocumentModal({ studentId, onCancel, onSave }) {
       const newDocument = Array.isArray(created) ? created[0] : created;
       onSave(newDocument);
     } catch (err) {
-      setUploadError(err.message || "Failed to upload the document. Please try again.");
+      const message = err.message || "Failed to upload the document. Please try again.";
+      setUploadError(message);
+      showToast("error", message);
     } finally {
       setUploading(false);
     }

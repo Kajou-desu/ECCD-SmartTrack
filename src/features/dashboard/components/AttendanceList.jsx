@@ -8,6 +8,7 @@ import { apiClient } from "@api/client.js";
 import { useAttendanceQuery } from "@features/attendance/hooks/useAttendanceQuery.js";
 import MarkDepartedButton from "@features/attendance/components/MarkDepartedButton";
 import { canMarkDeparted, formatTime } from "@features/attendance/utils/attendanceDeparture.js";
+import { useToast } from "@hooks/useToast.js";
 import { Check, ArrowRight } from "lucide-react";
 
 function getArrivalPeriod(arrivedAt) {
@@ -17,6 +18,7 @@ function getArrivalPeriod(arrivedAt) {
 
 export function AttendanceList() {
   const navigate = useNavigate();
+  const showToast = useToast();
 
   const today = useMemo(() => toDayKey(), []);
   const { data } = useAttendanceQuery(today);
@@ -27,6 +29,8 @@ export function AttendanceList() {
   const queryClient = useQueryClient();
   const departMutation = useMutation({
     mutationFn: (studentId) => apiClient.markDeparted(studentId),
+    onSuccess: () => showToast("success", "Student marked departed."),
+    onError: () => showToast("error", "Couldn't mark the student departed. Please try again."),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["attendance", today] }),
   });
   const departingId = departMutation.isPending ? departMutation.variables : null;

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 import { useConsumeLocationState } from "@hooks/useConsumeLocationState";
+import { useToast } from "@hooks/useToast.js";
 import Modal from "@components/ui/Modal";
 import ErrorMsg from "@components/ui/ErrorMsg";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
@@ -49,6 +50,7 @@ function formatEventDate(dateKey) {
 }
 
 function AddEventModal({ eventToEdit, onCancel, onSaved }) {
+  const showToast = useToast();
   const [title, setTitle] = useState(eventToEdit?.title ?? "");
   const [date, setDate] = useState(eventToEdit?.dateKey ?? "");
   const [category, setCategory] = useState(eventToEdit?.legend ?? "Holiday");
@@ -72,8 +74,10 @@ function AddEventModal({ eventToEdit, onCancel, onSaved }) {
       };
       if (eventToEdit) {
         await apiClient.updateEvent(eventToEdit.id, payload);
+        showToast("success", "Event updated successfully.");
       } else {
         await apiClient.createEvent(payload);
+        showToast("success", "Event added successfully.");
       }
       onSaved();
     } catch (err) {
@@ -81,6 +85,7 @@ function AddEventModal({ eventToEdit, onCancel, onSaved }) {
         err?.details?.message ||
           `Failed to ${eventToEdit ? "update" : "add"} event. Please try again.`,
       );
+      showToast("error", err?.details?.message || `Failed to ${eventToEdit ? "update" : "add"} event. Please try again.`);
       setSaving(false);
     }
   };
@@ -257,6 +262,7 @@ function getLegendBadgeClasses(legend) {
 }
 
 export default function CalendarEvents() {
+  const showToast = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -453,8 +459,11 @@ export default function CalendarEvents() {
       await apiClient.deleteEvent(eventToDelete.id);
       queryClient.invalidateQueries({ queryKey: ["events"] });
       setEventToDelete(null);
+      showToast("success", "Event deleted successfully.");
     } catch (err) {
-      setDeleteError(err?.details?.message || "Failed to delete event. Please try again.");
+      const message = err?.details?.message || "Failed to delete event. Please try again.";
+      setDeleteError(message);
+      showToast("error", message);
     } finally {
       setDeleting(false);
     }

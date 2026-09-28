@@ -5,6 +5,7 @@ import ErrorBoundary from "@components/shared/ErrorBoundary.jsx";
 import RouteSpinner from "@components/shared/RouteSpinner.jsx";
 import { AuthProvider } from "@context/AuthContext.jsx";
 import { NotificationProvider } from "@context/NotificationContext.jsx";
+import { ToastProvider } from "@context/ToastContext.jsx";
 import AppRoutes from "./routes/AppRoutes.jsx";
 
 const queryClient = new QueryClient({
@@ -35,11 +36,13 @@ export default function App() {
           <ScrollToTop />
 
           <AuthProvider>
-            <NotificationProvider>
-              <Suspense fallback={<RouteSpinner />}>
-                <AppRoutes />
-              </Suspense>
-            </NotificationProvider>
+            <ToastProvider>
+              <NotificationProvider>
+                <Suspense fallback={<RouteSpinner />}>
+                  <AppRoutes />
+                </Suspense>
+              </NotificationProvider>
+            </ToastProvider>
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>

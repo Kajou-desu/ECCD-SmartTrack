@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { apiClient } from "@api/client.js";
+import { useToast } from "@hooks/useToast.js";
 
 import {
     groupAccounts,
@@ -19,6 +20,7 @@ function getErrorMessage(err, fallback) {
 }
 
 export default function useAccounts() {
+    const showToast = useToast();
     const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [mutating, setMutating] = useState(false);
@@ -86,9 +88,12 @@ export default function useAccounts() {
                 await apiClient.createAccount(createAccountPayload(formData));
 
                 await fetchAccounts({ silent: true });
+                showToast("success", "Account created successfully.");
             } catch (err) {
                 if (isMountedRef.current) {
-                    setError(getErrorMessage(err, "Failed to create account."));
+                    const message = getErrorMessage(err, "Failed to create account.");
+                    setError(message);
+                    showToast("error", message);
                 }
 
                 throw err;
@@ -98,7 +103,7 @@ export default function useAccounts() {
                 }
             }
         },
-        [fetchAccounts],
+        [fetchAccounts, showToast],
     );
 
     const updateAccount = useCallback(
@@ -110,9 +115,12 @@ export default function useAccounts() {
                 await apiClient.updateAccount(updateAccountPayload(formData));
 
                 await fetchAccounts({ silent: true });
+                showToast("success", "Account updated successfully.");
             } catch (err) {
                 if (isMountedRef.current) {
-                    setError(getErrorMessage(err, "Failed to update account."));
+                    const message = getErrorMessage(err, "Failed to update account.");
+                    setError(message);
+                    showToast("error", message);
                 }
 
                 throw err;
@@ -122,7 +130,7 @@ export default function useAccounts() {
                 }
             }
         },
-        [fetchAccounts],
+        [fetchAccounts, showToast],
     );
 
     const deleteAccount = useCallback(async (accountId) => {
@@ -138,10 +146,13 @@ export default function useAccounts() {
                         (account) => getAccountId(account) !== accountId,
                     ),
                 );
+                showToast("success", "Account deleted successfully.");
             }
         } catch (err) {
             if (isMountedRef.current) {
-                setError(getErrorMessage(err, "Failed to delete account."));
+                const message = getErrorMessage(err, "Failed to delete account.");
+                setError(message);
+                showToast("error", message);
             }
 
             throw err;
@@ -150,7 +161,7 @@ export default function useAccounts() {
                 setMutating(false);
             }
         }
-    }, []);
+    }, [showToast]);
 
     const groupedAccounts = useMemo(
         () => groupAccounts(accounts),

@@ -15,6 +15,7 @@ import StudentEnrollmentPhotosCard from "@features/smartAttendance/components/St
 import PageHeader from "@components/shared/PageHeader";
 import LoadingState from "@components/shared/LoadingState";
 import ErrorMsg from "@components/ui/ErrorMsg";
+import { useToast } from "@hooks/useToast.js";
 import { ArrowLeft } from "lucide-react";
 
 export default function StudentDetail() {
@@ -52,6 +53,7 @@ function StudentNotFound() {
 
 function StudentDetailView({ studentId }) {
   const navigate = useNavigate();
+  const showToast = useToast();
 
   const { data: queryData, isLoading, isError, refetch } = useStudentProfileQuery(studentId);
   const [profile, setProfile] = useState(null);
@@ -154,13 +156,17 @@ function StudentDetailView({ studentId }) {
               documents: current.documents.filter((doc) => doc.id !== docId),
             }));
 
-            apiClient.deleteStudentDocument(studentId, docId).catch((err) => {
+            apiClient.deleteStudentDocument(studentId, docId).then(() => {
+              showToast("success", "Document deleted successfully.");
+            }).catch((err) => {
               // Roll back — the delete didn't actually happen server-side.
               setProfile((current) => ({
                 ...current,
                 documents: [...current.documents, removedDoc].filter(Boolean),
               }));
-              setDocError(err.message || "Failed to delete the document. Please try again.");
+              const message = err.message || "Failed to delete the document. Please try again.";
+              setDocError(message);
+              showToast("error", message);
             });
           }}
         />
@@ -182,9 +188,12 @@ function StudentDetailView({ studentId }) {
                   student: { ...current.student, primaryGuardianType },
                 }));
                 setActiveModal(null);
+                showToast("success", "Primary guardian updated.");
               })
               .catch((error) => {
-                setDocError(error.message || "Failed to save the primary guardian. Please try again.");
+                const message = error.message || "Failed to save the primary guardian. Please try again.";
+                setDocError(message);
+                showToast("error", message);
               });
           }}
         />
@@ -211,6 +220,7 @@ function StudentDetailView({ studentId }) {
               documents: [...(current.documents ?? []), newDocument],
             }));
             setActiveModal(null);
+            showToast("success", "Document uploaded successfully.");
           }}
         />
       )}

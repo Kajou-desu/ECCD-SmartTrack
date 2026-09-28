@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
+import { useToast } from "@hooks/useToast.js";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { FileText, Upload, X } from "lucide-react";
@@ -12,6 +13,7 @@ import { formatFileSize, isFileSizeValid, isPdfFile, MAX_MATERIAL_FILE_SIZE_BYTE
 const PLACEHOLDER_TITLE = "No theme set for today";
 
 export default function EditDailyThemeModal({ theme, onCancel, onConfirm }) {
+  const showToast = useToast();
   const queryClient = useQueryClient();
   const { data: materialData, isLoading: materialsLoading } = useQuery({
     queryKey: ["materials"],
@@ -79,8 +81,11 @@ export default function EditDailyThemeModal({ theme, onCancel, onConfirm }) {
       setMaterialId(String(created.id));
       setMaterialMode("existing");
       setNewMaterial({ title: "", category: "", description: "", file: null });
+      showToast("success", "Activity material was created.");
     } catch (error) {
-      setMaterialError(error.message || "Could not create the activity material.");
+      const message = error.message || "Could not create the activity material.";
+      setMaterialError(message);
+      showToast("error", message);
     } finally {
       setIsCreatingMaterial(false);
     }

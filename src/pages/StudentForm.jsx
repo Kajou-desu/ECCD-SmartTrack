@@ -4,6 +4,7 @@ import Modal from "@components/ui/Modal";
 import { Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@hooks/useAuth";
+import { useToast } from "@hooks/useToast.js";
 import { useFormValidation } from "@hooks/useFormValidation";
 import { studentSchema } from "@validation/student.js";
 import { apiClient } from "@api/client.js";
@@ -72,6 +73,7 @@ export default function StudentForm() {
   const { studentId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const showToast = useToast();
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
   const isEditing = Boolean(studentId);
@@ -146,13 +148,16 @@ export default function StudentForm() {
         queryClient.invalidateQueries({ queryKey: ["students"] });
         queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
 
+        showToast("success", `Student record ${isEditing ? "updated" : "created"} successfully.`);
         navigate("/student-info");
       } catch (error) {
         console.error(error);
-        setSubmitError(error?.message || "Unable to save student record.");
+        const message = error?.message || "Unable to save student record.";
+        setSubmitError(message);
+        showToast("error", message);
       }
     },
-    [isEditing, studentId, navigate, queryClient, photoFile, isAdmin],
+    [isEditing, studentId, navigate, queryClient, photoFile, isAdmin, showToast],
   );
 
   const handleDeleteStudent = async () => {
@@ -163,9 +168,12 @@ export default function StudentForm() {
       await apiClient.deleteStudent(studentId);
       queryClient.invalidateQueries({ queryKey: ["students"] });
       queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
+      showToast("success", "Student record deleted successfully.");
       navigate("/student-info");
     } catch (error) {
-      setSubmitError(error?.details?.message || "Unable to remove student.");
+      const message = error?.details?.message || "Unable to remove student.";
+      setSubmitError(message);
+      showToast("error", message);
       setDeleting(false);
     }
   };

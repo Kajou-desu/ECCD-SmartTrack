@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
+import { useToast } from "@hooks/useToast.js";
 import { normalizeSessionResponse, sessionPollInterval } from "../utils/attendanceSession.js";
 
 export const ATTENDANCE_SESSION_KEY = ["attendanceSession"];
@@ -9,6 +10,7 @@ export const ATTENDANCE_SESSION_KEY = ["attendanceSession"];
 // Start/Stop button survives a refresh and stays in sync across devices.
 export function useAttendanceSession() {
   const queryClient = useQueryClient();
+  const showToast = useToast();
 
   const query = useQuery({
     queryKey: ATTENDANCE_SESSION_KEY,
@@ -21,7 +23,9 @@ export function useAttendanceSession() {
     mutationFn: () => apiClient.startAttendanceSession(),
     onSuccess: (data) => {
       queryClient.setQueryData(ATTENDANCE_SESSION_KEY, normalizeSessionResponse(data));
+      showToast("success", "Attendance session started.");
     },
+    onError: () => showToast("error", "Couldn't start attendance. Please try again."),
   });
 
   const stopMutation = useMutation({
@@ -32,7 +36,9 @@ export function useAttendanceSession() {
       // the roster and the dashboard's stat cards must reflect the closed run.
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
+      showToast("success", "Attendance session stopped.");
     },
+    onError: () => showToast("error", "Couldn't stop attendance. Please try again."),
   });
 
   const { mutateAsync: startAsync } = startMutation;
