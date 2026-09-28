@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
-import { ArrowRight, CircleCheck, Pencil } from "lucide-react";
+import { ArrowRight, CircleCheck, ExternalLink, Pencil } from "lucide-react";
 import EditDailyThemeModal from "./EditDailyThemeModal";
 import { Toast } from "@components/ui/Toast";
 
@@ -94,6 +94,17 @@ export function DailyThemeCard() {
             <p className="text-sm leading-6 text-gray-600">
               {theme.description}
             </p>
+            {theme.material?.fileUrl && (
+              <a
+                href={theme.material.fileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#C2570C] hover:underline"
+              >
+                <ExternalLink size={15} />
+                Open activity: {theme.material.title}
+              </a>
+            )}
             <div className="space-y-3">
               {(theme.objectives ?? []).map((objective, idx) => (
                 <div key={idx} className="flex items-start gap-3">
