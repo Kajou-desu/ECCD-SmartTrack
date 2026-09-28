@@ -175,7 +175,11 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
       )}
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto">
+        {/* "relative" is required: sr-only makes the input position:absolute, and
+            without a positioned parent it anchors to the layout's fixed,
+            overflow-hidden root. Picking a file then scrolls that root to the
+            input, shoving the page up and leaving it blank. */}
+        <label className="relative flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto">
           <ImagePlus className="h-5 w-5" />
           {files.length > 0 ? `${files.length} photo${files.length === 1 ? "" : "s"} selected` : "Choose photos"}
           <input
