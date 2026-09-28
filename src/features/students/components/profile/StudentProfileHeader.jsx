@@ -72,6 +72,7 @@ export default function StudentProfileHeader({ student, headerAction }) {
             <InfoItem icon={ClipboardList} label="Student ID" value={formatStudentCode(student)} />
             <InfoItem icon={UsersRound} label="Session" value={student.session || "N/A"} />
             <InfoItem icon={GraduationCap} label="Teacher" value={student.teacher || "N/A"} />
+            <InfoItem icon={MapPin} label="Teacher Center" value={student.teacherCenterLocation || "N/A"} />
             <InfoItem icon={UserRound} label="Gender" value={student.gender || "N/A"} />
             <InfoItem
               icon={CalendarDays}
