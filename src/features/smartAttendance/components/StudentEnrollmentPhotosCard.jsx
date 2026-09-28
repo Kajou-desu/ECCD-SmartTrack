@@ -30,15 +30,48 @@ function describeEnrollmentError(err) {
 // Manages this student's face-recognition enrollment photo set. Uploading
 // REPLACES whatever was previously enrolled — it is not additive. This is
 // distinct from the profile picture (that's on the main student form); these
-// photos are only ever used to teach the recognition service this child's
-// face and are never shown anywhere in the app.
+// photos are used to teach the recognition service this child's face. They are
+// biometric data, so they are only loaded here for the signed-in teacher/admin
+// and are never cached or shown anywhere else in the app.
 export default function StudentEnrollmentPhotosCard({ studentId }) {
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
   const [uploading, setUploading] = useState(false);
+  // Photos already enrolled on the server, as blob: URLs. `loaded` is true only
+  // once the list was fetched successfully, so we never claim "none enrolled"
+  // while loading or when the service couldn't be reached.
+  const [saved, setSaved] = useState({ urls: [], loaded: false });
+  const [reloadKey, setReloadKey] = useState(0);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let urls = [];
+    const { signal } = controller;
+
+    (async () => {
+      try {
+        const { count } = await apiClient.getEnrollmentPhotoCount(studentId, { signal });
+        const blobs = await Promise.all(
+          Array.from({ length: count }, (_, i) => apiClient.getEnrollmentPhotoBlob(studentId, i, { signal })),
+        );
+        if (signal.aborted) return;
+        urls = blobs.filter(Boolean).map((blob) => URL.createObjectURL(blob));
+        setSaved({ urls, loaded: true });
+      } catch {
+        // Not configured / service down: the upload form still works, so just
+        // don't show a saved-photos list (we can't say what is enrolled).
+        if (!signal.aborted) setSaved({ urls: [], loaded: false });
+      }
+    })();
+
+    return () => {
+      controller.abort();
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [studentId, reloadKey]);
 
   // Object URLs must be revoked or they leak for the life of the tab.
   useEffect(() => {
@@ -74,6 +107,8 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
       const response = await apiClient.uploadEnrollmentPhotos(studentId, files);
       setResult(response);
       reset();
+      setSaved({ urls: [], loaded: false }); // old blob URLs are revoked on reload
+      setReloadKey((key) => key + 1);
     } catch (err) {
       setError(describeEnrollmentError(err));
     } finally {
@@ -110,8 +145,27 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
         </div>
       )}
 
+      {saved.loaded && (
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-gray-700">
+            Currently enrolled{saved.urls.length > 0 ? ` (${saved.urls.length})` : ""}
+          </h3>
+          {saved.urls.length > 0 ? (
+            <ul className="mt-2 flex flex-wrap gap-3">
+              {saved.urls.map((url, index) => (
+                <li key={url} className="h-20 w-20 overflow-hidden rounded-lg border border-emerald-200">
+                  <img src={url} alt={`Enrolled photo ${index + 1}`} className="h-full w-full object-cover" />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-1 text-sm text-gray-500">No photos enrolled yet.</p>
+          )}
+        </div>
+      )}
+
       {previews.length > 0 && (
-        <ul className="mt-6 flex flex-wrap gap-3">
+        <ul className="mt-6 flex flex-wrap gap-3" aria-label="Photos selected to upload">
           {previews.map((url, index) => (
             <li key={url} className="h-20 w-20 overflow-hidden rounded-lg border border-gray-200">
               <img src={url} alt={`Selected enrollment photo ${index + 1}`} className="h-full w-full object-cover" />

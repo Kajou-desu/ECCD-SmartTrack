@@ -647,6 +647,34 @@ export const apiClient = {
   },
 
   /**
+   * How many face-recognition enrollment photos are stored for a student.
+   * @param {number|string} studentId
+   * @returns {Promise<{count: number}>}
+   */
+  async getEnrollmentPhotoCount(studentId, { signal } = {}) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/enrollment-photos`, {
+      method: "GET",
+      signal,
+    });
+  },
+
+  /**
+   * One stored enrollment photo as a Blob. The API needs the bearer token, so
+   * this can't be an <img src>; the caller turns the Blob into a blob: URL.
+   * @returns {Promise<Blob|null>} the photo, or null if it no longer exists
+   */
+  async getEnrollmentPhotoBlob(studentId, index, { signal } = {}) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/api/students/${studentId}/enrollment-photos/${index}`,
+      { method: "GET", signal },
+    );
+    if (response.status === 404) return null;
+    if (response.status === 401) onUnauthorized?.();
+    if (!response.ok) throw new ApiError("Something went wrong.", response.status);
+    return response.blob();
+  },
+
+  /**
    * Delete a single document from a student's profile.
    * @param {number|string} studentId
    * @param {number|string} documentId
