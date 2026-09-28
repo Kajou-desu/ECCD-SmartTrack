@@ -52,23 +52,18 @@ export function AuthProvider({ children }) {
     initializeAuth();
   }, [clearStoredAuth]);
 
-  // Persist token changes to localStorage
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem("authToken", token.trim());
-    } else {
-      clearStoredAuth();
-    }
-  }, [token, clearStoredAuth]);
-
-  // Persist user changes to localStorage
+  // The token is written to localStorage synchronously in login() and
+  // updateToken(), NOT in an effect: the API client reads it from storage, and
+  // child effects (e.g. the notifications query) run before this provider's
+  // effects, so an effect-based write let the first request after login go out
+  // without an Authorization header -> 401 -> instant sign-out.
+  // Only ever write here (never clear): clearing on a null initial state wiped
+  // a valid stored session before it could be restored. logout() clears.
   useEffect(() => {
     if (user) {
       localStorage.setItem("authUser", JSON.stringify(user));
-    } else {
-      clearStoredAuth();
     }
-  }, [user, clearStoredAuth]);
+  }, [user]);
 
   const login = useCallback((authToken, authUser) => {
     const sanitizedToken = typeof authToken === "string" ? authToken.trim() : "";
@@ -80,6 +75,8 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    localStorage.setItem("authToken", sanitizedToken);
+    localStorage.setItem("authUser", JSON.stringify(authUser));
     setToken(sanitizedToken);
     setUser(authUser);
   }, [clearStoredAuth]);
@@ -97,6 +94,7 @@ export function AuthProvider({ children }) {
   const updateToken = useCallback((newToken) => {
     const sanitizedToken = typeof newToken === "string" ? newToken.trim() : "";
     if (!sanitizedToken) return;
+    localStorage.setItem("authToken", sanitizedToken);
     setToken(sanitizedToken);
   }, []);
 
