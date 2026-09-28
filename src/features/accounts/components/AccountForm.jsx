@@ -118,6 +118,31 @@ export default function AccountForm({
 }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      <FormField label="System Role" required>
+        <select
+          name="role"
+          value={normalizeRole(formData.role)}
+          onChange={(event) => {
+            onChange(event);
+            // Leaving Parent/Guardian: clear the (now-hidden) picker's
+            // selection too, so a stale, non-empty studentIds array doesn't
+            // ride along on this same submit and get rejected by the
+            // backend's "only Parent/Guardian can be connected" check.
+            if (!["Parent", "Guardian"].includes(normalizeRole(event.target.value))) {
+              onChange({ target: { name: "studentIds", value: [] } });
+            }
+          }}
+          className={inputClass}
+          required
+        >
+          {assignableRoles.map((role) => (
+            <option key={role} value={role}>
+              {role}
+            </option>
+          ))}
+        </select>
+      </FormField>
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <FormField label="Last Name" required>
           <input
@@ -186,31 +211,6 @@ export default function AccountForm({
           />
         </FormField>
       )}
-
-      <FormField label="System Role" required>
-        <select
-          name="role"
-          value={normalizeRole(formData.role)}
-          onChange={(event) => {
-            onChange(event);
-            // Leaving Parent/Guardian: clear the (now-hidden) picker's
-            // selection too, so a stale, non-empty studentIds array doesn't
-            // ride along on this same submit and get rejected by the
-            // backend's "only Parent/Guardian can be connected" check.
-            if (!["Parent", "Guardian"].includes(normalizeRole(event.target.value))) {
-              onChange({ target: { name: "studentIds", value: [] } });
-            }
-          }}
-          className={inputClass}
-          required
-        >
-          {assignableRoles.map((role) => (
-            <option key={role} value={role}>
-              {role}
-            </option>
-          ))}
-        </select>
-      </FormField>
 
       <FormField label="Contact Phone" required>
         <input

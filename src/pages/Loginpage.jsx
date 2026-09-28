@@ -241,7 +241,7 @@ export default function Login() {
                   htmlFor="login-email"
                   className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
                 >
-                  Email Address <span className="text-red-500">*</span>
+                  Email Address
                 </label>
                 <input
                   id="login-email"
@@ -267,7 +267,7 @@ export default function Login() {
                   htmlFor="login-password"
                   className="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1.5"
                 >
-                  Password <span className="text-red-500">*</span>
+                  Password
                 </label>
                 <div className="relative">
                   <input
