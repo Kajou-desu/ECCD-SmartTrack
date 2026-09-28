@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
-import { toDayKey } from "@utils/dateKeys.js";
+import useTodayKey from "@hooks/useTodayKey.js";
 import { useAttendanceQuery } from "./useAttendanceQuery.js";
 import { normalizeAttendanceTime } from "../utils/attendanceFilters.js";
 import { useToast } from "@hooks/useToast.js";
@@ -9,7 +9,16 @@ import { useToast } from "@hooks/useToast.js";
 export function useAttendance(initialDate) {
   const showToast = useToast();
   const queryClient = useQueryClient();
-  const [selectedDate, setSelectedDate] = useState(initialDate || toDayKey());
+  const todayKey = useTodayKey();
+  const [selectedDate, setSelectedDate] = useState(initialDate || todayKey);
+
+  // Follow the calendar across midnight, but only if the user was viewing
+  // "today" — a past date they picked on purpose stays as it is.
+  const [prevTodayKey, setPrevTodayKey] = useState(todayKey);
+  if (todayKey !== prevTodayKey) {
+    setPrevTodayKey(todayKey);
+    if (selectedDate === prevTodayKey) setSelectedDate(todayKey);
+  }
 
   const { data: queryData, isLoading, isError } = useAttendanceQuery(selectedDate);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
@@ -190,7 +199,7 @@ export function useAttendance(initialDate) {
     savingIds,
     handleStatusChange,
     handleDepart,
-    todayKey: toDayKey(),
+    todayKey,
     handleExport,
   };
 }

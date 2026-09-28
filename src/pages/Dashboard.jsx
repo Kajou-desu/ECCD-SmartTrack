@@ -11,6 +11,7 @@ import { QuickActions } from "@features/dashboard/components/QuickActions";
 import DashboardContentGrid from "@features/dashboard/components/DashboardContentGrid";
 import StatCard from "@components/shared/StatCard";
 import ErrorMsg from "@components/ui/ErrorMsg";
+import useTodayKey from "@hooks/useTodayKey.js";
 
 async function fetchDashboardStats() {
   return apiClient.getDashboardStats();
@@ -22,8 +23,10 @@ export default function Dashboard() {
     user?.name,
   );
 
+  const todayKey = useTodayKey();
   const { data: stats, isError, refetch } = useQuery({
-    queryKey: ["dashboardStats"],
+    // Keyed by day so a new day fetches fresh counts instead of the cache.
+    queryKey: ["dashboardStats", todayKey],
     queryFn: fetchDashboardStats,
   });
 

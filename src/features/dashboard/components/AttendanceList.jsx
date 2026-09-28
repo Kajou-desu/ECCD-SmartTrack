@@ -3,7 +3,7 @@ import formatStudentName from "@utils/formatStudentName.js";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toDayKey } from "@utils/dateKeys.js";
+import useTodayKey from "@hooks/useTodayKey.js";
 import { apiClient } from "@api/client.js";
 import { useAttendanceQuery } from "@features/attendance/hooks/useAttendanceQuery.js";
 import MarkDepartedButton from "@features/attendance/components/MarkDepartedButton";
@@ -20,7 +20,7 @@ export function AttendanceList() {
   const navigate = useNavigate();
   const showToast = useToast();
 
-  const today = useMemo(() => toDayKey(), []);
+  const today = useTodayKey();
   const { data } = useAttendanceQuery(today);
   const records = useMemo(() => data?.records ?? [], [data]);
 
