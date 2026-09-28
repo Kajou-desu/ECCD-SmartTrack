@@ -15,6 +15,12 @@ function describeEnrollmentError(err) {
   if (err instanceof ApiError && err.status === 502) {
     return "The face recognition service didn't respond. Try again in a moment.";
   }
+  if (err instanceof ApiError && err.status === 422) {
+    return "None of those photos showed exactly one clear face, so nothing was changed. Try well-lit photos with only this child in frame.";
+  }
+  if (err instanceof ApiError && err.status === 429) {
+    return "Too many uploads just now. Wait a few minutes and try again.";
+  }
   if (err instanceof ApiError && err.status === 400) {
     return "Each photo must be a JPEG or PNG image, and at least one is required.";
   }
