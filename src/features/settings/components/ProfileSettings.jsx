@@ -8,6 +8,7 @@ import {
   MAX_PHOTO_FILE_SIZE_BYTES,
   formatFileSize,
 } from "@features/eventPhotos/utils/photoValidation";
+import { SMS_ROLES, PH_MOBILE_HINT } from "@features/accounts/utils/accountUtils.js";
 import { UserRound, Camera, Mail, Phone, Loader2 } from "lucide-react";
 
 export default function ProfileSettings({ onNotify }) {
@@ -324,8 +325,15 @@ export default function ProfileSettings({ onNotify }) {
                   type="tel"
                   value={profile.phone}
                   onChange={(e) => handleProfileChange("phone", e.target.value)}
+                  placeholder={SMS_ROLES.includes(user.role) ? "09XX-XXX-XXXX" : undefined}
+                  aria-describedby={SMS_ROLES.includes(user.role) ? "profile-phone-hint" : undefined}
                   className="border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-1 focus:ring-[#C2570C] transition"
                 />
+                {SMS_ROLES.includes(user.role) && (
+                  <p id="profile-phone-hint" className="text-xs text-gray-500">
+                    {PH_MOBILE_HINT}
+                  </p>
+                )}
               </div>
 
               <div className="flex gap-3">

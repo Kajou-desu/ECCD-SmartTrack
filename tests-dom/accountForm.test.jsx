@@ -123,3 +123,32 @@ describe("AccountForm student picker", () => {
     expect(onSubmit.mock.calls[0][0].studentIds).toEqual([]);
   });
 });
+
+describe("AccountForm phone hint", () => {
+  const phone = () => screen.getByLabelText(/Contact Phone/);
+
+  it.each(["Parent", "Guardian"])("tells a %s account it needs a PH mobile (they get SMS alerts)", (role) => {
+    render(<Harness role={role} />);
+
+    expect(screen.getByText(/Philippine mobile number/)).toBeTruthy();
+    expect(phone().getAttribute("placeholder")).toBe("09XX-XXX-XXXX");
+    expect(phone().getAttribute("aria-describedby")).toBe("account-phone-hint");
+  });
+
+  it("does not show the SMS hint for a Teacher", () => {
+    render(<Harness role="Teacher" />);
+
+    expect(screen.queryByText(/Philippine mobile number/)).toBeNull();
+    expect(phone().getAttribute("placeholder")).toBe("Input phone number");
+    expect(phone().hasAttribute("aria-describedby")).toBe(false);
+  });
+
+  it("follows the role dropdown as it changes", () => {
+    render(<Harness role="Teacher" />);
+    expect(screen.queryByText(/Philippine mobile number/)).toBeNull();
+
+    fireEvent.change(screen.getByRole("combobox"), { target: { name: "role", value: "Parent" } });
+
+    expect(screen.getByText(/Philippine mobile number/)).toBeTruthy();
+  });
+});

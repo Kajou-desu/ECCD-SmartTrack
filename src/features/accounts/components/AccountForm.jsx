@@ -3,7 +3,7 @@ import formatStudentName from "@utils/formatStudentName.js";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
-import { normalizeRole } from "../utils/accountUtils.js";
+import { normalizeRole, SMS_ROLES, PH_MOBILE_HINT } from "../utils/accountUtils.js";
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
 
 const inputClass =
@@ -116,6 +116,8 @@ export default function AccountForm({
   assignableRoles,
   students = [],
 }) {
+  const receivesSms = SMS_ROLES.includes(normalizeRole(formData.role));
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <FormField label="System Role" required>
@@ -212,18 +214,26 @@ export default function AccountForm({
         </FormField>
       )}
 
-      <FormField label="Contact Phone" required>
-        <input
-          type="tel"
-          name="phone"
-          value={formData.phone}
-          onChange={onChange}
-          placeholder="Input phone number"
-          className={inputClass}
-          autoComplete="tel"
-          required
-        />
-      </FormField>
+      <div>
+        <FormField label="Contact Phone" required>
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={onChange}
+            placeholder={receivesSms ? "09XX-XXX-XXXX" : "Input phone number"}
+            className={inputClass}
+            autoComplete="tel"
+            aria-describedby={receivesSms ? "account-phone-hint" : undefined}
+            required
+          />
+        </FormField>
+        {receivesSms && (
+          <p id="account-phone-hint" className="mt-1 text-[10px] text-slate-400">
+            {PH_MOBILE_HINT}
+          </p>
+        )}
+      </div>
 
       <FormField label="Home Address" required>
         <textarea
