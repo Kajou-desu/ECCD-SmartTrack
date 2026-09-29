@@ -61,6 +61,7 @@ export function faceTone(face) {
 
 const STATUS_LABELS = {
   verified: "Marked present",
+  both_seen: "Face and tag seen, already recorded today",
   face_only: "Face seen, waiting for tag",
   ble_only: "Tag seen, waiting for face",
 };

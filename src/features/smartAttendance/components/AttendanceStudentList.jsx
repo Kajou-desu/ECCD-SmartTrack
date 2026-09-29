@@ -5,6 +5,7 @@ import { formatArrivalTime, statusLabel } from "../utils/attendanceMonitor.js";
 
 const CHIP = {
   verified: { style: "bg-green-100 text-green-700", Icon: CircleCheck },
+  both_seen: { style: "bg-slate-100 text-slate-700", Icon: CircleCheck },
   face_only: { style: "bg-amber-100 text-amber-700", Icon: Clock },
   ble_only: { style: "bg-amber-100 text-amber-700", Icon: Clock },
 };

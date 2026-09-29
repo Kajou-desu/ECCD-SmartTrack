@@ -74,6 +74,7 @@ test("faceTone distinguishes verified, waiting and unknown faces", () => {
 
 test("statusLabel has plain-language text for every status the server sends", () => {
   assert.equal(statusLabel("verified"), "Marked present");
+  assert.equal(statusLabel("both_seen"), "Face and tag seen, already recorded today");
   assert.equal(statusLabel("face_only"), "Face seen, waiting for tag");
   assert.equal(statusLabel("ble_only"), "Tag seen, waiting for face");
   assert.equal(statusLabel("???"), "Unknown");
