@@ -16,7 +16,7 @@ export default function AccountActions({
         type="button"
         onClick={() => onView(account)}
         disabled={disabled}
-        className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1.5 text-[11px] font-bold text-blue-600 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-600 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Eye size={13} />
         View
@@ -28,7 +28,7 @@ export default function AccountActions({
             type="button"
             onClick={() => onEdit(account)}
             disabled={disabled}
-            className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] font-bold text-amber-600 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-600 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Pencil size={13} />
             Edit
@@ -39,7 +39,7 @@ export default function AccountActions({
               type="button"
               onClick={() => onDelete(account)}
               disabled={disabled || !getAccountId(account)}
-              className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] font-bold text-red-500 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs font-bold text-red-500 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Trash2 size={13} />
               Remove

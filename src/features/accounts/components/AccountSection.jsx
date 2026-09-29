@@ -28,7 +28,7 @@ export default function AccountSection({
         </div>
 
         <span
-          className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black ${badgeClass}`}
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-black ${badgeClass}`}
         >
           {data.length} {data.length === 1 ? "Account" : "Accounts"}
         </span>

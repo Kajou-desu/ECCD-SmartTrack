@@ -27,7 +27,7 @@ export default function AccountTable({
     <div className="hidden overflow-x-auto sm:block">
       <table className="w-full min-w-180 border-collapse text-left">
         <thead>
-          <tr className="border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-wider text-slate-500">
             <th className="w-[25%] pb-3 pr-4">Account Name</th>
             <th className="w-[25%] pb-3 pr-4">Contact Details</th>
             <th className="w-[30%] pb-3 pr-4">Home Address</th>
@@ -53,7 +53,7 @@ export default function AccountTable({
                         {getAccountName(account)}
                       </p>
 
-                      <p className="mt-0.5 truncate text-[10px] font-bold text-slate-400">
+                      <p className="mt-0.5 truncate text-xs font-bold text-slate-500">
                         ID: {getAccountId(account) || "N/A"}
                       </p>
                     </div>
@@ -65,7 +65,7 @@ export default function AccountTable({
                     {account?.email || "No email provided"}
                   </p>
 
-                  <p className="mt-1 text-[11px] font-mono tracking-wide text-slate-400">
+                  <p className="mt-1 text-xs font-mono tracking-wide text-slate-500">
                     {account?.phone || "No phone provided"}
                   </p>
                 </td>

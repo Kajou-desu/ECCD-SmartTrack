@@ -35,7 +35,7 @@ export default function AccountCard({
             {getAccountName(account)}
           </p>
 
-          <p className="mt-0.5 truncate text-[10px] font-bold text-slate-400">
+          <p className="mt-0.5 truncate text-xs font-bold text-slate-500">
             ID: {getAccountId(account) || "N/A"}
           </p>
         </div>
@@ -43,7 +43,7 @@ export default function AccountCard({
 
       <div className="mt-4 grid gap-3 border-t border-slate-100 pt-4">
         <div>
-          <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">
+          <p className="text-xs font-black uppercase tracking-wider text-slate-500">
             Email
           </p>
 
@@ -53,7 +53,7 @@ export default function AccountCard({
         </div>
 
         <div>
-          <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">
+          <p className="text-xs font-black uppercase tracking-wider text-slate-500">
             Phone
           </p>
 
@@ -63,7 +63,7 @@ export default function AccountCard({
         </div>
 
         <div>
-          <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">
+          <p className="text-xs font-black uppercase tracking-wider text-slate-500">
             Address
           </p>
 

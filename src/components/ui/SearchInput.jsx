@@ -18,7 +18,7 @@ export default function SearchInput({
         onChange={onChange}
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#C2570C] focus:ring-2 focus:ring-[#C2570C]/20 sm:w-55"
+        className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-base text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#C2570C] focus:ring-2 focus:ring-[#C2570C]/20 sm:w-55"
       />
     </div>
   );

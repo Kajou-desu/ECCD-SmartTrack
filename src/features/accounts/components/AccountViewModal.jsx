@@ -15,7 +15,7 @@ function Detail({ label, children, wide = false }) {
     <div
       className={`rounded-xl border border-slate-100 p-3 ${wide ? "sm:col-span-2" : ""}`}
     >
-      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">
+      <p className="text-xs font-black uppercase tracking-wider text-slate-500">
         {label}
       </p>
 
@@ -69,7 +69,7 @@ export default function AccountViewModal({ account, onClose }) {
                 {getAccountName(account)}
               </p>
 
-              <p className="mt-0.5 break-all text-[10px] font-bold text-slate-400">
+              <p className="mt-0.5 break-all text-xs font-bold text-slate-500">
                 ID: {getAccountId(account) || "N/A"}
               </p>
             </div>
@@ -85,7 +85,7 @@ export default function AccountViewModal({ account, onClose }) {
             </Detail>
 
             <Detail label="Role">
-              <span className="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-blue-600">
+              <span className="inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-black uppercase tracking-wide text-blue-600">
                 {normalizeRole(account.role)}
               </span>
             </Detail>

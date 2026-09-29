@@ -478,7 +478,7 @@ export default function StudentForm() {
                   value={form.values.gender}
                   onChange={form.handleChange}
                   onBlur={form.handleBlur}
-                  className={`w-full rounded-xl border bg-white px-3 py-3 text-sm text-slate-800 outline-none transition ${
+                  className={`w-full rounded-xl border bg-white px-3 py-3 text-base text-slate-800 outline-none transition ${
                     form.touched.gender && form.errors.gender
                       ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100"
                       : "border-slate-300 focus:border-[#C2570C] focus:ring-2 focus:ring-[#C2570C]/15"
@@ -529,7 +529,7 @@ export default function StudentForm() {
                   value={form.values.teacherId}
                   onChange={form.handleChange}
                   required
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm text-slate-800 outline-none transition focus:border-[#C2570C] focus:ring-2 focus:ring-[#C2570C]/15"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-base text-slate-800 outline-none transition focus:border-[#C2570C] focus:ring-2 focus:ring-[#C2570C]/15"
                 >
                   <option value="" disabled>
                     Select a teacher

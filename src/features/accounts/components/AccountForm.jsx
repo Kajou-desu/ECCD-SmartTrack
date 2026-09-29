@@ -12,7 +12,7 @@ const inputClass =
 function FormField({ label, children, required = false }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[10px] font-black uppercase tracking-wide text-slate-400">
+      <span className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-500">
         {label}
         {required && <span className="ml-0.5 text-red-500">*</span>}
       </span>
@@ -27,7 +27,7 @@ function StatusMessage({ message }) {
 
   return (
     <div
-      className={`rounded-xl px-3 py-2.5 text-[11px] font-semibold ${
+      className={`rounded-xl px-3 py-2.5 text-xs font-semibold ${
         message.isError
           ? "bg-red-50 text-red-600"
           : "bg-emerald-50 text-emerald-600"
@@ -59,7 +59,7 @@ function StudentPicker({ students, selectedIds, onChange }) {
 
   return (
     <fieldset>
-      <legend className="mb-1 block text-[10px] font-black uppercase tracking-wide text-slate-400">
+      <legend className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-500">
         Connect Students
       </legend>
 
@@ -75,7 +75,7 @@ function StudentPicker({ students, selectedIds, onChange }) {
 
       <div className="mt-2 max-h-56 space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
         {visible.length === 0 && (
-          <p className="px-2 py-2 text-[11px] text-slate-500">No students found.</p>
+          <p className="px-2 py-2 text-xs text-slate-500">No students found.</p>
         )}
 
         {visible.map((student) => (
@@ -91,13 +91,13 @@ function StudentPicker({ students, selectedIds, onChange }) {
             />
             <span className="min-w-0">
               <span className="block text-xs font-semibold text-slate-800">{formatStudentName(student)}</span>
-              <span className="block text-[11px] text-slate-500">{formatStudentCode(student)}</span>
+              <span className="block text-xs text-slate-500">{formatStudentCode(student)}</span>
             </span>
           </label>
         ))}
       </div>
 
-      <p aria-live="polite" className="mt-1 text-[11px] text-slate-500">
+      <p aria-live="polite" className="mt-1 text-xs text-slate-500">
         {selected.size} selected
       </p>
     </fieldset>
@@ -236,7 +236,7 @@ export default function AccountForm({
           />
         </FormField>
         {receivesSms && (
-          <p id="account-phone-hint" className="mt-1 text-[10px] text-slate-400">
+          <p id="account-phone-hint" className="mt-1 text-xs text-slate-500">
             {ACCOUNT_PHONE_HINT}
           </p>
         )}

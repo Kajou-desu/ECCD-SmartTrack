@@ -96,7 +96,7 @@ function InfoItem({ icon: Icon, label, value }) {
         <Icon size={16} aria-hidden="true" />
       </div>
       <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
           {label}
         </p>
         <p

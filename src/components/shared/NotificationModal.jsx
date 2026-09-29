@@ -220,13 +220,13 @@ export default function NotificationModal({ isOpen, onClose }) {
                           </h3>
 
                           {!notification.unread && (
-                            <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
+                            <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-xs font-medium text-slate-600">
                               Read
                             </span>
                           )}
                         </div>
 
-                        <span className="shrink-0 text-[11px] text-slate-400">
+                        <span className="shrink-0 text-xs text-slate-500">
                           {notification.time}
                         </span>
                       </div>

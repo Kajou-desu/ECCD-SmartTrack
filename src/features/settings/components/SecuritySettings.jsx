@@ -159,7 +159,7 @@ export default function SecuritySettings({ onNotify }) {
               value={password.current}
               onChange={handlePasswordChange}
               required
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-12 text-sm transition focus:border-[#C2570C] focus:outline-none focus:ring-4 focus:ring-[#C2570C]/10"
+              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-12 text-base transition focus:border-[#C2570C] focus:outline-none focus:ring-4 focus:ring-[#C2570C]/10"
               placeholder="Enter current password"
             />
             <button
@@ -197,7 +197,7 @@ export default function SecuritySettings({ onNotify }) {
               value={password.new}
               onChange={handlePasswordChange}
               required
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-12 text-sm transition focus:border-[#C2570C] focus:outline-none focus:ring-4 focus:ring-[#C2570C]/10"
+              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-12 text-base transition focus:border-[#C2570C] focus:outline-none focus:ring-4 focus:ring-[#C2570C]/10"
               placeholder="Enter new password (min 10 characters)"
             />
             <button
@@ -306,7 +306,7 @@ export default function SecuritySettings({ onNotify }) {
               value={password.confirm}
               onChange={handlePasswordChange}
               required
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-12 text-sm transition focus:border-[#C2570C] focus:outline-none focus:ring-4 focus:ring-[#C2570C]/10"
+              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 pr-12 text-base transition focus:border-[#C2570C] focus:outline-none focus:ring-4 focus:ring-[#C2570C]/10"
               placeholder="Confirm new password"
             />
             <button
