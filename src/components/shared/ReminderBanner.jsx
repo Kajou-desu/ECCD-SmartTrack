@@ -28,7 +28,7 @@ export default function ReminderBanner({ reminder }) {
           `}</style>
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2 flex-1">
-              <span className="shrink-0 text-lg">
+              <span className="shrink-0 text-base">
                 <Megaphone className="h-5 w-5 text-orange-700 shrink-0" />
               </span>
               <div className="overflow-hidden flex-1">

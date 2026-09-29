@@ -55,7 +55,7 @@ export default function StudentInfo() {
           </h1>
 
           <section className="flex flex-col rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
-            <h2 className="mb-6 text-lg font-bold text-gray-800">
+            <h2 className="mb-6 text-base font-bold text-gray-800">
               Student List
             </h2>
             <StudentTableSkeleton />
@@ -93,7 +93,7 @@ export default function StudentInfo() {
 
         <section className="flex flex-col rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <h2 className="text-lg font-bold text-gray-800">Student List</h2>
+            <h2 className="text-base font-bold text-gray-800">Student List</h2>
 
             <StudentFilters
               searchTerm={searchTerm}

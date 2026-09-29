@@ -11,7 +11,7 @@ export default function WeeklyGoalsEmptyState({ onAddGoal }) {
         <Target size={32} className="text-orange-600" />
       </div>
 
-      <h2 className="mt-4 text-lg font-bold text-slate-900">No goals set for this week</h2>
+      <h2 className="mt-4 text-base font-bold text-slate-900">No goals set for this week</h2>
 
       <p className="my-4 max-w-sm text-sm text-slate-600">
         Add a goal to start tracking this class's progress for the week.

@@ -5,7 +5,7 @@ export default function GalleryEmptyState({ onAddPhotos }) {
     <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
       <ImagePlus size={32} className="text-slate-400" aria-hidden="true" />
 
-      <h2 className="mt-4 text-lg font-bold text-slate-900">
+      <h2 className="mt-4 text-base font-bold text-slate-900">
         No photos in this album yet
       </h2>
 

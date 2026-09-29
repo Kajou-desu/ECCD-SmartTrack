@@ -43,7 +43,7 @@ export default function ParentRecentLogs({ logs, childName, monthName }) {
   return (
     <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-gray-800">Recent Logs</h3>
+        <h3 className="text-lg font-bold text-gray-800">Recent Logs</h3>
         <button
           type="button"
           onClick={handleExport}

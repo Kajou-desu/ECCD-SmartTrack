@@ -30,7 +30,7 @@ export default function ChildrenSection() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Heart className="h-6 w-6 text-[#C2570C]" />
-          <h2 className="text-2xl font-bold text-gray-800">Children</h2>
+          <h2 className="text-xl font-bold text-gray-800">Children</h2>
         </div>
         <button
           onClick={() => setShowAddChild(true)}

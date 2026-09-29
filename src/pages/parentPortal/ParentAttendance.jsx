@@ -52,7 +52,7 @@ export default function ParentAttendance() {
           >
             <Users size={32} className="text-orange-600" />
           </div>
-          <h2 className="mt-4 text-lg font-bold text-slate-900">
+          <h2 className="mt-4 text-base font-bold text-slate-900">
             No child linked to your account
           </h2>
           <p className="mt-2 max-w-sm text-sm text-slate-600">
@@ -125,30 +125,30 @@ export default function ParentAttendance() {
           </div>
 
           <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
-            <h3 className="text-xl font-bold text-gray-800 mb-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-6">
               Monthly Breakdown
             </h3>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="text-center">
-                <p className="text-4xl font-bold text-emerald-600">
+                <p className="text-3xl font-bold text-emerald-600">
                   {attendance.stats.presentDays}
                 </p>
                 <p className="text-sm text-gray-600 mt-2">Days Present</p>
               </div>
               <div className="text-center">
-                <p className="text-4xl font-bold text-rose-600">
+                <p className="text-3xl font-bold text-rose-600">
                   {attendance.stats.absentDays}
                 </p>
                 <p className="text-sm text-gray-600 mt-2">Days Absent</p>
               </div>
               <div className="text-center">
-                <p className="text-4xl font-bold text-amber-600">
+                <p className="text-3xl font-bold text-amber-600">
                   {attendance.stats.excusedDays}
                 </p>
                 <p className="text-sm text-gray-600 mt-2">Excused Absences</p>
               </div>
               <div className="text-center">
-                <p className="text-4xl font-bold text-blue-600">
+                <p className="text-3xl font-bold text-blue-600">
                   {attendance.stats.attendanceRate}%
                 </p>
                 <p className="text-sm text-gray-600 mt-2">Attendance Rate</p>

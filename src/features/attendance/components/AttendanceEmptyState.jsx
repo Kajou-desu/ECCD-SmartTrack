@@ -5,7 +5,7 @@ export default function AttendanceEmptyState({ searchQuery }) {
     <div className="col-span-full rounded-xl border border-dashed border-gray-200 p-8 text-center">
       <UsersRound className="mx-auto mb-4 h-16 w-16 text-gray-300" />
 
-      <h3 className="mb-2 text-lg font-semibold text-gray-600">No Attendance Records</h3>
+      <h3 className="mb-2 text-base font-semibold text-gray-600">No Attendance Records</h3>
 
       <p className="text-sm text-gray-500">
         {searchQuery

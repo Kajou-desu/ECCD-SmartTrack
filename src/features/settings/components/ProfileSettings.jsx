@@ -116,7 +116,7 @@ export default function ProfileSettings({ onNotify }) {
     <div className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm space-y-8">
       <div className="flex items-center gap-3 mb-6">
         <UserRound className="h-6 w-6 text-[#C2570C]" />
-        <h2 className="text-2xl font-bold text-gray-800">Profile Settings</h2>
+        <h2 className="text-xl font-bold text-gray-800">Profile Settings</h2>
       </div>
       <div className="flex flex-col items-center text-center">
         {/* Profile Picture Section */}
@@ -130,7 +130,7 @@ export default function ProfileSettings({ onNotify }) {
                   src={user.profilePicture}
                   name={fullName}
                   alt={`${fullName}'s profile`}
-                  className="h-full w-full text-4xl"
+                  className="h-full w-full text-3xl"
                 />
               )}
             </div>
@@ -151,7 +151,7 @@ export default function ProfileSettings({ onNotify }) {
             />
           </div>
           <div className="text-center space-y-1">
-            <h3 className="text-2xl font-bold text-gray-900">{fullName}</h3>
+            <h3 className="text-xl font-bold text-gray-900">{fullName}</h3>
 
             <p className="text-sm text-gray-500">{user.role}</p>
 
@@ -182,7 +182,7 @@ export default function ProfileSettings({ onNotify }) {
         {/* Personal Information */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-base font-semibold text-gray-900">
               Personal Information
             </h3>
 
@@ -214,7 +214,7 @@ export default function ProfileSettings({ onNotify }) {
                   </p>
                 </div>
 
-                <p className="mt-4 text-lg font-semibold text-gray-900">
+                <p className="mt-4 text-base font-semibold text-gray-900">
                   {fullName}
                 </p>
               </div>
@@ -226,7 +226,7 @@ export default function ProfileSettings({ onNotify }) {
                   </p>
                 </div>
 
-                <p className="mt-4 text-lg font-semibold text-gray-900 break-all">
+                <p className="mt-4 text-base font-semibold text-gray-900 break-all">
                   {profile.email}
                 </p>
               </div>
@@ -238,7 +238,7 @@ export default function ProfileSettings({ onNotify }) {
                   </p>
                 </div>
 
-                <p className="mt-4 text-lg font-semibold text-gray-900">
+                <p className="mt-4 text-base font-semibold text-gray-900">
                   {profile.phone || "—"}
                 </p>
               </div>

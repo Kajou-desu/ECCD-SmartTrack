@@ -24,7 +24,7 @@ export default function GoalFormModal({ mode, goal, onCancel, onConfirm }) {
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
         <div className="flex shrink-0 items-center justify-between border-b border-slate-200 p-5">
           <div>
-            <h2 id="goal-form-title" className="text-lg font-bold text-slate-900">
+            <h2 id="goal-form-title" className="text-base font-bold text-slate-900">
               {isEdit ? "Edit Goal" : "Add Goal"}
             </h2>
             <p className="mt-1 text-sm text-slate-600">

@@ -17,10 +17,10 @@ export default function ChildOverviewCard({ child, arrivalTime, departedTime }) 
         <Avatar
           src={child.photo}
           name={formatStudentName(child)}
-          className="h-24 w-24 rounded-2xl text-3xl"
+          className="h-24 w-24 rounded-2xl text-2xl"
         />
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-gray-800">{formatStudentName(child)}</h2>
+          <h2 className="text-xl font-bold text-gray-800">{formatStudentName(child)}</h2>
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4 text-sm">
             <div>
               <p className="text-xs uppercase font-semibold text-gray-600">

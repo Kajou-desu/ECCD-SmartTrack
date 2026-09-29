@@ -5,7 +5,7 @@ export default function AttendanceSummaryCard({ stats, monthName }) {
   return (
     <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
       <div className="flex items-center justify-between gap-4 mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Attendance Summary</h2>
+        <h2 className="text-lg font-bold text-gray-800">Attendance Summary</h2>
         <Link
           to="/parent/attendance"
           className="text-sm font-semibold text-[#C2570C] hover:text-orange-700"
@@ -55,7 +55,7 @@ export default function AttendanceSummaryCard({ stats, monthName }) {
 function Stat({ label, value, color }) {
   return (
     <div className="text-center">
-      <p className={`text-2xl font-bold ${color}`}>{value}</p>
+      <p className={`text-xl font-bold ${color}`}>{value}</p>
       <p className="text-xs text-gray-500 mt-1">{label}</p>
     </div>
   );

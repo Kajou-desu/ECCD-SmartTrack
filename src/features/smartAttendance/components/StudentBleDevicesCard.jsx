@@ -38,7 +38,7 @@ export default function StudentBleDevicesCard({ studentId }) {
 
   return (
     <section aria-label="Attendance tag" className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-      <h2 className="text-xl font-bold text-gray-800">Attendance tag</h2>
+      <h2 className="text-lg font-bold text-gray-800">Attendance tag</h2>
       <p className="mt-1 max-w-prose text-sm text-gray-600">
         The Bluetooth tag this child carries, for example on their bag. A child is marked present automatically
         when their tag and their face are both seen at the door.

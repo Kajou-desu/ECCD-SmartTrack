@@ -68,7 +68,7 @@ export default function NotificationModal({ isOpen, onClose }) {
             <div className="flex items-center gap-2">
               <h2
                 id="notification-title"
-                className="text-lg font-bold text-slate-900"
+                className="text-base font-bold text-slate-900"
               >
                 Notifications
               </h2>

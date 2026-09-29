@@ -111,7 +111,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
         <div>
           <h2
             id="upload-work-title"
-            className="text-lg font-bold text-slate-900"
+            className="text-base font-bold text-slate-900"
           >
             Upload Student Work
           </h2>

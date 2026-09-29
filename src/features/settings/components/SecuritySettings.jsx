@@ -123,7 +123,7 @@ export default function SecuritySettings({ onNotify }) {
     <div className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm">
       <div className="flex items-center gap-3 mb-6">
         <Lock className="h-6 w-6 text-[#C2570C]" />
-        <h2 className="text-2xl font-bold text-gray-800">Change Password</h2>
+        <h2 className="text-xl font-bold text-gray-800">Change Password</h2>
       </div>
 
       <div className="mb-8 rounded-2xl border border-orange-100 bg-orange-50 p-5">
@@ -351,7 +351,7 @@ export default function SecuritySettings({ onNotify }) {
               maxLength={6}
               value={otpCode}
               onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-center text-lg tracking-[0.4em]"
+              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-center text-base tracking-[0.4em]"
               placeholder="000000"
             />
           </div>

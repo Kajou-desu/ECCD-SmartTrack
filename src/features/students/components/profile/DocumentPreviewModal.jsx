@@ -18,7 +18,7 @@ export default function DocumentPreviewModal({
         <div className="flex min-w-0 items-center gap-2">
           <h2
             id="document-preview-title"
-            className="truncate text-lg font-bold text-slate-900"
+            className="truncate text-base font-bold text-slate-900"
           >
             {fileName}
           </h2>

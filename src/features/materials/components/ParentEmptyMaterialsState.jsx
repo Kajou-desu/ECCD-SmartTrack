@@ -10,7 +10,7 @@ export default function ParentEmptyMaterialsState() {
         <FileText size={32} className="text-orange-600" />
       </div>
 
-      <h2 className="mt-4 text-lg font-bold text-slate-900">
+      <h2 className="mt-4 text-base font-bold text-slate-900">
         No materials shared yet
       </h2>
 

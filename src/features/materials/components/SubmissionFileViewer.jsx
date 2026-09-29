@@ -5,7 +5,7 @@ function Message({ icon: Icon, children, role }) {
   return (
     <div role={role} className="flex flex-col items-center text-slate-900">
       <Icon size={72} strokeWidth={2} className="mb-4" aria-hidden="true" />
-      <p className="text-center text-xl font-medium leading-snug">{children}</p>
+      <p className="text-center text-lg font-medium leading-snug">{children}</p>
     </div>
   );
 }
@@ -17,7 +17,7 @@ export default function SubmissionFileViewer({ file, fileName }) {
     return (
       <div role="status" className="flex flex-col items-center">
         <div className="mb-4 h-16 w-16 animate-spin rounded-full border-[5px] border-gray-200 border-t-gray-800" />
-        <p className="text-center text-xl font-medium leading-snug text-slate-900">
+        <p className="text-center text-lg font-medium leading-snug text-slate-900">
           Loading...
           <br />
           Please Wait

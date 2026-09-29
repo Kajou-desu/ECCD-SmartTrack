@@ -31,7 +31,7 @@ export default function CreateAlbumModal({ onCancel, onConfirm }) {
         <div className="shrink-0 p-5">
           <h2
             id="create-album-title"
-            className="text-lg font-bold text-slate-900"
+            className="text-base font-bold text-slate-900"
           >
             New Album
           </h2>

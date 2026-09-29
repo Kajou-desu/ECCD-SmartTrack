@@ -61,7 +61,7 @@ export default function ParentDashboard() {
           >
             <Users size={32} className="text-orange-600" />
           </div>
-          <h2 className="mt-4 text-lg font-bold text-slate-900">
+          <h2 className="mt-4 text-base font-bold text-slate-900">
             No child linked to your account
           </h2>
           <p className="mt-2 max-w-sm text-sm text-slate-600">

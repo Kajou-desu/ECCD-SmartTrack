@@ -1,7 +1,7 @@
 export default function WeeklyGoalsCard({ goals }) {
   return (
     <div className="lg:col-span-1 bg-white rounded-3xl border border-gray-200 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <h3 className="text-xl font-bold text-gray-800 mb-6">
+      <h3 className="text-lg font-bold text-gray-800 mb-6">
         This Week's Goals
       </h3>
       <div className="space-y-4">

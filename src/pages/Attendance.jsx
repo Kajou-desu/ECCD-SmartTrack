@@ -97,7 +97,7 @@ export default function Attendance() {
           <div className="max-w-sm text-center">
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gray-100" />
 
-            <h2 className="mb-2 text-lg font-semibold text-gray-700">
+            <h2 className="mb-2 text-base font-semibold text-gray-700">
               No Attendance Records
             </h2>
 
@@ -121,7 +121,7 @@ export default function Attendance() {
 
       <section className="flex min-w-0 flex-col gap-6 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
         <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <h2 className="text-lg font-bold text-gray-800">
+          <h2 className="text-base font-bold text-gray-800">
             Attendance Records
           </h2>
 

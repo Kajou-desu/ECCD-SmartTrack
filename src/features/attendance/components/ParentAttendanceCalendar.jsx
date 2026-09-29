@@ -77,7 +77,7 @@ export default function ParentAttendanceCalendar({
   return (
     <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">{monthName}</h2>
+        <h2 className="text-xl font-bold text-gray-800">{monthName}</h2>
         <div className="flex gap-2">
           <button
             onClick={onPrevMonth}

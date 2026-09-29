@@ -113,7 +113,7 @@ function EmptyState({ Icon, title, description }) {
       >
         <Icon size={32} className="text-orange-600" />
       </div>
-      <h2 className="mt-4 text-lg font-bold text-slate-900">{title}</h2>
+      <h2 className="mt-4 text-base font-bold text-slate-900">{title}</h2>
       <p className="mt-2 max-w-sm text-sm text-slate-600">{description}</p>
     </div>
   );

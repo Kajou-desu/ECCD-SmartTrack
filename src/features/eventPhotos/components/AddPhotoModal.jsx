@@ -75,7 +75,7 @@ export default function AddPhotoModal({ albums, createAlbum, addPhotos, onClose 
     >
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="shrink-0 p-5">
-          <h2 id="add-photo-title" className="text-lg font-bold text-slate-900">
+          <h2 id="add-photo-title" className="text-base font-bold text-slate-900">
             Add Photo
           </h2>
           <p className="mt-1 text-sm text-slate-600">

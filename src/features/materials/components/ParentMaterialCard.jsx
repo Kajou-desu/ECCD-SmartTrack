@@ -23,7 +23,7 @@ export default function ParentMaterialCard({ material, onView }) {
           />
         ) : (
           <div
-            className={`absolute inset-0 flex items-center justify-center text-6xl opacity-80 ${material.bgColor ?? "bg-slate-200"}`}
+            className={`absolute inset-0 flex items-center justify-center text-5xl opacity-80 ${material.bgColor ?? "bg-slate-200"}`}
             aria-hidden="true"
           >
             {material.icon ?? "📄"}

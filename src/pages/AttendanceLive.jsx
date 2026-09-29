@@ -68,7 +68,7 @@ export default function AttendanceLive() {
       <div className="space-y-6 p-6">
         {header}
         <section className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-800">Attendance isn't running</h2>
+          <h2 className="text-base font-semibold text-gray-800">Attendance isn't running</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-gray-600">
             Press Start Attendance in the top bar. Then turn on a camera facing the door, and students are marked
             present when both their face and their tag are seen.

@@ -7,7 +7,7 @@ export default function StatCard({ Icon, label, value, color }) {
             {label}
           </p>
 
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
             {value}
           </h2>
         </div>

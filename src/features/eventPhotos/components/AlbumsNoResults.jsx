@@ -5,7 +5,7 @@ export default function AlbumsNoResults({ query, onClearSearch }) {
     <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
       <Search size={28} className="text-slate-500" aria-hidden="true" />
 
-      <h2 className="mt-4 text-lg font-bold text-slate-900">No albums found</h2>
+      <h2 className="mt-4 text-base font-bold text-slate-900">No albums found</h2>
 
       <p className="mt-2 text-sm text-slate-600">
         No albums match &quot;{query}&quot;.

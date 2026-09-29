@@ -46,7 +46,7 @@ export function EventCard({ showBirthdays = true }) {
     <div className="flex h-full min-h-0 w-full max-w-2xl overflow-hidden flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <div className="flex shrink-0 items-center gap-2">
         <CalendarFold className="h-6 w-6 text-[#C2570C]" />
-        <h4 className="text-lg font-semibold text-gray-800 sm:text-xl">
+        <h4 className="text-base font-semibold text-gray-800 sm:text-lg">
           Events
         </h4>
       </div>

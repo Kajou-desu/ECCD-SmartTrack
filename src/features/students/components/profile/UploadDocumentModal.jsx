@@ -131,7 +131,7 @@ export default function UploadDocumentModal({ studentId, onCancel, onSave }) {
           <div>
             <h2
               id="upload-document-title"
-              className="text-lg font-bold text-slate-900"
+              className="text-base font-bold text-slate-900"
             >
               Upload Document
             </h2>

@@ -47,7 +47,7 @@ export default function StudentProfileHeader({ student, headerAction }) {
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#C2570C]">
                 Student profile
               </p>
-              <h2 className="truncate text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              <h2 className="truncate text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
                 {student.name}
               </h2>
               <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">

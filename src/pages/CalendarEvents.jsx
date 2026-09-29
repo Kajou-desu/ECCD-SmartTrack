@@ -93,7 +93,7 @@ function AddEventModal({ eventToEdit, onCancel, onSaved }) {
   return (
     <Modal onClose={onCancel} labelledBy="event-form-title">
       <form onSubmit={handleSubmit} className="p-6">
-        <h2 id="event-form-title" className="text-lg font-bold text-gray-900">
+        <h2 id="event-form-title" className="text-base font-bold text-gray-900">
           {eventToEdit ? "Edit Event" : "Add Event"}
         </h2>
 
@@ -199,7 +199,7 @@ function EventDetailsModal({ details, onClose }) {
   return (
     <Modal onClose={onClose} labelledBy="event-details-title">
       <div className="p-6">
-        <h2 id="event-details-title" className="text-lg font-bold text-gray-900">
+        <h2 id="event-details-title" className="text-base font-bold text-gray-900">
           Events for {details.date}
         </h2>
 
@@ -507,7 +507,7 @@ export default function CalendarEvents() {
         <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-xl font-bold text-gray-800">
               {monthName}
               {loading && (
                 <span className="ml-2 text-sm font-normal text-gray-500">
@@ -595,7 +595,7 @@ export default function CalendarEvents() {
         {/* Event Logs */}
         <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-800">Event Logs</h3>
+            <h3 className="text-lg font-bold text-gray-800">Event Logs</h3>
             <button
               onClick={() => setShowAddEventModal(true)}
               className="text-sm font-semibold text-[#C2570C] hover:text-orange-800 cursor-pointer"
@@ -689,7 +689,7 @@ export default function CalendarEvents() {
           labelledBy="delete-event-title"
         >
           <div className="p-6">
-            <h2 id="delete-event-title" className="text-lg font-bold text-gray-900">
+            <h2 id="delete-event-title" className="text-base font-bold text-gray-900">
               Delete Event?
             </h2>
             <p className="mt-2 text-sm text-gray-600">

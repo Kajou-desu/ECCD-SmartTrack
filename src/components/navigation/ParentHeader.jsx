@@ -55,7 +55,7 @@ export default function ParentHeader({
               />
 
               <div className="min-w-0">
-                <h2 className="text-xl font-bold leading-5 text-[#C2570C]">
+                <h2 className="text-lg font-bold leading-5 text-[#C2570C]">
                   ECCD
                 </h2>
 

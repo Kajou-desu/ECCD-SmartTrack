@@ -33,11 +33,11 @@ export default function AttendanceCard({ record, onMarkStatus, onDepart, canDepa
         <Avatar
           src={record.photo}
           name={formatStudentName(record)}
-          className="h-16 w-16 rounded-full text-xl"
+          className="h-16 w-16 rounded-full text-lg"
         />
 
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-lg font-semibold text-gray-800">{studentName}</h3>
+          <h3 className="truncate text-base font-semibold text-gray-800">{studentName}</h3>
           <p className="text-sm text-gray-500">
             {record.status === "present" && record.arrivedAt
               ? `Arrived at ${new Date(record.arrivedAt).toLocaleTimeString([], {

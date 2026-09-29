@@ -47,7 +47,7 @@ export default function AttendanceCamera({ camera }) {
   return (
     <section aria-label="Camera" className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-gray-800">Camera</h2>
+        <h2 className="text-base font-semibold text-gray-800">Camera</h2>
         <div className="flex flex-wrap gap-2">
           {isOn ? (
             <>

@@ -15,7 +15,7 @@ export default function RequiredDocumentsCard({
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Required Documents</h2>
+        <h2 className="text-lg font-bold text-gray-800">Required Documents</h2>
         {onUpload ? (
           <button
             type="button"

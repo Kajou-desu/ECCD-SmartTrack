@@ -121,7 +121,7 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
       aria-label="Face recognition enrollment"
       className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8"
     >
-      <h2 className="text-xl font-bold text-gray-800">Face recognition enrollment</h2>
+      <h2 className="text-lg font-bold text-gray-800">Face recognition enrollment</h2>
       <p className="mt-1 max-w-prose text-sm text-gray-600">
         {RECOMMENDED_MIN}–{RECOMMENDED_MAX} clear, well-lit photos of this child, each with only their face in
         frame. Uploading replaces any photos already enrolled for them. Only enroll a child once you have the

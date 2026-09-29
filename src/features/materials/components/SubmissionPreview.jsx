@@ -29,7 +29,7 @@ export default function SubmissionPreview({ submission }) {
       className="relative flex min-h-150 flex-col rounded-3xl border border-slate-100 bg-white shadow-sm lg:col-span-2"
     >
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 p-6">
-        <h2 className="truncate text-lg font-bold text-slate-900">
+        <h2 className="truncate text-base font-bold text-slate-900">
           {displayName}
         </h2>
 

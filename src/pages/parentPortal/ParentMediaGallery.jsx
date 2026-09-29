@@ -107,7 +107,7 @@ export default function ParentMediaGallery({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="text-5xl">{getMediaIcon()}</div>
+                  <div className="text-4xl">{getMediaIcon()}</div>
                 )}
 
                 {/* Quick Actions Overlay */}
@@ -135,7 +135,7 @@ export default function ParentMediaGallery({
 
               {/* Content */}
               <div className="p-4">
-                <h3 className="font-semibold text-gray-800 text-lg mb-1">
+                <h3 className="font-semibold text-gray-800 text-base mb-1">
                   {item.title}
                 </h3>
                 {item.description && (
@@ -169,8 +169,8 @@ export default function ParentMediaGallery({
         </div>
       ) : (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">{getMediaIcon()}</div>
-          <p className="text-gray-600 text-lg">{getEmptyState()}</p>
+          <div className="text-5xl mb-4">{getMediaIcon()}</div>
+          <p className="text-gray-600 text-base">{getEmptyState()}</p>
           <p className="text-gray-500 text-sm mt-2">
             {type === "eventPhotos"
               ? "Photos will appear here as teachers upload them"

@@ -61,7 +61,7 @@ export default function AddMaterial({ onCancel, onConfirm }) {
           <div>
             <h2
               id="add-material-title"
-              className="text-lg font-bold text-slate-900"
+              className="text-base font-bold text-slate-900"
             >
               Add Material
             </h2>

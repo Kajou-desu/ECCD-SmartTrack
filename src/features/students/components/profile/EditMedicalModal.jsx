@@ -61,7 +61,7 @@ export default function EditMedicalModal({
           <div>
             <h2
               id="edit-medical-title"
-              className="text-lg font-bold text-slate-900"
+              className="text-base font-bold text-slate-900"
             >
               Edit Medical & Special Notes
             </h2>

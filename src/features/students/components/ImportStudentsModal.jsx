@@ -90,7 +90,7 @@ export default function ImportStudentsModal({ onCancel, onImported }) {
   return (
     <Modal onClose={onCancel} labelledBy="import-students-title">
       <div className="p-5 sm:p-6">
-        <h2 id="import-students-title" className="text-lg font-bold text-slate-900">Import Students</h2>
+        <h2 id="import-students-title" className="text-base font-bold text-slate-900">Import Students</h2>
         <p className="mt-1 text-sm text-slate-500">Upload a CSV with student and primary guardian information.</p>
         <button type="button" onClick={downloadStudentImportTemplate} className="mt-2 text-xs font-semibold text-[#C2570C] underline">Download CSV template</button>
         <label className="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 p-6 text-center hover:bg-slate-50">

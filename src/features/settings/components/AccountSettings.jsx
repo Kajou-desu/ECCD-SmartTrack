@@ -54,7 +54,7 @@ function DeleteAccountModal({ onCancel, onDeleted }) {
   return (
     <Modal onClose={onCancel} labelledBy="delete-account-title">
       <form onSubmit={handleDelete} className="p-6">
-        <h2 id="delete-account-title" className="text-lg font-bold text-gray-900">
+        <h2 id="delete-account-title" className="text-base font-bold text-gray-900">
           Delete your account?
         </h2>
         <p className="mt-2 text-sm text-gray-600">
@@ -139,7 +139,7 @@ export default function AccountSettings() {
 
   return (
     <div className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+      <h2 className="text-xl font-bold text-gray-800 mb-6">
         Account Information
       </h2>
 

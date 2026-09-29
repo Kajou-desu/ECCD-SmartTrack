@@ -31,7 +31,7 @@ export default function DashboardHeader({
             })}
           </p>
 
-          <p className="text-end text-lg font-bold text-[#C2570C]">
+          <p className="text-end text-base font-bold text-[#C2570C]">
             {currentDateTime.toLocaleTimeString("en-US", {
               hour: "numeric",
               minute: "2-digit",

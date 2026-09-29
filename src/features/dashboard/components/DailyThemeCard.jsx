@@ -60,11 +60,11 @@ export function DailyThemeCard() {
         {/* Right Panel */}
         <div className="flex min-w-45 flex-col items-center justify-center bg-[#e5eeff] p-8">
           <div className="flex h-28 w-28 items-center justify-center rounded-full bg-white shadow-md">
-            <span className="text-6xl font-extrabold text-[#C2570C]">
+            <span className="text-5xl font-extrabold text-[#C2570C]">
               {theme.letter}
             </span>
           </div>
-          <p className="mt-4 text-lg font-semibold text-orange-700">
+          <p className="mt-4 text-base font-semibold text-orange-700">
             {theme.label}
           </p>
           <p className="mt-1 text-center text-sm text-orange-600">
@@ -90,7 +90,7 @@ export function DailyThemeCard() {
             </button>
           </div>
           <div className="flex flex-col gap-2 my-auto">
-            <h2 className="text-2xl font-bold text-gray-800">{theme.title}</h2>
+            <h2 className="text-xl font-bold text-gray-800">{theme.title}</h2>
             <p className="text-sm leading-6 text-gray-600">
               {theme.description}
             </p>

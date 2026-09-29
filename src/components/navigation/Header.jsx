@@ -88,7 +88,7 @@ export default function Header({
             <div className="flex items-center gap-2">
               <img src={Logo} alt="Logo" className="h-12 w-auto" />
               <div>
-                <h2 className="text-xl font-bold leading-5 text-[#C2570C]">
+                <h2 className="text-lg font-bold leading-5 text-[#C2570C]">
                   ECCD
                 </h2>
                 <p className="text-xs font-semibold uppercase text-[#C2570C]/70">

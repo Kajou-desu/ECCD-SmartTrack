@@ -32,7 +32,7 @@ export function ProgressEmptyState({ childName }) {
       >
         <Sparkles size={32} className="text-blue-600" />
       </div>
-      <h2 className="mt-4 text-lg font-bold text-slate-900">
+      <h2 className="mt-4 text-base font-bold text-slate-900">
         No progress data yet for {childName}
       </h2>
       <p className="mt-2 max-w-sm text-sm text-slate-600">
@@ -52,7 +52,7 @@ export function ProgressErrorState({ onRetry }) {
       >
         <AlertTriangle size={32} className="text-red-600" />
       </div>
-      <h2 className="mt-4 text-lg font-bold text-slate-900">
+      <h2 className="mt-4 text-base font-bold text-slate-900">
         Couldn't load progress data
       </h2>
       <p className="mt-2 max-w-sm text-sm text-slate-600">

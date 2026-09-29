@@ -53,7 +53,7 @@ export function AttendanceList() {
       {/* Header */}
       <div className="flex shrink-0 flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <h4 className="text-lg font-semibold text-gray-800 sm:text-xl">
+          <h4 className="text-base font-semibold text-gray-800 sm:text-lg">
             Today's Attendance
           </h4>
 

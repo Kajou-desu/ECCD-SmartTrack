@@ -15,7 +15,7 @@ export default function AttendanceStudentList({ students = [], counts }) {
 
   return (
     <section aria-label="Arrivals" className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
-      <h2 className="text-lg font-semibold text-gray-800">Arrivals</h2>
+      <h2 className="text-base font-semibold text-gray-800">Arrivals</h2>
       <p className="mt-1 text-sm text-gray-600">
         {counts?.verified ?? 0} marked present, {waiting} waiting for a second check
       </p>

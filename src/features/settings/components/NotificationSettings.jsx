@@ -71,7 +71,7 @@ export default function NotificationSettings() {
         <div className="flex items-center gap-3">
           <Bell className="h-6 w-6 text-[#C2570C]" />
 
-          <h2 className="text-xl font-bold text-gray-800 sm:text-2xl">
+          <h2 className="text-lg font-bold text-gray-800 sm:text-xl">
             Notification Settings
           </h2>
         </div>
@@ -169,7 +169,7 @@ function SettingsSection({ icon: Icon, title, children }) {
       <div className="mb-3 flex items-center gap-2">
         <Icon className="h-5 w-5 shrink-0 text-[#C2570C]" />
 
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-base font-semibold text-gray-900">{title}</h3>
       </div>
 
       <div

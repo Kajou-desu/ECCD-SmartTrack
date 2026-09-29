@@ -5,7 +5,7 @@ export default function AlbumsEmptyState({ onCreateAlbum }) {
     <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
       <Images size={32} className="text-slate-400" aria-hidden="true" />
 
-      <h2 className="mt-4 text-lg font-bold text-slate-900">No albums yet</h2>
+      <h2 className="mt-4 text-base font-bold text-slate-900">No albums yet</h2>
 
       <p className="mt-2 max-w-sm text-sm text-slate-600">
         {onCreateAlbum

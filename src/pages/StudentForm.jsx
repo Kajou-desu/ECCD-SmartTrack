@@ -772,7 +772,7 @@ export default function StudentForm() {
       {showDeleteConfirm && (
         <Modal onClose={() => setShowDeleteConfirm(false)} labelledBy="remove-student-title">
           <div className="p-6">
-            <h2 id="remove-student-title" className="text-lg font-bold text-slate-900">Remove Student?</h2>
+            <h2 id="remove-student-title" className="text-base font-bold text-slate-900">Remove Student?</h2>
             <p className="mt-2 text-sm text-slate-600">This permanently removes the student record and related records.</p>
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button type="button" onClick={() => setShowDeleteConfirm(false)} disabled={deleting} className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold">Cancel</button>

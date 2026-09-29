@@ -167,14 +167,14 @@ export default function Login() {
               className="w-full h-full object-cover rounded-full"
             />
           </div>
-          <span className="text-xl font-black tracking-tight text-white">
+          <span className="text-lg font-black tracking-tight text-white">
             ECCD SmartTrack
           </span>
         </div>
 
         {/* headline copy */}
         <div className="relative max-w-sm">
-          <h2 className="text-3xl font-black text-white leading-tight mb-3">
+          <h2 className="text-2xl font-black text-white leading-tight mb-3">
             Every child's day,
             <br />
             organized with care.
@@ -202,7 +202,7 @@ export default function Login() {
               className="w-full h-full object-cover rounded-full"
             />
           </div>
-          <span className="text-2xl font-black tracking-tight text-slate-900">
+          <span className="text-xl font-black tracking-tight text-slate-900">
             ECCD SmartTrack
           </span>
         </div>
@@ -392,7 +392,7 @@ export default function Login() {
                   {...resetRegister("otpCode")}
                   required
                   placeholder="Enter OTP Code"
-                  className={`w-full p-3 bg-slate-50 border rounded-xl text-center tracking-[10px] text-xl font-black text-slate-800 focus:outline-none focus:ring-2 transition ${
+                  className={`w-full p-3 bg-slate-50 border rounded-xl text-center tracking-[10px] text-lg font-black text-slate-800 focus:outline-none focus:ring-2 transition ${
                     resetErrors.otpCode
                       ? "border-red-500 focus:ring-red-500/40 focus:border-red-500"
                       : "border-slate-300 focus:ring-[#C2570C]/40 focus:border-[#C2570C]"

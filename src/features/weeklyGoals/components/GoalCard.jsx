@@ -19,7 +19,7 @@ export default function GoalCard({ goal, onGrade, onEdit, onDelete }) {
               {goal.category}
             </span>
           )}
-          <h3 className="mt-2 text-lg font-bold text-gray-800">{goal.title}</h3>
+          <h3 className="mt-2 text-base font-bold text-gray-800">{goal.title}</h3>
           {goal.description && (
             <p className="mt-1 text-sm text-gray-600">{goal.description}</p>
           )}
