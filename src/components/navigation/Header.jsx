@@ -39,19 +39,14 @@ export default function Header({
   const toggleAttendance = async () => {
     if (isToggling) return;
     const wasRecording = isRecording;
-    let liveTab;
     try {
       if (wasRecording) await stop();
       else {
-        liveTab = window.open("about:blank", "_blank");
-        if (liveTab) liveTab.opener = null;
         await start();
-        if (liveTab) liveTab.location.href = "/attendance/live";
-        else navigate("/attendance/live");
+        navigate("/attendance/live");
       }
       onToggleAttendance?.(!wasRecording);
     } catch (err) {
-      if (liveTab && !liveTab.closed) liveTab.close();
       console.error("Failed to toggle attendance session:", err);
       setAttendanceError(
         wasRecording
