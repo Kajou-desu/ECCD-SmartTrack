@@ -990,4 +990,23 @@ export const apiClient = {
       method: "DELETE",
     });
   },
+
+  /** Fetch the current user's email/SMS notification preferences. */
+  async getNotificationPreferences() {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/preferences`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Update the current user's email/SMS notification preferences.
+   * @param {{ notifyByEmail?: boolean, notifyBySms?: boolean }} preferences
+   */
+  async updateNotificationPreferences(preferences) {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/preferences`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(preferences),
+    });
+  },
 };
