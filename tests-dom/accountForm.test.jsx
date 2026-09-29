@@ -12,7 +12,7 @@ const STUDENTS = [
 
 const BASE = {
   firstName: "Maria", middleName: "", lastName: "Dela Cruz", email: "maria@example.com",
-  phone: "09171234567", address: "Angeles City", password: "", role: "Parent", studentIds: [],
+  phone: "9171234567", address: "Angeles City", password: "", role: "Parent", studentIds: [],
 };
 
 // Mirrors how AccountManagement feeds the form: onChange receives {target:{name,value}}.
@@ -131,7 +131,7 @@ describe("AccountForm phone hint", () => {
     render(<Harness role={role} />);
 
     expect(screen.getByText(/Philippine mobile number/)).toBeTruthy();
-    expect(phone().getAttribute("placeholder")).toBe("09XX-XXX-XXXX");
+    expect(phone().getAttribute("placeholder")).toBe("9XXXXXXXXX");
     expect(phone().getAttribute("aria-describedby")).toBe("account-phone-hint");
   });
 
@@ -139,7 +139,7 @@ describe("AccountForm phone hint", () => {
     render(<Harness role="Teacher" />);
 
     expect(screen.queryByText(/Philippine mobile number/)).toBeNull();
-    expect(phone().getAttribute("placeholder")).toBe("Input phone number");
+    expect(phone().getAttribute("placeholder")).toBe("Input 10-digit phone number");
     expect(phone().hasAttribute("aria-describedby")).toBe(false);
   });
 
@@ -150,5 +150,47 @@ describe("AccountForm phone hint", () => {
     fireEvent.change(screen.getByRole("combobox"), { target: { name: "role", value: "Parent" } });
 
     expect(screen.getByText(/Philippine mobile number/)).toBeTruthy();
+  });
+});
+
+describe("AccountForm phone input (10 digits)", () => {
+  const phone = () => screen.getByLabelText(/Contact Phone/);
+  const type = (value) => fireEvent.change(phone(), { target: { value } });
+
+  it("keeps only digits and caps at 10", () => {
+    render(<Harness />);
+    type("917-123-45678999");
+    expect(phone().value).toBe("9171234567");
+  });
+
+  it.each([
+    ["09171234567", "typed with the leading 0"],
+    ["+63 917 123 4567", "pasted with +63"],
+    ["639171234567", "pasted with 63"],
+  ])("normalizes %s (%s) to 10 digits", (input) => {
+    render(<Harness />);
+    type(input);
+    expect(phone().value).toBe("9171234567");
+  });
+
+  it("does not block pasting a longer number with a max-length attribute", () => {
+    render(<Harness />);
+    expect(phone().hasAttribute("maxlength")).toBe(false);
+  });
+
+  it("requires a 9-leading mobile for Parent/Guardian, any 10 digits for a Teacher", () => {
+    const { unmount } = render(<Harness role="Parent" />);
+    expect(phone().getAttribute("pattern")).toBe("9[0-9]{9}");
+    unmount();
+    render(<Harness role="Teacher" />);
+    expect(phone().getAttribute("pattern")).toBe("[0-9]{10}");
+  });
+
+  it("submits the normalized 10-digit value", () => {
+    const onSubmit = vi.fn();
+    render(<Harness onSubmit={onSubmit} />);
+    type("0917 123 4567");
+    fireEvent.click(screen.getByText("Save"));
+    expect(onSubmit.mock.calls[0][0].phone).toBe("9171234567");
   });
 });

@@ -27,6 +27,7 @@ import {
   getAssignableRoles,
   canModifyAccount,
   canDeleteAccount,
+  toTenDigitPhone,
 } from "@features/accounts/utils/accountUtils.js";
 
 function EmptyAccounts({ onCreate }) {
@@ -154,7 +155,7 @@ export default function AccountsManagement() {
       middleName: account.middleName || account.middlename || "",
       lastName: account.lastName || account.lastname || "",
       email: account.email || "",
-      phone: account.phone || "",
+      phone: toTenDigitPhone(account.phone),
       address: account.address || "",
       centerLocation: account.centerLocation || "",
       role: account.role || "Parent",

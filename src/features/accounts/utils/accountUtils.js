@@ -109,6 +109,25 @@ export const SMS_ROLES = ["Parent", "Guardian"];
 export const PH_MOBILE_HINT =
     "Philippine mobile number, e.g. 0917 123 4567. Arrival and departure text alerts are sent to this number.";
 
+// The Contact Phone field holds the 10-digit mobile number without the country
+// or trunk prefix (9XXXXXXXXX) — the backend adds +63 when sending. Strips
+// everything but digits and drops a leading 0 / 63 so a typed "0917…", a pasted
+// "+63 917…", or a legacy 11-digit value all land on the same 10 digits.
+export const PHONE_DIGITS = 10;
+
+export function toTenDigitPhone(value) {
+    let digits = String(value ?? "").replace(/\D/g, "");
+    if (digits.startsWith("63") && digits.length > PHONE_DIGITS) {
+        digits = digits.slice(2);
+    } else if (digits.startsWith("0")) {
+        digits = digits.slice(1);
+    }
+    return digits.slice(0, PHONE_DIGITS);
+}
+
+export const ACCOUNT_PHONE_HINT =
+    "Philippine mobile number, 10 digits without the leading 0, e.g. 9171234567. Arrival and departure text alerts are sent to this number.";
+
 export function normalizeRole(role) {
     return role === "Day Care Worker" ? "Teacher" : role || "Parent";
 }

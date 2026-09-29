@@ -3,7 +3,7 @@ import formatStudentName from "@utils/formatStudentName.js";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
-import { normalizeRole, SMS_ROLES, PH_MOBILE_HINT } from "../utils/accountUtils.js";
+import { normalizeRole, SMS_ROLES, ACCOUNT_PHONE_HINT, toTenDigitPhone } from "../utils/accountUtils.js";
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
 
 const inputClass =
@@ -118,6 +118,10 @@ export default function AccountForm({
 }) {
   const receivesSms = SMS_ROLES.includes(normalizeRole(formData.role));
 
+  // Same {target:{name,value}} shape the page's handlers already read.
+  const handlePhoneChange = (event) =>
+    onChange({ target: { name: "phone", value: toTenDigitPhone(event.target.value) } });
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <FormField label="System Role" required>
@@ -220,17 +224,20 @@ export default function AccountForm({
             type="tel"
             name="phone"
             value={formData.phone}
-            onChange={onChange}
-            placeholder={receivesSms ? "09XX-XXX-XXXX" : "Input phone number"}
+            onChange={handlePhoneChange}
+            placeholder={receivesSms ? "9XXXXXXXXX" : "Input 10-digit phone number"}
             className={inputClass}
-            autoComplete="tel"
+            autoComplete="tel-national"
+            inputMode="numeric"
+            pattern={receivesSms ? "9[0-9]{9}" : "[0-9]{10}"}
+            title={receivesSms ? "10 digits starting with 9, e.g. 9171234567" : "10 digits"}
             aria-describedby={receivesSms ? "account-phone-hint" : undefined}
             required
           />
         </FormField>
         {receivesSms && (
           <p id="account-phone-hint" className="mt-1 text-[10px] text-slate-400">
-            {PH_MOBILE_HINT}
+            {ACCOUNT_PHONE_HINT}
           </p>
         )}
       </div>
