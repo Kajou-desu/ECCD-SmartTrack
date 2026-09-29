@@ -5,12 +5,23 @@ import { Bell, CalendarDays, Mail, Shield } from "lucide-react";
 import { apiClient } from "@api/client.js";
 import { useAuth } from "@hooks/useAuth.js";
 import { useToast } from "@hooks/useToast.js";
+import {
+  PushPermissionError,
+  getDeviceSubscription,
+  getPushPermission,
+  isPushSupported,
+  subscribeDevice,
+} from "@utils/pushNotifications.js";
+
+const CHANNEL_LABELS = {
+  notifyByEmail: "Email notifications",
+  notifyBySms: "SMS notifications",
+};
 
 export default function NotificationSettings() {
-  // Email and SMS are saved on the server (they decide what the backend
-  // actually sends). The toggles below are still local-only for now.
+  // Email, SMS and push are real (they decide what the backend actually
+  // sends). The toggles below are still local-only for now.
   const [settings, setSettings] = useState({
-    pushNotifications: true,
     systemAlerts: true,
     activityUpdates: true,
     securityNotifications: true,
@@ -51,6 +62,10 @@ export default function NotificationSettings() {
     },
     // Re-sync from the server rather than restoring a snapshot, so a failed
     // save can never leave the switch showing something the server doesn't have.
+    onSuccess: (_data, change) => {
+      const [key, value] = Object.entries(change)[0];
+      showToast("success", `${CHANNEL_LABELS[key]} turned ${value ? "on" : "off"}.`);
+    },
     onError: (err) => {
       console.error("Failed to update notification preferences", err);
       showToast("error", "Couldn't save your notification settings. Please try again.");
@@ -60,6 +75,87 @@ export default function NotificationSettings() {
 
   const handlePreferenceChange = (key) => {
     updatePreference.mutate({ [key]: !prefs[key] });
+  };
+
+  // Push is per device: the toggle reflects whether THIS browser is
+  // subscribed, and turning it on/off only changes this browser.
+  const pushSupported = isPushSupported();
+  const pushEnabled = pushSupported && userId !== null;
+
+  const { data: pushKey, isLoading: pushKeyLoading } = useQuery({
+    queryKey: ["notifications", "push-key"],
+    queryFn: async () => (await apiClient.getPushPublicKey()).publicKey,
+    enabled: pushEnabled,
+  });
+
+  const deviceKey = ["notifications", "push-device", userId];
+  const { data: deviceSubscribed = false, isLoading: deviceLoading } = useQuery({
+    queryKey: deviceKey,
+    queryFn: async () => (await getDeviceSubscription()) !== null,
+    enabled: pushEnabled,
+  });
+
+  const turnOnPush = useMutation({
+    mutationFn: async () => {
+      const subscription = await subscribeDevice(pushKey);
+      try {
+        await apiClient.subscribePush(subscription);
+      } catch (err) {
+        // Don't leave the browser subscribed to something the server doesn't know about.
+        await (await getDeviceSubscription())?.unsubscribe();
+        throw err;
+      }
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(deviceKey, true);
+      showToast("success", "Push notifications turned on for this device.");
+    },
+    onError: (err) => {
+      if (err instanceof PushPermissionError) {
+        showToast("warning", "Push notifications weren't turned on because notifications are blocked for this site.");
+        return;
+      }
+      console.error("Failed to turn on push notifications", err);
+      showToast("error", "Couldn't turn on push notifications. Please try again.");
+    },
+  });
+
+  const turnOffPush = useMutation({
+    mutationFn: async () => {
+      const subscription = await getDeviceSubscription();
+      if (!subscription) return;
+      await apiClient.unsubscribePush(subscription.endpoint);
+      await subscription.unsubscribe();
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(deviceKey, false);
+      showToast("success", "Push notifications turned off for this device.");
+    },
+    onError: (err) => {
+      console.error("Failed to turn off push notifications", err);
+      showToast("error", "Couldn't turn off push notifications. Please try again.");
+    },
+  });
+
+  const pushBusy = turnOnPush.isPending || turnOffPush.isPending;
+  const pushBlocked = pushSupported && getPushPermission() === "denied" && !deviceSubscribed;
+
+  let pushDescription = "Get arrival and departure alerts on this device, even when the app is closed";
+  let pushAvailable = true;
+  if (!pushSupported) {
+    pushDescription = "Not supported in this browser. On iPhone or iPad, add this site to your Home Screen first.";
+    pushAvailable = false;
+  } else if (!pushKeyLoading && !pushKey) {
+    pushDescription = "Push notifications aren't available right now.";
+    pushAvailable = false;
+  } else if (pushBlocked) {
+    pushDescription = "Blocked in your browser settings. Allow notifications for this site to turn this on.";
+    pushAvailable = false;
+  }
+
+  const handlePushChange = () => {
+    if (deviceSubscribed) turnOffPush.mutate();
+    else turnOnPush.mutate();
   };
 
   return (
@@ -125,9 +221,10 @@ export default function NotificationSettings() {
           <SettingToggle
             id="push-notifications"
             label="Push Notifications"
-            description="Receive notifications on your device"
-            checked={settings.pushNotifications}
-            onChange={() => handleSettingChange("pushNotifications")}
+            description={pushDescription}
+            checked={deviceSubscribed}
+            onChange={handlePushChange}
+            disabled={!pushAvailable || pushKeyLoading || deviceLoading || pushBusy}
           />
         </SettingsSection>
 

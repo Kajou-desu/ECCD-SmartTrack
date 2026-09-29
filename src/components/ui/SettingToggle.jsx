@@ -4,6 +4,7 @@ export default function SettingToggle({
   description,
   checked,
   onChange,
+  disabled = false,
 }) {
   return (
     <div
@@ -33,13 +34,14 @@ export default function SettingToggle({
           role="switch"
           checked={checked}
           onChange={onChange}
+          disabled={disabled}
           aria-describedby={`${id}-description`}
           className="peer sr-only"
         />
 
         <span
           className="absolute inset-0 rounded-full bg-gray-300 transition
-            peer-checked:bg-[#C2570C] peer-focus-visible:ring-2
+            peer-disabled:opacity-50 peer-checked:bg-[#C2570C] peer-focus-visible:ring-2
             peer-focus-visible:ring-[#C2570C] peer-focus-visible:ring-offset-2"
         />
 

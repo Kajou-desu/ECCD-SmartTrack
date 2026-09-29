@@ -1009,4 +1009,32 @@ export const apiClient = {
       body: JSON.stringify(preferences),
     });
   },
+
+  /** The server's public Web Push key, or { publicKey: null } if push is off. */
+  async getPushPublicKey() {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/push/public-key`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Register this browser for push alerts.
+   * @param {{ endpoint: string, keys: { p256dh: string, auth: string } }} subscription
+   */
+  async subscribePush(subscription) {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/push/subscribe`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(subscription),
+    });
+  },
+
+  /** Stop push alerts for the browser with this endpoint. */
+  async unsubscribePush(endpoint) {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/push/unsubscribe`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ endpoint }),
+    });
+  },
 };
