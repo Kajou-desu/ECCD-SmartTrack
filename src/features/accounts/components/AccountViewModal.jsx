@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 
+import Avatar from "@components/shared/Avatar.jsx";
 import {
   getAccountId,
   getAccountName,
@@ -57,9 +58,11 @@ export default function AccountViewModal({ account, onClose }) {
 
         <div className="space-y-4">
           <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-xs font-black text-slate-600">
-              {getAccountName(account).charAt(0).toUpperCase()}
-            </div>
+            <Avatar
+              src={account.profilePicture}
+              name={getAccountName(account)}
+              className="h-12 w-12 rounded-full border border-slate-200 text-sm"
+            />
 
             <div className="min-w-0">
               <p className="text-sm font-black text-slate-800">

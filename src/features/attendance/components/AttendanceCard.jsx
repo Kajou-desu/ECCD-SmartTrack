@@ -1,11 +1,11 @@
 import formatStudentName from "@utils/formatStudentName.js";
+import Avatar from "@components/shared/Avatar.jsx";
 import MarkDepartedButton from "./MarkDepartedButton";
 import { formatTime } from "../utils/attendanceDeparture.js";
 
 export default function AttendanceCard({ record, onMarkStatus, onDepart, canDepart = false, isSaving }) {
   const studentName = formatStudentName(record) || "Unknown Student";
   const status = record.status || "absent";
-  const initial = studentName.charAt(0).toUpperCase();
 
   const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
 
@@ -30,9 +30,11 @@ export default function AttendanceCard({ record, onMarkStatus, onDepart, canDepa
   return (
     <article className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${isSaving ? "opacity-60" : ""}`}>
       <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gray-200">
-          <span className="text-xl font-bold text-gray-500">{initial}</span>
-        </div>
+        <Avatar
+          src={record.photo}
+          name={formatStudentName(record)}
+          className="h-16 w-16 rounded-full text-xl"
+        />
 
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-lg font-semibold text-gray-800">{studentName}</h3>

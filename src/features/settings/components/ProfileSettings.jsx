@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useAuth } from "../../../hooks/useAuth.js";
 import { apiClient } from "@api/client.js";
+import Avatar from "@components/shared/Avatar.jsx";
 import {
   isImageFile,
   isFileSizeValid,
@@ -123,14 +124,13 @@ export default function ProfileSettings({ onNotify }) {
             <div className="h-32 w-32 rounded-full bg-linear-to-br from-[#C2570C] to-orange-600 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
               {uploadingPhoto ? (
                 <Loader2 className="h-10 w-10 animate-spin text-white" />
-              ) : user.profilePicture ? (
-                <img
-                  src={user.profilePicture}
-                  alt={`${fullName}'s profile`}
-                  className="h-full w-full object-cover"
-                />
               ) : (
-                <UserRound className="h-16 w-16 text-white" />
+                <Avatar
+                  src={user.profilePicture}
+                  name={fullName}
+                  alt={`${fullName}'s profile`}
+                  className="h-full w-full text-4xl"
+                />
               )}
             </div>
             <button

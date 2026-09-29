@@ -1,3 +1,4 @@
+import Avatar from "@components/shared/Avatar.jsx";
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
 import formatStudentName from "@utils/formatStudentName.js";
 
@@ -13,10 +14,10 @@ export default function ChildOverviewCard({ child, arrivalTime, departedTime }) 
   return (
     <div className="bg-linear-to-r from-orange-50 to-orange-100 rounded-3xl border border-orange-200 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-        <img
+        <Avatar
           src={child.photo}
-          alt={formatStudentName(child)}
-          className="w-24 h-24 rounded-2xl object-cover shrink-0"
+          name={formatStudentName(child)}
+          className="h-24 w-24 rounded-2xl text-3xl"
         />
         <div className="flex-1">
           <h2 className="text-2xl font-bold text-gray-800">{formatStudentName(child)}</h2>

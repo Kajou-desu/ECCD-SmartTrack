@@ -1,15 +1,16 @@
 import { MapPin } from "lucide-react";
 
+import Avatar from "@components/shared/Avatar.jsx";
 import AccountActions from "./AccountActions.jsx";
 import { getAccountId, getAccountName } from "../utils/accountUtils.js";
 
 function AccountAvatar({ account }) {
-  const name = getAccountName(account);
-
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-xs font-black text-slate-600">
-      {name.charAt(0).toUpperCase() || "U"}
-    </div>
+    <Avatar
+      src={account?.profilePicture}
+      name={getAccountName(account)}
+      className="h-9 w-9 rounded-full border border-slate-200 text-xs"
+    />
   );
 }
 

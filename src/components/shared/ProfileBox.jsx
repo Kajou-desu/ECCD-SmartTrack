@@ -1,4 +1,4 @@
-import { getInitials } from "@utils/user.js";
+import Avatar from "@components/shared/Avatar.jsx";
 
 export default function ProfileBox({
   name = "User",
@@ -11,7 +11,6 @@ export default function ProfileBox({
 }) {
   const displayName = name || "User";
   const displayRole = role || "Member";
-  const initials = getInitials(displayName);
 
   return (
     <button
@@ -37,28 +36,11 @@ export default function ProfileBox({
       {...buttonProps}
     >
       <div className="relative shrink-0">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt=""
-            className="
-              h-11 w-11 rounded-full
-              border border-orange-100
-              object-cover
-            "
-          />
-        ) : (
-          <div
-            aria-hidden="true"
-            className="
-              flex h-11 w-11 items-center justify-center
-              rounded-full bg-orange-100
-              text-sm font-semibold text-[#C2570C]
-            "
-          >
-            {initials}
-          </div>
-        )}
+        <Avatar
+          src={avatarUrl}
+          name={displayName}
+          className="h-11 w-11 rounded-full border border-orange-100 text-sm"
+        />
       </div>
 
       {!collapsed && (
