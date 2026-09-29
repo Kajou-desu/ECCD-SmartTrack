@@ -1,19 +1,34 @@
+import { useState } from "react";
 import { FileText, Calendar, CheckCircle2, Clock } from "lucide-react";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 
+const IMAGE_FILE_EXTENSIONS = /\.(png|jpe?g|gif|webp|avif|bmp|svg)(?:[?#].*)?$/i;
+
 export default function ParentMaterialCard({ material, onView }) {
+  const [imageFailed, setImageFailed] = useState(false);
   const isCompleted = material.completion?.status === "completed";
+  const thumbnailUrl = material.thumbnail || material.fileUrl || material.pdfUrl || material.url;
+  const hasImageThumbnail = Boolean(thumbnailUrl) && IMAGE_FILE_EXTENSIONS.test(thumbnailUrl) && !imageFailed;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Material cover */}
       <div className="relative h-75 sm:h-85 w-full overflow-hidden bg-linear-to-br from-slate-100 to-slate-200">
-        <div
-          className={`absolute inset-0 flex items-center justify-center text-6xl opacity-80 ${material.bgColor ?? "bg-slate-200"}`}
-          aria-hidden="true"
-        >
-          {material.icon ?? "📄"}
-        </div>
+        {hasImageThumbnail ? (
+          <img
+            src={thumbnailUrl}
+            alt={`Thumbnail for ${material.title}`}
+            className="h-full w-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <div
+            className={`absolute inset-0 flex items-center justify-center text-6xl opacity-80 ${material.bgColor ?? "bg-slate-200"}`}
+            aria-hidden="true"
+          >
+            {material.icon ?? "📄"}
+          </div>
+        )}
 
         <span className="absolute left-3 top-3 inline-block rounded-full bg-white/90 px-3 py-1 text-xs font-semibold tracking-wider text-slate-700 shadow-sm">
           {material.category}

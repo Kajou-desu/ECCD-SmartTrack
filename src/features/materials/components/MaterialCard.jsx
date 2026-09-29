@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import formatDate from "@utils/formatDate";
 import {
@@ -9,6 +10,8 @@ import {
   FolderOpen,
 } from "lucide-react";
 
+const IMAGE_FILE_EXTENSIONS = /\.(png|jpe?g|gif|webp|avif|bmp|svg)(?:[?#].*)?$/i;
+
 export default function LearningMaterialCard({
   material,
   onView,
@@ -17,16 +20,29 @@ export default function LearningMaterialCard({
   onEdit,
   onDelete,
 }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const thumbnailUrl = material.thumbnail || material.fileUrl || material.pdfUrl || material.url;
+  const hasImageThumbnail = Boolean(thumbnailUrl) && IMAGE_FILE_EXTENSIONS.test(thumbnailUrl) && !imageFailed;
+
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Material cover and quick actions. */}
       <div className="relative h-75 sm:h-85 w-full overflow-hidden bg-linear-to-br from-slate-100 to-slate-200">
-        <div
-          className="absolute inset-0 flex items-center justify-center text-6xl opacity-80 bg-slate-200"
-          aria-hidden="true"
-        >
-          <FileText size={50} />
-        </div>
+        {hasImageThumbnail ? (
+          <img
+            src={thumbnailUrl}
+            alt={`Thumbnail for ${material.title}`}
+            className="h-full w-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <div
+            className="absolute inset-0 flex items-center justify-center text-6xl opacity-80 bg-slate-200"
+            aria-hidden="true"
+          >
+            <FileText size={50} />
+          </div>
+        )}
 
         {/* Mobile-first priority: category is the first identifying badge
             shown, ahead of any secondary controls. */}
