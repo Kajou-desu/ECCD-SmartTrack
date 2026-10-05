@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ImageOff } from "lucide-react";
+import SafeImage from "@components/shared/SafeImage.jsx";
 
 export default function RecentPhotosCard({ albums }) {
   const recent = (albums ?? []).slice(0, 3);
@@ -24,7 +25,7 @@ export default function RecentPhotosCard({ albums }) {
               to={album.url || "/parent/photo-gallery"}
               className="group block overflow-hidden rounded-xl border border-gray-200 hover:border-orange-300 transition"
             >
-              <img
+              <SafeImage
                 src={album.thumbnail}
                 alt={album.title}
                 className="h-24 w-full object-cover transition group-hover:scale-105"

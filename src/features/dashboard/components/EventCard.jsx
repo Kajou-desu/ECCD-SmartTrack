@@ -3,6 +3,7 @@ import { CalendarFold, Cake } from "lucide-react";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { HOLIDAYS } from "@constants/holidays.js";
 import formatStudentName from "@utils/formatStudentName.js";
+import SafeImage from "@components/shared/SafeImage.jsx";
 
 // Neutral avatar used when a student has no photo. Inlined rather than
 // fetched from a placeholder service: every dashboard load would otherwise
@@ -88,7 +89,7 @@ export function EventCard({ showBirthdays = true }) {
                 key={birthday.id}
                 className="flex items-center gap-4 rounded-lg bg-orange-50 p-3 transition-colors duration-200 hover:bg-orange-100"
               >
-                <img
+                <SafeImage
                   src={birthday.photo || AVATAR_PLACEHOLDER}
                   alt={birthday.name}
                   className="h-10 w-10 shrink-0 rounded-full object-cover"

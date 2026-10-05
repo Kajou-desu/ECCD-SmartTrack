@@ -3,17 +3,14 @@ import ProfileSettings from "@features/settings/components/ProfileSettings.jsx";
 import SecuritySettings from "@features/settings/components/SecuritySettings.jsx";
 import NotificationSettings from "@features/settings/components/NotificationSettings.jsx";
 import AccountSettings from "@features/settings/components/AccountSettings.jsx";
-import {
-  UserRound,
-  Bell,
-  Lock,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
+import { Toast } from "@components/ui/Toast.jsx";
+import { UserRound, Bell, Lock } from "lucide-react";
 
 export default function ParentSettings() {
-  const [message] = useState({ type: "", text: "" });
+  const [message, setMessage] = useState({ type: "", text: "" });
   const [activeTab, setActiveTab] = useState("profile");
+  const notify = (type, text) => setMessage({ type, text });
+  const clearMessage = () => setMessage({ type: "", text: "" });
 
   const tabs = [
     {
@@ -71,33 +68,24 @@ export default function ParentSettings() {
 
       {/* Message Toast */}
       {message.text && (
-        <div
-          className={`rounded-xl border px-4 py-3 text-sm flex items-center gap-2 ${
-            message.type === "success"
-              ? "border-green-200 bg-green-50 text-green-700"
-              : "border-red-200 bg-red-50 text-red-700"
-          }`}
-        >
-          {message.type === "success" ? (
-            <CheckCircle className="h-4 w-4" />
-          ) : (
-            <AlertCircle className="h-4 w-4" />
-          )}
-          {message.text}
-        </div>
+        <Toast
+          type={message.type}
+          message={message.text}
+          onClose={clearMessage}
+        />
       )}
 
       {activeTab === "profile" && (
         <div className="w-full">
           {/* Profile Card */}
-          <ProfileSettings />
+          <ProfileSettings onNotify={notify} />
         </div>
       )}
 
       {activeTab === "security" && (
         <div className="w-full sm:max-w-3xl sm:mx-auto">
           {/* Change Password */}
-          <SecuritySettings />
+          <SecuritySettings onNotify={notify} />
         </div>
       )}
 

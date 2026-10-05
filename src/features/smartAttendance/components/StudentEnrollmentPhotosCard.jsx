@@ -33,6 +33,13 @@ function describeEnrollmentError(err) {
 // photos are used to teach the recognition service this child's face. They are
 // biometric data, so they are only loaded here for the signed-in teacher/admin
 // and are never cached or shown anywhere else in the app.
+function enrolledMessage({ photosReceived, photosUsable, photosRejected }) {
+  const used = photosUsable ?? photosReceived;
+  const plural = (n) => (n === 1 ? "" : "s");
+  if (!photosRejected) return `Enrolled from ${used} photo${plural(used)}.`;
+  return `Enrolled from ${used} photo${plural(used)}. ${photosRejected} photo${plural(photosRejected)} could not be used (no face or more than one face) and ${photosRejected === 1 ? "was" : "were"} not saved.`;
+}
+
 export default function StudentEnrollmentPhotosCard({ studentId }) {
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -139,7 +146,7 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
           <CheckCircle2 className="h-5 w-5 shrink-0" />
           <span>
             {result.enrolled
-              ? `Enrolled from ${result.photosReceived} photo${result.photosReceived === 1 ? "" : "s"}.`
+              ? enrolledMessage(result)
               : `${result.photosReceived} photo${result.photosReceived === 1 ? "" : "s"} received, but none had a single clear face — try different photos.`}
           </span>
         </div>

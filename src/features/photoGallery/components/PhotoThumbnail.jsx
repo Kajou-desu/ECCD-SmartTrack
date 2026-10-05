@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import SafeImage from "@components/shared/SafeImage.jsx";
 
 export default function PhotoThumbnail({
   photo,
@@ -8,6 +9,7 @@ export default function PhotoThumbnail({
   onDelete,
 }) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isFailed, setIsFailed] = useState(false);
   const altText = photo.caption || `Photo from ${albumTitle}`;
 
   const handleDeleteClick = (event) => {
@@ -33,15 +35,16 @@ export default function PhotoThumbnail({
     >
       {/* Loading placeholder prevents the image's natural dimensions from
           shifting layout or expanding the page while it loads. */}
-      {!isLoaded && (
+      {!isLoaded && !isFailed && (
         <div className="absolute inset-0 animate-pulse bg-slate-200" />
       )}
 
-      <img
+      <SafeImage
         src={photo.url}
         alt={altText}
         loading="lazy"
         onLoad={() => setIsLoaded(true)}
+        onError={() => setIsFailed(true)}
         className="h-full w-full object-cover"
       />
 

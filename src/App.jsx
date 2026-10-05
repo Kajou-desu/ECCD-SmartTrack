@@ -7,6 +7,7 @@ import { AuthProvider } from "@context/AuthContext.jsx";
 import { NotificationProvider } from "@context/NotificationContext.jsx";
 import { ToastProvider } from "@context/ToastContext.jsx";
 import AppRoutes from "./routes/AppRoutes.jsx";
+import { FILE_URL_FAILED_EVENT } from "@components/shared/SafeImage.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,6 +18,28 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Signed file URLs expire after an hour, but a page that stays open keeps
+// showing the URLs from its last fetch. When an image fails, refetch what is on
+// screen to get fresh URLs. At most once per interval so a genuinely missing
+// file can't cause a refetch storm.
+const FILE_URL_REFRESH_INTERVAL_MS = 30_000;
+
+function FileUrlRefresher() {
+  useEffect(() => {
+    let lastRefresh = 0;
+    const refresh = () => {
+      const now = Date.now();
+      if (now - lastRefresh < FILE_URL_REFRESH_INTERVAL_MS) return;
+      lastRefresh = now;
+      queryClient.invalidateQueries({ refetchType: "active" });
+    };
+    window.addEventListener(FILE_URL_FAILED_EVENT, refresh);
+    return () => window.removeEventListener(FILE_URL_FAILED_EVENT, refresh);
+  }, []);
+
+  return null;
+}
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -34,6 +57,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <ScrollToTop />
+          <FileUrlRefresher />
 
           <AuthProvider>
             <ToastProvider>

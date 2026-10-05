@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Trash2, X } from "lucide-react";
 import Modal from "@components/ui/Modal";
+import SafeImage from "@components/shared/SafeImage.jsx";
 
 export default function PhotoPreviewModal({
   photo,
@@ -63,10 +64,15 @@ export default function PhotoPreviewModal({
           </button>
         )}
 
-        <img
+        <SafeImage
           src={photo.url}
           alt={altText}
           className="max-h-full max-w-full rounded-lg object-contain"
+          fallback={
+            <p role="img" aria-label={altText} className="text-sm text-white/80">
+              This photo could not be loaded.
+            </p>
+          }
         />
 
         {hasNext && (

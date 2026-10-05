@@ -53,11 +53,15 @@ export default function ImportStudentsModal({ onCancel, onImported }) {
   const [fileName, setFileName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [failedRows, setFailedRows] = useState([]);
 
   const handleFile = async (event) => {
     const file = event.target.files?.[0];
+    // Clear the input so choosing the same (re-saved) file again still fires onChange.
+    event.target.value = "";
     if (!file) return;
     setError("");
+    setFailedRows([]);
     setFileName(file.name);
     try {
       const parsed = parseCsv(await file.text());
@@ -74,10 +78,24 @@ export default function ImportStudentsModal({ onCancel, onImported }) {
     if (!rows.length || loading) return;
     setLoading(true);
     setError("");
+    setFailedRows([]);
     try {
       const result = await apiClient.importStudents(rows);
       onImported(result);
-      showToast("success", "Student import completed successfully.");
+      const failed = Array.isArray(result?.failed) ? result.failed : [];
+      const imported = result?.imported ?? rows.length - failed.length;
+      if (failed.length) {
+        // Keep the dialog open so the user can see which rows were rejected.
+        // The accepted rows are already saved, so the file is cleared to stop
+        // a second click from importing them again.
+        setFailedRows(failed);
+        setRows([]);
+        setFileName("");
+        setLoading(false);
+        showToast("warning", `${imported} imported, ${failed.length} failed.`);
+        return;
+      }
+      showToast("success", `${imported} student(s) imported successfully.`);
       onCancel();
     } catch (err) {
       const message = err?.details?.message || "Student import failed.";
@@ -100,6 +118,16 @@ export default function ImportStudentsModal({ onCancel, onImported }) {
         </label>
         {rows.length > 0 && <p className="mt-3 text-xs font-semibold text-slate-600">{rows.length} student record(s) ready to import.</p>}
         {error && <p role="alert" className="mt-3 text-xs text-red-600">{error}</p>}
+        {failedRows.length > 0 && (
+          <div role="alert" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+            <p className="font-semibold">{failedRows.length} row(s) were not imported. Fix them in the CSV and upload again:</p>
+            <ul className="mt-2 max-h-40 list-disc space-y-1 overflow-y-auto pl-4">
+              {failedRows.map((item, index) => (
+                <li key={`${item.row}-${index}`}>Row {item.row}: {item.message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" onClick={onCancel} disabled={loading} className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold">Cancel</button>
           <button type="button" onClick={handleImport} disabled={!rows.length || loading} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C2570C] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50">

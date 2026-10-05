@@ -5,6 +5,7 @@ import useTodayKey from "@hooks/useTodayKey.js";
 import { useAttendanceQuery } from "./useAttendanceQuery.js";
 import { normalizeAttendanceTime } from "../utils/attendanceFilters.js";
 import { useToast } from "@hooks/useToast.js";
+import { downloadCsv } from "@utils/exportCsv.js";
 
 export function useAttendance(initialDate) {
   const showToast = useToast();
@@ -161,18 +162,11 @@ export function useAttendance(initialDate) {
 
   const handleExport = useCallback(() => {
     try {
-      const escapeCsvValue = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-      const rows = filteredRecords.map((record) => [record.name, record.status, record.arrivedAt].map(escapeCsvValue).join(","));
-      const csv = ["name,status,arrivedAt", ...rows].join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `attendance_${selectedDate}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadCsv(
+        `attendance_${selectedDate}.csv`,
+        ["name", "status", "arrivedAt"],
+        filteredRecords.map((record) => [record.name, record.status, record.arrivedAt]),
+      );
       showToast("success", "Attendance data was exported.");
     } catch (err) {
       console.error("Failed to export attendance:", err);

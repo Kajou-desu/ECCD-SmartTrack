@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Download, ChevronRight } from "lucide-react";
+import SafeImage from "@components/shared/SafeImage.jsx";
 
 export default function ParentMediaGallery({
   type = "materials", // "materials" | "eventPhotos"
@@ -101,7 +102,7 @@ export default function ParentMediaGallery({
               {/* Preview/Thumbnail */}
               <div className="relative bg-linear-to-br from-gray-100 to-gray-50 h-48 flex items-center justify-center overflow-hidden">
                 {item.thumbnail ? (
-                  <img
+                  <SafeImage
                     src={item.thumbnail}
                     alt={item.title}
                     className="w-full h-full object-cover"

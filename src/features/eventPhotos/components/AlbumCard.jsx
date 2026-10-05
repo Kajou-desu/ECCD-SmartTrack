@@ -1,9 +1,11 @@
 import { useState } from "react";
 import formatDate from "@utils/formatDate";
 import { Images, Pencil, Trash2 } from "lucide-react";
+import SafeImage from "@components/shared/SafeImage.jsx";
 
 export default function AlbumCard({ album, onOpen, onDelete, onEdit }) {
   const [isCoverLoaded, setIsCoverLoaded] = useState(false);
+  const [isCoverFailed, setIsCoverFailed] = useState(false);
   const coverPhoto = album.photos[0];
 
   const handleDeleteClick = (event) => {
@@ -30,13 +32,14 @@ export default function AlbumCard({ album, onOpen, onDelete, onEdit }) {
       <div className="relative aspect-4/3 w-full overflow-hidden bg-slate-100">
         {coverPhoto ? (
           <>
-            {!isCoverLoaded && (
+            {!isCoverLoaded && !isCoverFailed && (
               <div className="absolute inset-0 animate-pulse bg-slate-200" />
             )}
-            <img
+            <SafeImage
               src={coverPhoto.url}
               alt={`Cover photo for ${album.title}`}
               onLoad={() => setIsCoverLoaded(true)}
+              onError={() => setIsCoverFailed(true)}
               className="h-full w-full object-cover"
             />
           </>
