@@ -4,8 +4,11 @@ import { apiClient } from "@api/client.js";
 import useTodayKey from "@hooks/useTodayKey.js";
 import { useAttendanceQuery } from "./useAttendanceQuery.js";
 import { normalizeAttendanceTime } from "../utils/attendanceFilters.js";
+import { formatTime } from "../utils/attendanceDeparture.js";
 import { useToast } from "@hooks/useToast.js";
 import { downloadCsv } from "@utils/exportCsv.js";
+
+const SESSION_LABELS = { morning: "Morning", afternoon: "Afternoon" };
 
 export function useAttendance(initialDate) {
   const showToast = useToast();
@@ -162,10 +165,24 @@ export function useAttendance(initialDate) {
 
   const handleExport = useCallback(() => {
     try {
+      // When any filter is on, say so in the filename so a partial list isn't
+      // mistaken for the whole day later.
+      const isFiltered = filterStatus !== "all" || filterTime !== "all" || searchQuery.trim() !== "";
+
       downloadCsv(
-        `attendance_${selectedDate}.csv`,
-        ["name", "status", "arrivedAt"],
-        filteredRecords.map((record) => [record.name, record.status, record.arrivedAt]),
+        `attendance_${selectedDate}${isFiltered ? "_filtered" : ""}.csv`,
+        ["Date", "Name", "Session", "Status", "Arrived", "Departed"],
+        filteredRecords.map((record) => [
+          selectedDate,
+          record.name,
+          SESSION_LABELS[record.session] ?? "",
+          // A student with no record yet is "Not recorded", not a blank cell.
+          record.status ? record.status.charAt(0).toUpperCase() + record.status.slice(1) : "Not recorded",
+          // Local clock time, the same as the attendance cards — the raw value
+          // is a UTC ISO string that reads as 00:05 for an 8:05 AM arrival.
+          record.status === "present" ? formatTime(record.arrivedAt) : "",
+          record.status === "present" ? formatTime(record.departedAt) : "",
+        ]),
       );
       showToast("success", "Attendance data was exported.");
     } catch (err) {
@@ -173,7 +190,7 @@ export function useAttendance(initialDate) {
       setError("Failed to export attendance data.");
       showToast("error", "Failed to export attendance data.");
     }
-  }, [filteredRecords, selectedDate, showToast]);
+  }, [filteredRecords, selectedDate, filterStatus, filterTime, searchQuery, showToast]);
 
   return {
     attendanceRecords,

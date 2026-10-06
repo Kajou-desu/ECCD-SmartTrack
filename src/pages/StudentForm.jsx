@@ -18,6 +18,7 @@ import ListField from "@features/students/components/form/ListField";
 import { combineAddress, splitAddress } from "@features/students/utils/address.js";
 import { toMedicalList, fromMedicalList } from "@features/students/utils/medicalList.js";
 import { compressImage } from "@utils/compressImage.js";
+import { getErrorMessage } from "@api/errorMessage.js";
 
 const initialValues = {
   firstName: "",
@@ -27,8 +28,10 @@ const initialValues = {
   birthday: "",
   gender: "",
   address: "",
-  addressPurok: "",
+  addressProvince: "",
+  addressMunicipality: "",
   addressBarangay: "",
+  addressDetails: "",
   session: "morning",
   // Only used/shown for an Admin (see TeacherSelector below) — a Teacher
   // creating or editing a student always connects to themselves server-side,
@@ -36,14 +39,26 @@ const initialValues = {
   teacherId: "",
   motherName: "",
   motherAddress: "",
+  motherAddressProvince: "",
+  motherAddressMunicipality: "",
+  motherAddressBarangay: "",
+  motherAddressDetails: "",
   motherPhone: "",
   motherEmail: "",
   fatherName: "",
   fatherAddress: "",
+  fatherAddressProvince: "",
+  fatherAddressMunicipality: "",
+  fatherAddressBarangay: "",
+  fatherAddressDetails: "",
   fatherPhone: "",
   fatherEmail: "",
   guardianName: "",
   guardianAddress: "",
+  guardianAddressProvince: "",
+  guardianAddressMunicipality: "",
+  guardianAddressBarangay: "",
+  guardianAddressDetails: "",
   guardianPhone: "",
   guardianEmail: "",
   allergiesList: [],
@@ -152,7 +167,7 @@ export default function StudentForm() {
         navigate("/student-info");
       } catch (error) {
         console.error(error);
-        const message = error?.message || "Unable to save student record.";
+        const message = getErrorMessage(error, "Unable to save student record.");
         setSubmitError(message);
         showToast("error", message);
       }
@@ -228,20 +243,21 @@ export default function StudentForm() {
     photoRequestRef.current += 1;
   }, []);
 
-  // Keeps the student's Purok/Barangay pair in sync with the address string
-  // validated and sent to the API.
+  // Keep the four editable address parts in sync with the API's single string.
   const handleAddressChange = (baseKey) => (event) => {
     const { name, value } = event.target;
     form.setValues((prev) => {
-      const purok = name === `${baseKey}Purok` ? value : prev[`${baseKey}Purok`];
-      const barangay = name === `${baseKey}Barangay` ? value : prev[`${baseKey}Barangay`];
-      return { ...prev, [name]: value, [baseKey]: combineAddress(purok, barangay) };
+      const parts = {
+        province: name === `${baseKey}Province` ? value : prev[`${baseKey}Province`],
+        municipality: name === `${baseKey}Municipality` ? value : prev[`${baseKey}Municipality`],
+        barangay: name === `${baseKey}Barangay` ? value : prev[`${baseKey}Barangay`],
+        details: name === `${baseKey}Details` ? value : prev[`${baseKey}Details`],
+      };
+      return { ...prev, [name]: value, [baseKey]: combineAddress(parts) };
     });
   };
 
-  // Validation errors live on the combined field (e.g. "address"), not on
-  // the individual Purok/Barangay inputs, so blurring either half also
-  // marks the combined field touched.
+  // Validation is attached to the combined address field, not its parts.
   const handleAddressBlur = (baseKey) => (event) => {
     form.handleBlur(event);
     form.handleBlur({ target: { name: baseKey } });
@@ -301,6 +317,9 @@ export default function StudentForm() {
         if (!isMounted) return;
 
         const studentAddr = splitAddress(student.address);
+        const motherAddr = splitAddress(student.motherAddress);
+        const fatherAddr = splitAddress(student.fatherAddress);
+        const guardianAddr = splitAddress(student.guardianAddress);
         setValues({
           firstName: student.firstName || "",
           middleName: student.middleName || "",
@@ -309,20 +328,34 @@ export default function StudentForm() {
           birthday: student.birthday || "",
           gender: student.gender || "",
           address: student.address || "",
-          addressPurok: studentAddr.purok,
+          addressProvince: studentAddr.province,
+          addressMunicipality: studentAddr.municipality,
           addressBarangay: studentAddr.barangay,
+          addressDetails: studentAddr.details,
           session: student.session || "morning",
           teacherId: student.teacherId != null ? String(student.teacherId) : "",
           motherName: student.motherName || "",
           motherAddress: student.motherAddress || "",
+          motherAddressProvince: motherAddr.province,
+          motherAddressMunicipality: motherAddr.municipality,
+          motherAddressBarangay: motherAddr.barangay,
+          motherAddressDetails: motherAddr.details,
           motherPhone: student.motherPhone || "",
           motherEmail: student.motherEmail || "",
           fatherName: student.fatherName || "",
           fatherAddress: student.fatherAddress || "",
+          fatherAddressProvince: fatherAddr.province,
+          fatherAddressMunicipality: fatherAddr.municipality,
+          fatherAddressBarangay: fatherAddr.barangay,
+          fatherAddressDetails: fatherAddr.details,
           fatherPhone: student.fatherPhone || "",
           fatherEmail: student.fatherEmail || "",
           guardianName: student.guardianName || "",
           guardianAddress: student.guardianAddress || "",
+          guardianAddressProvince: guardianAddr.province,
+          guardianAddressMunicipality: guardianAddr.municipality,
+          guardianAddressBarangay: guardianAddr.barangay,
+          guardianAddressDetails: guardianAddr.details,
           guardianPhone: student.guardianPhone || "",
           guardianEmail: student.guardianEmail || "",
           allergiesList: toMedicalList(student.allergies),
@@ -498,10 +531,8 @@ export default function StudentForm() {
             <div className="mt-4">
               <AddressFields
                 label="Address"
-                purokName="addressPurok"
-                barangayName="addressBarangay"
-                purokValue={form.values.addressPurok}
-                barangayValue={form.values.addressBarangay}
+                baseKey="address"
+                values={form.values}
                 onChange={handleAddressChange("address")}
                 onBlur={handleAddressBlur("address")}
                 error={form.touched.address && form.errors.address}
@@ -562,6 +593,8 @@ export default function StudentForm() {
                 errors={form.errors}
                 onChange={form.handleChange}
                 onBlur={form.handleBlur}
+                onAddressChange={handleAddressChange("motherAddress")}
+                onAddressBlur={handleAddressBlur("motherAddress")}
               />
 
               <ContactSection
@@ -572,6 +605,8 @@ export default function StudentForm() {
                 errors={form.errors}
                 onChange={form.handleChange}
                 onBlur={form.handleBlur}
+                onAddressChange={handleAddressChange("fatherAddress")}
+                onAddressBlur={handleAddressBlur("fatherAddress")}
               />
             </div>
           </FormSection>
@@ -618,14 +653,13 @@ export default function StudentForm() {
                 </div>
 
                 <div className="mt-4">
-                  <FormField
+                  <AddressFields
                     label="Guardian Address"
-                    name="guardianAddress"
-                    value={form.values.guardianAddress}
-                    onChange={form.handleChange}
-                    onBlur={form.handleBlur}
+                    baseKey="guardianAddress"
+                    values={form.values}
+                    onChange={handleAddressChange("guardianAddress")}
+                    onBlur={handleAddressBlur("guardianAddress")}
                     error={form.touched.guardianAddress && form.errors.guardianAddress}
-                    placeholder="Guardian's full address"
                   />
                 </div>
               </>

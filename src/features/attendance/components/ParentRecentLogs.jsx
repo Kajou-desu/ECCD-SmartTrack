@@ -31,12 +31,29 @@ function getLogStyles(status) {
   };
 }
 
+// The backend sends arrivedAt/departedAt (ISO timestamps), never a ready-made
+// `time`; `log.time` is kept only as an override for any caller that has one.
+function formatLogTime(isoValue) {
+  return isoValue
+    ? new Date(isoValue).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+    : "";
+}
+
+const toFilenamePart = (value, fallback) =>
+  String(value ?? "").trim().replace(/\s+/g, "_") || fallback;
+
 export default function ParentRecentLogs({ logs, childName, monthName }) {
   const handleExport = () => {
     downloadCsv(
-      `attendance_${childName.replace(/\s+/g, "_")}_${monthName.replace(/\s+/g, "_")}.csv`,
-      ["date", "status", "check-in time"],
-      logs.map((log) => [log.date, log.status, log.time]),
+      // childName / monthName can be undefined while the page is still loading.
+      `attendance_${toFilenamePart(childName, "child")}_${toFilenamePart(monthName, "month")}.csv`,
+      ["Date", "Status", "Check-in", "Check-out"],
+      logs.map((log) => [
+        log.date,
+        log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : "",
+        log.time ?? formatLogTime(log.arrivedAt),
+        formatLogTime(log.departedAt),
+      ]),
     );
   };
 
@@ -56,12 +73,7 @@ export default function ParentRecentLogs({ logs, childName, monthName }) {
       <div className="space-y-3">
         {logs.map((log, idx) => {
           const { row, badge } = getLogStyles(log.status);
-          const time = log.time ?? (log.arrivedAt
-            ? new Date(log.arrivedAt).toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              })
-            : "---");
+          const time = log.time ?? (formatLogTime(log.arrivedAt) || "---");
           return (
             <div
               key={idx}

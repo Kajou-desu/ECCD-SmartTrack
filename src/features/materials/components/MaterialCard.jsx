@@ -20,9 +20,12 @@ export default function LearningMaterialCard({
   onEdit,
   onDelete,
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
+  // Remember WHICH url failed, not just that one did: a new photo (after an
+  // upload or a refreshed signed URL) is then tried again. A boolean stayed
+  // true for the life of the component. Same approach as shared/Avatar.jsx.
+  const [failedSrc, setFailedSrc] = useState(null);
   const thumbnailUrl = material.thumbnail || material.fileUrl || material.pdfUrl || material.url;
-  const hasImageThumbnail = Boolean(thumbnailUrl) && IMAGE_FILE_EXTENSIONS.test(thumbnailUrl) && !imageFailed;
+  const hasImageThumbnail = Boolean(thumbnailUrl) && IMAGE_FILE_EXTENSIONS.test(thumbnailUrl) && failedSrc !== thumbnailUrl;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
@@ -33,7 +36,7 @@ export default function LearningMaterialCard({
             src={thumbnailUrl}
             alt={`Thumbnail for ${material.title}`}
             className="h-full w-full object-cover"
-            onError={() => setImageFailed(true)}
+            onError={() => setFailedSrc(thumbnailUrl)}
           />
         ) : (
           <div

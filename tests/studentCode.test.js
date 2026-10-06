@@ -2,6 +2,16 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseStudentCode, formatStudentCode } from "../src/features/students/utils/studentCode.js";
 
+test("accepts any four-digit year, since codes carry the year the student was created", () => {
+  assert.equal(parseStudentCode("ECCD-2027-5"), 5);
+  assert.equal(parseStudentCode("ECCD-2031-123"), 123);
+});
+
+test("rejects a year that is not exactly four digits", () => {
+  assert.equal(parseStudentCode("ECCD-202-5"), null);
+  assert.equal(parseStudentCode("ECCD-20277-5"), null);
+});
+
 test("accepts ECCD-2026-<number> and returns the number", () => {
   assert.equal(parseStudentCode("ECCD-2026-1"), 1);
   assert.equal(parseStudentCode("ECCD-2026-12"), 12);
@@ -13,7 +23,6 @@ test("rejects a bare numeric id (the old URL form)", () => {
 });
 
 const REJECTED = [
-  ["wrong year", "ECCD-2025-12"],
   ["wrong prefix", "ABCD-2026-12"],
   ["lowercase", "eccd-2026-12"],
   ["missing number", "ECCD-2026-"],

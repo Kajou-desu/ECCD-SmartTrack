@@ -7,16 +7,19 @@
 export function formatStudentCode(student) {
   if (!student) return "N/A";
   if (student.studentCode) return student.studentCode;
-  if (student.id != null) return `ECCD-2026-${student.id}`;
+  if (student.id != null) return `ECCD-${new Date().getFullYear()}-${student.id}`;
   return "N/A";
 }
 
 // Student detail URLs use the student code, and only the student code:
-// exactly "ECCD-2026-" followed by the incrementing number — a positive
+// "ECCD-", a four-digit year, "-", then the incrementing number — a positive
 // integer with no leading zeros, sign, spaces or other text. Anything else
 // (a bare "12", "eccd-2026-12", "ECCD-2026-012", "ECCD-2026-12/../x") returns
 // null. The digit cap keeps the result inside a 32-bit database integer.
-const STUDENT_CODE_PATTERN = /^ECCD-2026-([1-9][0-9]{0,8})$/;
+// The year is the year the student was created (any four digits): the backend
+// no longer hard-codes 2026, so a student created in 2027 is ECCD-2027-<n>. Only
+// the number is used to look the student up.
+const STUDENT_CODE_PATTERN = /^ECCD-[0-9]{4}-([1-9][0-9]{0,8})$/;
 
 // "ECCD-2026-12" -> 12, or null if `value` isn't a valid student code.
 // The number is the student's database id (see finalStudentCode in the

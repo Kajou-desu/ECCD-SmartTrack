@@ -1,33 +1,41 @@
-// The backend stores each address (student, mother, father, guardian) as
-// a single free-text string. To split the form into Purok/Barangay inputs
-// without a backend/schema change, we combine the two into one string of
-// the form "Purok {purok}, Barangay {barangay}" before it's sent, and
-// parse it back the same way when loading an existing student for edit.
+const ADDRESS_PARTS = [
+  ["province", "Province"],
+  ["municipality", "Municipality"],
+  ["barangay", "Barangay"],
+  ["details", "Details"],
+];
 
-export function combineAddress(purok, barangay) {
-  const p = (purok ?? "").trim();
-  const b = (barangay ?? "").trim();
-
-  if (!p && !b) return "";
-  if (!p) return `Barangay ${b}`;
-  if (!b) return `Purok ${p}`;
-  return `Purok ${p}, Barangay ${b}`;
+export function combineAddress(parts) {
+  return ADDRESS_PARTS
+    .map(([key, label]) => {
+      const value = (parts[key] ?? "").trim();
+      return value ? `${label}: ${value}` : "";
+    })
+    .filter(Boolean)
+    .join(" | ");
 }
 
-// Best-effort split for display/editing. Recognizes the "Purok X,
-// Barangay Y" format this form writes going forward; for older
-// free-text addresses that predate this split (no such pattern), falls
-// back to splitting on the first comma so nothing is lost — the user can
-// tidy it into the two fields the next time they save.
 export function splitAddress(address) {
   const value = (address ?? "").trim();
-  if (!value) return { purok: "", barangay: "" };
+  const emptyParts = { province: "", municipality: "", barangay: "", details: "" };
+  if (!value) return emptyParts;
+
+  if (/^(Province|Municipality|Barangay|Details):/i.test(value)) {
+    return value.split(" | ").reduce((parts, segment) => {
+      const match = segment.match(/^(Province|Municipality|Barangay|Details):\s*(.*)$/i);
+      if (match) parts[match[1].toLowerCase()] = match[2].trim();
+      return parts;
+    }, emptyParts);
+  }
 
   const match = value.match(/^purok\s*:?\s*(.*?),?\s*barangay\s*:?\s*(.*)$/i);
   if (match) {
-    return { purok: match[1].trim(), barangay: match[2].trim() };
+    return {
+      ...emptyParts,
+      barangay: match[2].trim(),
+      details: `Purok ${match[1].trim()}`.trim(),
+    };
   }
 
-  const [first, ...rest] = value.split(",");
-  return { purok: (first ?? "").trim(), barangay: rest.join(",").trim() };
+  return { ...emptyParts, details: value };
 }

@@ -18,7 +18,11 @@ function getStatusBadgeClass(status) {
 }
 
 export default function StudentProfileHeader({ student, headerAction }) {
-  const [photoFailed, setPhotoFailed] = useState(false);
+  // Remember WHICH url failed, not just that one did: a new photo (after an
+  // upload or a refreshed signed URL) is then tried again. A boolean stayed
+  // true for the life of the component. Same approach as shared/Avatar.jsx.
+  const [failedSrc, setFailedSrc] = useState(null);
+  const showPhoto = Boolean(student.photo) && failedSrc !== student.photo;
 
   return (
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm hover:shadow-md">
@@ -28,11 +32,11 @@ export default function StudentProfileHeader({ student, headerAction }) {
           <div className="relative shrink-0">
             <div className="absolute -inset-1 rounded-[1.25rem] bg-orange-100" aria-hidden="true" />
             <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-orange-50 text-orange-700 shadow-sm sm:h-32 sm:w-32">
-            {student.photo && !photoFailed ? (
+            {showPhoto ? (
               <img
                 src={student.photo}
                 alt={`${student.name}'s profile`}
-                onError={() => setPhotoFailed(true)}
+                onError={() => setFailedSrc(student.photo)}
                 className="h-full w-full object-cover"
               />
             ) : (

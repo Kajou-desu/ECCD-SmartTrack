@@ -29,6 +29,7 @@ import {
   canDeleteAccount,
   toTenDigitPhone,
 } from "@features/accounts/utils/accountUtils.js";
+import { splitAddress } from "@features/students/utils/address.js";
 
 function EmptyAccounts({ onCreate }) {
   return (
@@ -147,6 +148,7 @@ export default function AccountsManagement() {
   };
 
   const openEdit = (account) => {
+    const accountAddress = splitAddress(account.address);
     setEditAccount(account);
     setEditForm({
       ...INITIAL_EDIT_FORM,
@@ -157,6 +159,10 @@ export default function AccountsManagement() {
       email: account.email || "",
       phone: toTenDigitPhone(account.phone),
       address: account.address || "",
+      addressProvince: accountAddress.province,
+      addressMunicipality: accountAddress.municipality,
+      addressBarangay: accountAddress.barangay,
+      addressDetails: accountAddress.details,
       centerLocation: account.centerLocation || "",
       role: account.role || "Parent",
       studentIds: account.studentIds ?? account.children?.map((child) => child.id) ?? [],

@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 
 import { normalizeRole, SMS_ROLES, ACCOUNT_PHONE_HINT, toTenDigitPhone } from "../utils/accountUtils.js";
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
+import AddressFields from "@features/students/components/form/AddressFields";
 
 const inputClass =
   "w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10";
@@ -242,18 +243,13 @@ export default function AccountForm({
         )}
       </div>
 
-      <FormField label="Home Address" required>
-        <textarea
-          name="address"
-          value={formData.address}
-          onChange={onChange}
-          placeholder="Input address"
-          rows={3}
-          className={`${inputClass} resize-none`}
-          autoComplete="street-address"
-          required
-        />
-      </FormField>
+      <AddressFields
+        label="Home Address"
+        baseKey="address"
+        values={formData}
+        onChange={onChange}
+        required
+      />
 
       {(normalizeRole(formData.role) === "Parent" ||
         normalizeRole(formData.role) === "Guardian") && (

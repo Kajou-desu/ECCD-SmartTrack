@@ -1,9 +1,20 @@
+import { address } from "@constants/address.js";
+
+const fields = [
+  { suffix: "Province", label: "Province", options: address.Province },
+  {
+    suffix: "Municipality",
+    label: "Municipality / City",
+    options: Object.values(address.City).flat(),
+  },
+  { suffix: "Barangay", label: "Barangay" },
+  { suffix: "Details", label: "Purok / House # / Street" },
+];
+
 export default function AddressFields({
   label = "Address",
-  purokName,
-  barangayName,
-  purokValue,
-  barangayValue,
+  baseKey,
+  values,
   onChange,
   onBlur,
   error,
@@ -23,27 +34,35 @@ export default function AddressFields({
       </p>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <input
-          id={purokName}
-          name={purokName}
-          value={purokValue}
-          onChange={onChange}
-          onBlur={onBlur}
-          placeholder="Purok"
-          aria-label={`${label} — Purok`}
-          className={inputClass}
-        />
-
-        <input
-          id={barangayName}
-          name={barangayName}
-          value={barangayValue}
-          onChange={onChange}
-          onBlur={onBlur}
-          placeholder="Barangay"
-          aria-label={`${label} — Barangay`}
-          className={inputClass}
-        />
+        {fields.map(({ suffix, label: fieldLabel, options }) => {
+          const name = `${baseKey}${suffix}`;
+          const listId = `${name}-options`;
+          return (
+            <div key={suffix}>
+              <label htmlFor={name} className="mb-1 block text-xs font-semibold text-slate-600">
+                {fieldLabel}
+                {required && suffix !== "Details" && <span className="text-red-500"> *</span>}
+              </label>
+              <input
+                id={name}
+                name={name}
+                value={values[name] || ""}
+                onChange={onChange}
+                onBlur={onBlur}
+                placeholder={`Select or enter ${fieldLabel.toLowerCase()}`}
+                aria-label={`${label} — ${fieldLabel}`}
+                list={options?.length ? listId : undefined}
+                required={required && suffix !== "Details"}
+                className={inputClass}
+              />
+              {options?.length ? (
+                <datalist id={listId}>
+                  {options.map((option) => <option key={option} value={option} />)}
+                </datalist>
+              ) : null}
+            </div>
+          );
+        })}
       </div>
 
       {error ? <p className="mt-1.5 text-xs text-red-600">{error}</p> : null}

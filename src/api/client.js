@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "../config/api.js";
 import { compressImage, compressImages } from "../utils/compressImage.js";
+import { toDayKey } from "../utils/dateKeys.js";
 
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 const MAX_RETRIES = 3;
@@ -257,7 +258,7 @@ export const apiClient = {
    * const records = await apiClient.getAttendance(new Date());
    */
   async getAttendance(date) {
-    const dateString = date instanceof Date ? date.toISOString().split("T")[0] : date;
+    const dateString = date instanceof Date ? toDayKey(date) : date;
     // allow callers to pass fetch options (e.g., signal)
     const options = arguments[1] || {};
     return fetchWithRetry(`${API_BASE_URL}/api/attendance?date=${dateString}`, {
@@ -279,7 +280,7 @@ export const apiClient = {
    */
   async updateAttendance(studentId, date, status) {
     const dateString = date instanceof Date
-      ? date.toISOString().split('T')[0]
+      ? toDayKey(date)
       : date;
     return fetchWithRetry(`${API_BASE_URL}/api/attendance/${studentId}`, {
       method: "PUT",

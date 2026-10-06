@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import SettingToggle from "../../../components/ui/SettingToggle";
-import { Bell, CalendarDays, Mail, Shield } from "lucide-react";
+import { Bell, Mail } from "lucide-react";
 import { apiClient } from "@api/client.js";
 import { useAuth } from "@hooks/useAuth.js";
 import { useToast } from "@hooks/useToast.js";
@@ -19,21 +18,6 @@ const CHANNEL_LABELS = {
 };
 
 export default function NotificationSettings() {
-  // Email, SMS and push are real (they decide what the backend actually
-  // sends). The toggles below are still local-only for now.
-  const [settings, setSettings] = useState({
-    systemAlerts: true,
-    activityUpdates: true,
-    securityNotifications: true,
-  });
-
-  const handleSettingChange = (key) => {
-    setSettings((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
   const showToast = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -225,34 +209,6 @@ export default function NotificationSettings() {
             checked={deviceSubscribed}
             onChange={handlePushChange}
             disabled={!pushAvailable || pushKeyLoading || deviceLoading || pushBusy}
-          />
-        </SettingsSection>
-
-        <SettingsSection icon={Shield} title="System">
-          <SettingToggle
-            id="system-alerts"
-            label="System Alerts"
-            description="Get notified about system and maintenance updates"
-            checked={settings.systemAlerts}
-            onChange={() => handleSettingChange("systemAlerts")}
-          />
-
-          <SettingToggle
-            id="activity-updates"
-            label="Activity Updates"
-            description="Receive updates about school activities and events"
-            checked={settings.activityUpdates}
-            onChange={() => handleSettingChange("activityUpdates")}
-          />
-        </SettingsSection>
-
-        <SettingsSection icon={CalendarDays} title="School Activities">
-          <SettingToggle
-            id="security-notifications"
-            label="Security Notifications"
-            description="Get alerts about suspicious activity on your account"
-            checked={settings.securityNotifications}
-            onChange={() => handleSettingChange("securityNotifications")}
           />
         </SettingsSection>
       </div>

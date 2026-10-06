@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useAuth } from "@hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import StudentFilters from "@features/students/components/StudentFilters";
 import StudentMobileList from "@features/students/components/StudentMobileList";
@@ -17,6 +18,7 @@ const ITEMS_PER_PAGE = 10;
 
 export default function StudentInfo() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [importOpen, setImportOpen] = useState(false);
 
   const {
@@ -154,6 +156,7 @@ export default function StudentInfo() {
         <ImportStudentsModal
           onCancel={() => setImportOpen(false)}
           onImported={() => refetch()}
+          isAdmin={user?.role === "Admin"}
         />
       )}
     </main>

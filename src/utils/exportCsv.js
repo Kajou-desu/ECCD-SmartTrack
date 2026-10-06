@@ -17,12 +17,35 @@ export function escapeCsvValue(value) {
     return `"${text.replace(/"/g, '""')}"`;
 }
 
+// Marks a cell as text so Excel does not turn "09171234567" into 9171234567.
+// Written as ="09171234567". Only used for values made purely of phone
+// characters (digits + - ( ) and spaces), which cannot contain a quote or any
+// other formula syntax; anything else falls back to the normal escaped cell.
+const PHONE_CHARS = /^[0-9+\-\s()]+$/;
+
+export function csvText(value) {
+    return { csvText: String(value ?? "") };
+}
+
+function toCell(value) {
+    if (value && typeof value === "object" && "csvText" in value) {
+        const text = value.csvText;
+        return PHONE_CHARS.test(text) ? `="${text}"` : escapeCsvValue(text);
+    }
+    return escapeCsvValue(value);
+}
+
+// UTF-8 byte-order mark: without it Excel reads the file as ANSI and garbles
+// accented names (Peña, Niño).
+const UTF8_BOM = "\uFEFF";
+
 // Triggers a client-side CSV download. No backend involved.
 export function downloadCsv(filename, headers, rows) {
-    const csvRows = rows.map((row) => row.map(escapeCsvValue).join(","));
-    const csv = [headers.join(","), ...csvRows].join("\n");
+    const csvRows = rows.map((row) => row.map(toCell).join(","));
+    // RFC 4180 line endings; headers quoted like every other cell.
+    const csv = [headers.map(escapeCsvValue).join(","), ...csvRows].join("\r\n");
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([UTF8_BOM, csv], { type: "text/csv;charset=utf-8;" });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;

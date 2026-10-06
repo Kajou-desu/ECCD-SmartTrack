@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@hooks/useAuth";
 import { apiClient } from "@api/client.js";
+import { getErrorMessage } from "@api/errorMessage.js";
 import { LoginSchema, PasswordResetSchema } from "@validation/auth.js";
 import logo from "@assets/ECCDST_Logo.png";
 import { Eye, EyeOff } from "lucide-react";
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 export default function Login() {
   const { login } = useAuth();
@@ -22,6 +25,16 @@ export default function Login() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [forgotEmail, setForgotEmail] = useState("");
+  // Seconds until a new code may be requested. Matches the server's 60 s
+  // cooldown; without it, tapping "Get OTP Code" again looked like a resend
+  // but the server would not issue a new one.
+  const [resendSeconds, setResendSeconds] = useState(0);
+
+  useEffect(() => {
+    if (resendSeconds <= 0) return undefined;
+    const timer = setTimeout(() => setResendSeconds((n) => n - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendSeconds]);
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
@@ -58,8 +71,7 @@ export default function Login() {
       login(result.token, result.user);
       navigate(from, { replace: true });
     } catch (err) {
-      const message = err?.message || "Login failed";
-      setError(err?.status === 401 ? "Invalid email or password" : message);
+      setError(err?.status === 401 ? "Invalid email or password" : getErrorMessage(err, "Login failed"));
     } finally {
       setLoading(false);
     }
@@ -79,8 +91,9 @@ export default function Login() {
       const result = await apiClient.requestPasswordReset(forgotEmail);
       setSuccessMessage(result.message || "Verification code sent.");
       setViewMode("reset");
+      setResendSeconds(RESEND_COOLDOWN_SECONDS);
     } catch (err) {
-      setError(err?.message || "Failed to dispatch code.");
+      setError(getErrorMessage(err, "Failed to dispatch code."));
     } finally {
       setLoading(false);
     }
@@ -101,7 +114,22 @@ export default function Login() {
       setViewMode("login");
       resetResetForm();
     } catch (err) {
-      setError(err?.message || "Reset rejected.");
+      setError(getErrorMessage(err, "Reset rejected."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
+    try {
+      const result = await apiClient.requestPasswordReset(forgotEmail);
+      setSuccessMessage(result.message || "Verification code sent.");
+      setResendSeconds(RESEND_COOLDOWN_SECONDS);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to dispatch code."));
     } finally {
       setLoading(false);
     }
@@ -115,6 +143,7 @@ export default function Login() {
     // Clear forgot email when leaving forgot/reset flows
     if (mode === "login") {
       setForgotEmail("");
+      setResendSeconds(0);
       resetResetForm();
     }
   };
@@ -482,6 +511,17 @@ export default function Login() {
                   </p>
                 )}
               </div>
+
+              {forgotEmail && (
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={loading || resendSeconds > 0}
+                  className="text-xs font-semibold text-[#C2570C] hover:underline disabled:text-slate-400 disabled:no-underline"
+                >
+                  {resendSeconds > 0 ? `Resend code in ${resendSeconds}s` : "Didn't get a code? Resend"}
+                </button>
+              )}
 
               <div className="flex gap-3 pt-2">
                 <button

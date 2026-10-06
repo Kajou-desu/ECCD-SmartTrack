@@ -10,6 +10,7 @@ import {
 } from "@features/eventPhotos/utils/photoValidation";
 import { SMS_ROLES, PH_MOBILE_HINT } from "@features/accounts/utils/accountUtils.js";
 import { UserRound, Camera, Mail, Phone, Loader2 } from "lucide-react";
+import { getErrorMessage } from "@api/errorMessage.js";
 
 export default function ProfileSettings({ onNotify }) {
   const fileInputRef = useRef(null);
@@ -52,7 +53,7 @@ export default function ProfileSettings({ onNotify }) {
       updateUser({ profilePicture: updated.profilePicture });
       onNotify?.("success", "Profile photo updated.");
     } catch (err) {
-      onNotify?.("error", err.message || "Failed to upload photo. Please try again.");
+      onNotify?.("error", getErrorMessage(err, "Failed to upload photo. Please try again."));
     } finally {
       setUploadingPhoto(false);
     }
@@ -84,7 +85,9 @@ export default function ProfileSettings({ onNotify }) {
         middleName: profile.middleName.trim(),
         lastName: profile.lastName.trim(),
         email: profile.email.trim(),
-        phone: profile.phone.trim() || undefined,
+        // "" clears the number (the backend reads it that way); `|| undefined`
+        // dropped the key, so an emptied field was silently kept.
+        phone: profile.phone.trim(),
         ...(emailChanged && { currentPassword }),
       });
       setCurrentPassword("");
@@ -101,7 +104,7 @@ export default function ProfileSettings({ onNotify }) {
     } catch (err) {
       onNotify?.(
         "error",
-        err?.details?.message || "Failed to update profile. Please try again.",
+        getErrorMessage(err, "Failed to update profile. Please try again."),
       );
     } finally {
       setSaving(false);

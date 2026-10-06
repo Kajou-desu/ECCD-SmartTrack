@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { exceedsMaxPasswordBytes, MAX_PASSWORD_MESSAGE } from "./passwordLimits.js";
 
 export const LoginSchema = z.object({
   email: z
@@ -25,6 +26,7 @@ export const PasswordResetSchema = z
     newPassword: z
       .string({ required_error: "Password is required" })
       .min(10, "Password must be at least 10 characters")
+      .refine((value) => !exceedsMaxPasswordBytes(value), MAX_PASSWORD_MESSAGE)
       .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
       .regex(/[0-9]/, "Password must contain at least one number")
       .regex(/[!@#$%^&*]/, "Password must contain at least one special character"),

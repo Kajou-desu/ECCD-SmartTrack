@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@hooks/useAuth";
 import { apiClient } from "@api/client.js";
+import { exceedsMaxPasswordBytes, MAX_PASSWORD_MESSAGE } from "@validation/passwordLimits.js";
 import { Lock, ShieldQuestionMark, EyeOff, Eye, Save, Loader2 } from "lucide-react";
 
 export default function SecuritySettings({ onNotify }) {
@@ -60,6 +61,10 @@ export default function SecuritySettings({ onNotify }) {
       onNotify?.("error", "Password must be at least 10 characters.");
       return;
     }
+    if (exceedsMaxPasswordBytes(password.new)) {
+      onNotify?.("error", MAX_PASSWORD_MESSAGE);
+      return;
+    }
 
     setSaving(true);
     try {
@@ -117,6 +122,7 @@ export default function SecuritySettings({ onNotify }) {
     password.new &&
     password.confirm &&
     passwordsMatch &&
+    !exceedsMaxPasswordBytes(password.new) &&
     Object.values(passwordChecks).every(Boolean);
 
   return (

@@ -2,19 +2,16 @@ import { useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { X, Trash2, Plus } from "lucide-react";
-
-function splitAddress(address) {
-  if (!address) return { street: "", barangay: "" };
-  const [street = "", ...rest] = address.split(",");
-  return { street: street.trim(), barangay: rest.join(",").trim() };
-}
+import { combineAddress, splitAddress } from "../../utils/address.js";
 
 function toFormGuardian(guardian) {
-  const { street, barangay } = splitAddress(guardian.address);
+  const { province, municipality, barangay, details } = splitAddress(guardian.address);
   return {
     ...guardian,
-    street: guardian.street ?? street,
+    province: guardian.province ?? province,
+    municipality: guardian.municipality ?? municipality,
     barangay: guardian.barangay ?? barangay,
+    details: guardian.street ?? details,
   };
 }
 
@@ -25,8 +22,10 @@ function makeEmptyGuardian() {
     name: "",
     phone: "",
     email: "",
-    street: "",
+    province: "",
+    municipality: "",
     barangay: "",
+    details: "",
     isPrimary: false,
   };
 }
@@ -102,10 +101,15 @@ export default function EditGuardiansModal({ guardians, onCancel, onSave }) {
     onSave(
       rows
         .filter((row) => row.name.trim())
-        .map(({ street, barangay, ...row }) => ({
+        .map(({ province, municipality, barangay, details, street, ...row }) => ({
           ...row,
           name: row.name.trim(),
-          address: [street.trim(), barangay.trim()].filter(Boolean).join(", "),
+          address: combineAddress({
+            province,
+            municipality,
+            barangay,
+            details: details ?? street,
+          }),
         })),
     );
   };
@@ -227,31 +231,25 @@ export default function EditGuardiansModal({ guardians, onCancel, onSave }) {
                   />
                 </label>
 
-                <label className="text-xs font-semibold text-slate-600">
-                  Street/Purok <span className="text-red-500">*</span>
-                  <input
-                    type="text"
-                    value={row.street}
-                    onChange={(e) => updateRow(index, "street", e.target.value)}
-                    required
-                    placeholder="e.g. Purok 1"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                  />
-                </label>
-
-                <label className="text-xs font-semibold text-slate-600">
-                  Barangay <span className="text-red-500">*</span>
-                  <input
-                    type="text"
-                    value={row.barangay}
-                    onChange={(e) =>
-                      updateRow(index, "barangay", e.target.value)
-                    }
-                    required
-                    placeholder="e.g. Poblacion"
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                  />
-                </label>
+                {[
+                  ["province", "Province"],
+                  ["municipality", "Municipality / City"],
+                  ["barangay", "Barangay"],
+                  ["details", "Purok / House # / Street"],
+                ].map(([field, label]) => (
+                  <label key={field} className="text-xs font-semibold text-slate-600">
+                    {label}
+                    {field !== "details" && <span className="text-red-500"> *</span>}
+                    <input
+                      type="text"
+                      value={row[field]}
+                      onChange={(event) => updateRow(index, field, event.target.value)}
+                      required={field !== "details"}
+                      placeholder={label}
+                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                    />
+                  </label>
+                ))}
               </div>
 
               <label className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-600">

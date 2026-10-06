@@ -1,3 +1,5 @@
+import { combineAddress } from "../../students/utils/address.js";
+
 export const INITIAL_FORM = {
     firstName: "",
     middleName: "",
@@ -6,6 +8,10 @@ export const INITIAL_FORM = {
     password: "",
     phone: "",
     address: "",
+    addressProvince: "",
+    addressMunicipality: "",
+    addressBarangay: "",
+    addressDetails: "",
     // Which ECCD center a Teacher account is based at; not shown/used for
     // other roles.
     centerLocation: "",
@@ -21,6 +27,10 @@ export const INITIAL_EDIT_FORM = {
     email: "",
     phone: "",
     address: "",
+    addressProvince: "",
+    addressMunicipality: "",
+    addressBarangay: "",
+    addressDetails: "",
     centerLocation: "",
     role: "Parent",
     studentIds: [],
@@ -167,6 +177,12 @@ export function createAccountPayload(formData) {
         firstName: formData.firstName.trim(),
         middleName: formData.middleName.trim(),
         lastName: formData.lastName.trim(),
+        address: combineAddress({
+            province: formData.addressProvince,
+            municipality: formData.addressMunicipality,
+            barangay: formData.addressBarangay,
+            details: formData.addressDetails,
+        }),
         centerLocation: (formData.centerLocation ?? "").trim(),
         role: normalizeRole(formData.role),
         studentIds: formData.studentIds ?? [],
@@ -181,7 +197,12 @@ export function updateAccountPayload(formData) {
         lastName: formData.lastName.trim(),
         email: formData.email.trim().toLowerCase(),
         phone: formData.phone.trim(),
-        address: formData.address.trim(),
+        address: combineAddress({
+            province: formData.addressProvince,
+            municipality: formData.addressMunicipality,
+            barangay: formData.addressBarangay,
+            details: formData.addressDetails,
+        }),
         centerLocation: (formData.centerLocation ?? "").trim(),
         role: normalizeRole(formData.role),
         studentIds: formData.studentIds ?? [],
