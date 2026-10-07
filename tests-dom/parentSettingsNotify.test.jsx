@@ -32,7 +32,7 @@ describe("ParentSettings feedback", () => {
 
   it("shows a password change error to the parent", () => {
     render(<ParentSettings />);
-    fireEvent.click(screen.getByRole("button", { name: "Security" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Security" }));
     fireEvent.click(screen.getByRole("button", { name: "save-password" }));
     expect(screen.getByText("Failed to update password.")).toBeTruthy();
   });

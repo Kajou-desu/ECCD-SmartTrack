@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ImagePlus, CheckCircle2 } from "lucide-react";
 import ErrorMsg from "@components/ui/ErrorMsg";
-import { PrimaryButton } from "@components/ui/Button";
+import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { apiClient, ApiError } from "@api/client.js";
 
 const MAX_PHOTOS = 8;
@@ -51,6 +51,8 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
   // while loading or when the service couldn't be reached.
   const [saved, setSaved] = useState({ urls: [], loaded: false });
   const [reloadKey, setReloadKey] = useState(0);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -90,6 +92,9 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
     setResult(null);
     if (selected.length === 0) return;
     if (selected.length > MAX_PHOTOS) {
+      // Drop the earlier selection too, so it can't be uploaded by mistake
+      // while the error says the new choice was refused.
+      reset();
       setError(`Choose at most ${MAX_PHOTOS} photos.`);
       return;
     }
@@ -123,6 +128,22 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
     }
   };
 
+  const handleRemove = async () => {
+    setRemoving(true);
+    setError("");
+    try {
+      await apiClient.deleteEnrollmentPhotos(studentId);
+      setResult(null);
+      setConfirmingRemove(false);
+      setSaved({ urls: [], loaded: false }); // old blob URLs are revoked on reload
+      setReloadKey((key) => key + 1);
+    } catch (err) {
+      setError(describeEnrollmentError(err));
+    } finally {
+      setRemoving(false);
+    }
+  };
+
   return (
     <section
       aria-label="Face recognition enrollment"
@@ -145,9 +166,7 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
         <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           <CheckCircle2 className="h-5 w-5 shrink-0" />
           <span>
-            {result.enrolled
-              ? enrolledMessage(result)
-              : `${result.photosReceived} photo${result.photosReceived === 1 ? "" : "s"} received, but none had a single clear face — try different photos.`}
+            {enrolledMessage(result)}
           </span>
         </div>
       )}
@@ -203,7 +222,23 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
           onClick={handleUpload}
           disabled={files.length === 0 || uploading}
         />
+        {saved.urls.length > 0 && !confirmingRemove && (
+          <SecondaryButton label="Remove enrolled photos" onClick={() => setConfirmingRemove(true)} />
+        )}
       </div>
+
+      {confirmingRemove && (
+        <div role="alertdialog" aria-label="Confirm removal" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <p className="font-semibold">Remove this child&apos;s enrolled face photos?</p>
+          <p className="mt-1">
+            Their face will no longer be recognised for attendance until new photos are enrolled. This cannot be undone.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <PrimaryButton label={removing ? "Removing…" : "Yes, remove"} onClick={handleRemove} disabled={removing} />
+            <SecondaryButton label="Cancel" onClick={() => setConfirmingRemove(false)} disabled={removing} />
+          </div>
+        </div>
+      )}
     </section>
   );
 }

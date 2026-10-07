@@ -3,8 +3,9 @@ import ProfileSettings from "@features/settings/components/ProfileSettings.jsx";
 import SecuritySettings from "@features/settings/components/SecuritySettings.jsx";
 import NotificationSettings from "@features/settings/components/NotificationSettings.jsx";
 import AccountSettings from "@features/settings/components/AccountSettings.jsx";
+import { SettingsTabs, SettingsTabPanel } from "@features/settings/components/SettingsTabs.jsx";
 import { Toast } from "@components/ui/Toast.jsx";
-import { UserRound, Bell, Lock } from "lucide-react";
+import { UserRound, Bell, Lock, Settings as SettingsIcon } from "lucide-react";
 
 export default function ParentSettings() {
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -31,7 +32,7 @@ export default function ParentSettings() {
     {
       id: "account",
       label: "Account",
-      icon: UserRound,
+      icon: SettingsIcon,
     },
   ];
 
@@ -45,26 +46,7 @@ export default function ParentSettings() {
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-sm">
-        <div className="flex flex-wrap justify-center items-center gap-2">
-          {tabs.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200
-          ${
-            activeTab === id
-              ? "bg-[#C2570C] text-white shadow-sm"
-              : "text-gray-600 hover:bg-orange-50 hover:text-[#C2570C]"
-          }`}
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <SettingsTabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
       {/* Message Toast */}
       {message.text && (
@@ -76,31 +58,31 @@ export default function ParentSettings() {
       )}
 
       {activeTab === "profile" && (
-        <div className="w-full">
+        <SettingsTabPanel id="profile" className="w-full">
           {/* Profile Card */}
           <ProfileSettings onNotify={notify} />
-        </div>
+        </SettingsTabPanel>
       )}
 
       {activeTab === "security" && (
-        <div className="w-full sm:max-w-3xl sm:mx-auto">
+        <SettingsTabPanel id="security" className="w-full sm:max-w-3xl sm:mx-auto">
           {/* Change Password */}
           <SecuritySettings onNotify={notify} />
-        </div>
+        </SettingsTabPanel>
       )}
 
       {activeTab === "notifications" && (
-        <div className="w-full sm:mx-auto">
+        <SettingsTabPanel id="notifications" className="w-full sm:mx-auto">
           {/* Notification Settings */}
           <NotificationSettings />
-        </div>
+        </SettingsTabPanel>
       )}
 
       {activeTab === "account" && (
-        <div className="w-full sm:max-w-3xl sm:mx-auto">
+        <SettingsTabPanel id="account" className="w-full sm:max-w-3xl sm:mx-auto">
           {/* Account Information */}
           <AccountSettings />
-        </div>
+        </SettingsTabPanel>
       )}
     </div>
   );

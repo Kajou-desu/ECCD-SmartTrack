@@ -27,6 +27,8 @@ function contentSecurityPolicy(apiUrl) {
     "default-src 'self'",
     "script-src 'self'", // no inline script, no eval, no third-party script
     "style-src 'self' 'unsafe-inline'", // React inline style={} attributes need this
+    // NOTE: if files ever move to S3/CDN presigned URLs, that origin must be
+    // added to img-src, frame-src and connect-src, or images and PDFs will be blocked.
     `img-src 'self' data: blob: ${apiOrigin}`, // blob: = upload previews; API = photos/documents
     "font-src 'self' data:",
     `connect-src 'self' ${apiOrigin} https://api.open-meteo.com`, // API + the weather widget
@@ -57,12 +59,14 @@ function cspPlugin(apiUrl) {
 }
 
 export default defineConfig(({ mode }) => {
-  // Same fallback as src/config/api.js.
-  const apiUrl =
-    loadEnv(mode, __dirname, "VITE_").VITE_API_URL ||
-    (mode === "production"
-      ? "https://eccd-backend-production.up.railway.app"
-      : "http://localhost:4000");
+  // A production build must name its backend explicitly: the CSP below is
+  // generated from it, and silently falling back to a hard-coded host would
+  // ship a policy (and an API target) nobody chose. Dev keeps the localhost default.
+  const configured = loadEnv(mode, __dirname, "VITE_").VITE_API_URL;
+  if (mode === "production" && !configured) {
+    throw new Error("VITE_API_URL must be set for production builds.");
+  }
+  const apiUrl = configured || "http://localhost:4000";
 
   return {
   plugins: [react(), tailwindcss(), cspPlugin(apiUrl)],

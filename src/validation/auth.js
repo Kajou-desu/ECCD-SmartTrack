@@ -26,10 +26,10 @@ export const PasswordResetSchema = z
     newPassword: z
       .string({ required_error: "Password is required" })
       .min(10, "Password must be at least 10 characters")
-      .refine((value) => !exceedsMaxPasswordBytes(value), MAX_PASSWORD_MESSAGE)
       .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
       .regex(/[0-9]/, "Password must contain at least one number")
-      .regex(/[!@#$%^&*]/, "Password must contain at least one special character"),
+      .regex(/[!@#$%^&*]/, "Password must contain at least one special character")
+      .refine((value) => !exceedsMaxPasswordBytes(value), MAX_PASSWORD_MESSAGE),
     confirmPassword: z.string({ required_error: "Confirmation is required" }),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

@@ -90,6 +90,13 @@ export default function Login() {
 
       const result = await apiClient.requestPasswordReset(forgotEmail);
       setSuccessMessage(result.message || "Verification code sent.");
+      // Carry the email over so it doesn't have to be typed twice.
+      resetResetForm({
+        email: forgotEmail.trim().toLowerCase(),
+        otpCode: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
       setViewMode("reset");
       setResendSeconds(RESEND_COOLDOWN_SECONDS);
     } catch (err) {

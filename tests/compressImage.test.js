@@ -130,3 +130,46 @@ test("compressImages keeps order and decodes one image at a time", async () => {
   assert.deepEqual(out.map((f) => f.name), ["a.jpg", "b.jpg", "c.jpg", "d.jpg"]);
   assert.equal(maxInFlight, 1);
 });
+
+test("decodes through an <img> (which applies EXIF orientation) when createImageBitmap is missing", async () => {
+  delete globalThis.createImageBitmap;
+  let revoked = 0;
+  const realRevoke = URL.revokeObjectURL;
+  URL.revokeObjectURL = (...args) => {
+    revoked += 1;
+    return realRevoke.apply(URL, args);
+  };
+  globalThis.Image = class {
+    set src(_value) {
+      this.naturalWidth = 4000;
+      this.naturalHeight = 3000;
+      queueMicrotask(() => this.onload());
+    }
+  };
+  try {
+    const out = await compressImage(fakeFile("sideways.jpg", "image/jpeg", 5000));
+    assert.equal(out.type, "image/jpeg");
+    assert.ok(out.size < 5000);
+    // Drawn at the resized, upright dimensions.
+    assert.deepEqual(calls.draw[0], ["draw", 2000, 1500]);
+    assert.equal(revoked, 1);
+  } finally {
+    delete globalThis.Image;
+    URL.revokeObjectURL = realRevoke;
+  }
+});
+
+test("falls back to the original when the <img> cannot decode the file", async () => {
+  delete globalThis.createImageBitmap;
+  globalThis.Image = class {
+    set src(_value) {
+      queueMicrotask(() => this.onerror(new Error("bad image")));
+    }
+  };
+  try {
+    const file = fakeFile("broken.jpg", "image/jpeg", 5000);
+    assert.equal(await compressImage(file), file);
+  } finally {
+    delete globalThis.Image;
+  }
+});

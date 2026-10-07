@@ -213,7 +213,7 @@ export default function AccountForm({
             placeholder="••••••••"
             className={inputClass}
             autoComplete="new-password"
-            minLength={6}
+            minLength={10}
             required
           />
         </FormField>

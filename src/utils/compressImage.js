@@ -32,6 +32,34 @@ function withJpgExtension(name) {
   return `${dot > 0 ? name.slice(0, dot) : name}.jpg`;
 }
 
+// Decodes the file so it can be drawn on a canvas, upright. createImageBitmap
+// is preferred; without it an <img> is used, because browsers apply the photo's
+// EXIF orientation to <img> by default. Either way the result is rotated the
+// way the photo is meant to be seen: a phone photo that is stored sideways with
+// an EXIF flag must not be sent sideways (face detection ignores EXIF).
+// Resolves to null when the browser can do neither.
+async function decodeImage(file) {
+  if (typeof createImageBitmap === "function") {
+    const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+    return { drawable: bitmap, width: bitmap.width, height: bitmap.height, close: () => bitmap.close?.() };
+  }
+  if (typeof Image === "undefined" || typeof URL === "undefined" || typeof URL.createObjectURL !== "function") {
+    return null;
+  }
+  const url = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = reject;
+      image.src = url;
+    });
+    return { drawable: image, width: image.naturalWidth, height: image.naturalHeight, close: () => {} };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 // Returns a smaller JPEG File, or the ORIGINAL file untouched whenever
 // compressing isn't possible or wouldn't help (not a compressible image,
 // browser lacks the APIs, image fails to decode, or the result isn't
@@ -44,12 +72,13 @@ export async function compressImage(
   if (typeof File === "undefined" || !(file instanceof File) || !COMPRESSIBLE_TYPES.has(file.type)) {
     return file;
   }
-  if (typeof createImageBitmap !== "function" || typeof document === "undefined") return file;
+  if (typeof document === "undefined") return file;
 
-  let bitmap;
+  let decoded;
   try {
-    bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
-    const { width, height } = targetSize(bitmap.width, bitmap.height, maxDimension);
+    decoded = await decodeImage(file);
+    if (!decoded) return file;
+    const { width, height } = targetSize(decoded.width, decoded.height, maxDimension);
 
     const canvas = document.createElement("canvas");
     canvas.width = width;
@@ -61,7 +90,7 @@ export async function compressImage(
     // areas would come out black.
     context.fillStyle = "#fff";
     context.fillRect(0, 0, width, height);
-    context.drawImage(bitmap, 0, 0, width, height);
+    context.drawImage(decoded.drawable, 0, 0, width, height);
 
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
     if (!blob || blob.size >= file.size) return file;
@@ -73,7 +102,7 @@ export async function compressImage(
   } catch {
     return file;
   } finally {
-    bitmap?.close?.();
+    decoded?.close();
   }
 }
 

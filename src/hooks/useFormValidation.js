@@ -32,7 +32,9 @@ export function useFormValidation(initialValues, onSubmit, schema) {
         if (error.errors) {
           const newErrors = {};
           error.errors.forEach(({ path, message }) => {
-            newErrors[path[0]] = message;
+            // Form-level rules (a refine with no path) have no field to attach
+            // to; they go under "_form" instead of an "undefined" key.
+            newErrors[path.length ? path[0] : "_form"] = message;
           });
           setErrors(newErrors);
           setTouched(

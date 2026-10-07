@@ -8,21 +8,26 @@ import {
   MAX_PHOTO_FILE_SIZE_BYTES,
   formatFileSize,
 } from "@features/eventPhotos/utils/photoValidation";
-import { SMS_ROLES, PH_MOBILE_HINT } from "@features/accounts/utils/accountUtils.js";
+import { SMS_ROLES, PH_MOBILE_HINT, toTenDigitPhone } from "@features/accounts/utils/accountUtils.js";
 import { UserRound, Camera, Mail, Phone, Loader2 } from "lucide-react";
 import { getErrorMessage } from "@api/errorMessage.js";
+
+const toForm = (user) => ({
+  firstName: user.firstName ?? "",
+  middleName: user.middleName ?? "",
+  lastName: user.lastName ?? "",
+  email: user.email,
+  phone: user.phone ?? "",
+});
 
 export default function ProfileSettings({ onNotify }) {
   const fileInputRef = useRef(null);
   const { user, updateUser } = useAuth();
 
-  const [profile, setProfile] = useState({
-    firstName: user.firstName ?? "",
-    middleName: user.middleName ?? "",
-    lastName: user.lastName ?? "",
-    email: user.email,
-    phone: user.phone ?? "",
-  });
+  // Form state is only a draft: it is seeded from `user` when editing starts,
+  // and the read-only view always shows the current `user`.
+  const [profile, setProfile] = useState(() => toForm(user));
+  const [phoneError, setPhoneError] = useState("");
 
   const [profileEditMode, setProfileEditMode] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -59,7 +64,14 @@ export default function ProfileSettings({ onNotify }) {
     }
   };
 
+  const startEditing = () => {
+    setProfile(toForm(user));
+    setPhoneError("");
+    setProfileEditMode(true);
+  };
+
   const handleProfileChange = (field, value) => {
+    if (field === "phone") setPhoneError("");
     setProfile((prev) => ({
       ...prev,
       [field]: value,
@@ -77,6 +89,15 @@ export default function ProfileSettings({ onNotify }) {
       onNotify?.("error", "Enter your current password to change your email.");
       return;
     }
+    const phone = profile.phone.trim();
+    if (
+      phone &&
+      SMS_ROLES.includes(user.role) &&
+      !/^9\d{9}$/.test(toTenDigitPhone(phone))
+    ) {
+      setPhoneError("Enter a valid Philippine mobile number, e.g. 0917 123 4567.");
+      return;
+    }
     setSaving(true);
 
     try {
@@ -85,9 +106,8 @@ export default function ProfileSettings({ onNotify }) {
         middleName: profile.middleName.trim(),
         lastName: profile.lastName.trim(),
         email: profile.email.trim(),
-        // "" clears the number (the backend reads it that way); `|| undefined`
-        // dropped the key, so an emptied field was silently kept.
-        phone: profile.phone.trim(),
+        // '' clears a saved phone; omit it when there was never one.
+        phone: phone || (user.phone ? "" : undefined),
         ...(emailChanged && { currentPassword }),
       });
       setCurrentPassword("");
@@ -158,7 +178,7 @@ export default function ProfileSettings({ onNotify }) {
 
             <p className="text-sm text-gray-500">{user.role}</p>
 
-            <p className="text-sm text-gray-500">{profile.email}</p>
+            <p className="text-sm text-gray-500">{user.email}</p>
           </div>
           <div className="flex gap-3">
             <button
@@ -172,7 +192,7 @@ export default function ProfileSettings({ onNotify }) {
 
             <button
               type="button"
-              onClick={() => setProfileEditMode(true)}
+              onClick={startEditing}
               className="cursor-pointer px-5 py-2.5 rounded-xl bg-[#C2570C] text-white font-medium hover:bg-orange-800 transition"
             >
               Edit Profile
@@ -230,7 +250,7 @@ export default function ProfileSettings({ onNotify }) {
                 </div>
 
                 <p className="mt-4 text-base font-semibold text-gray-900 break-all">
-                  {profile.email}
+                  {user.email}
                 </p>
               </div>
               <div className="rounded-2xl border border-gray-200 p-5 hover:border-[#C2570C] hover:shadow-md transition-all duration-200">
@@ -242,7 +262,7 @@ export default function ProfileSettings({ onNotify }) {
                 </div>
 
                 <p className="mt-4 text-base font-semibold text-gray-900">
-                  {profile.phone || "—"}
+                  {user.phone || "—"}
                 </p>
               </div>
             </div>
@@ -329,12 +349,22 @@ export default function ProfileSettings({ onNotify }) {
                   value={profile.phone}
                   onChange={(e) => handleProfileChange("phone", e.target.value)}
                   placeholder={SMS_ROLES.includes(user.role) ? "09XX-XXX-XXXX" : undefined}
-                  aria-describedby={SMS_ROLES.includes(user.role) ? "profile-phone-hint" : undefined}
+                  aria-invalid={phoneError ? true : undefined}
+                  aria-describedby={
+                    [SMS_ROLES.includes(user.role) && "profile-phone-hint", phoneError && "profile-phone-error"]
+                      .filter(Boolean)
+                      .join(" ") || undefined
+                  }
                   className="border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#C2570C] focus:ring-1 focus:ring-[#C2570C] transition"
                 />
                 {SMS_ROLES.includes(user.role) && (
                   <p id="profile-phone-hint" className="text-xs text-gray-500">
                     {PH_MOBILE_HINT}
+                  </p>
+                )}
+                {phoneError && (
+                  <p id="profile-phone-error" role="alert" className="text-xs text-red-600">
+                    {phoneError}
                   </p>
                 )}
               </div>
@@ -360,13 +390,6 @@ export default function ProfileSettings({ onNotify }) {
                   onClick={() => {
                     setProfileEditMode(false);
                     setCurrentPassword("");
-                    setProfile({
-                      firstName: user.firstName ?? "",
-                      middleName: user.middleName ?? "",
-                      lastName: user.lastName ?? "",
-                      email: user.email,
-                      phone: user.phone ?? "",
-                    });
                   }}
                   disabled={saving}
                   className="cursor-pointer border border-gray-200 text-gray-700 font-semibold py-2.5 px-6 rounded-lg hover:bg-gray-50 transition-colors flex-1 disabled:cursor-not-allowed disabled:opacity-50"

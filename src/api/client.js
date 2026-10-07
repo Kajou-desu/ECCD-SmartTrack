@@ -84,7 +84,10 @@ async function fetchWithTimeout(url, options = {}) {
     const token = getAuthToken();
     const headers = new Headers(options.headers || {});
 
-    if (token && !url.endsWith("/api/login")) {
+    // Sign-in and password-reset requests are made without a session, so a
+    // leftover token must not be sent with them.
+    const unauthenticated = /\/api\/(v1\/)?(login|auth\/(login|forgot-password|reset-password))$/.test(url);
+    if (token && !unauthenticated) {
       headers.set("Authorization", `Bearer ${token}`);
     }
 
@@ -644,6 +647,17 @@ export const apiClient = {
     return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/enrollment-photos`, {
       method: "POST",
       body: formData,
+    });
+  },
+
+  /**
+   * Erase a student's face-recognition enrollment (photos and encoding).
+   * Resolves once the server answers 204; safe to call when nothing is enrolled.
+   * @param {number|string} studentId
+   */
+  async deleteEnrollmentPhotos(studentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/enrollment-photos`, {
+      method: "DELETE",
     });
   },
 

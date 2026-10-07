@@ -49,10 +49,10 @@ export default function UploadDocumentModal({ studentId, onCancel, onSave }) {
 
     setFileError("");
     setFile(selectedFile);
-    setPreviewUrl((current) => {
-      if (current) URL.revokeObjectURL(current);
-      return URL.createObjectURL(selectedFile);
-    });
+    // The effect above revokes the previous URL when this one replaces it (and on
+    // unmount). Doing it inside a state updater would run twice under StrictMode
+    // and leak the first URL it created.
+    setPreviewUrl(URL.createObjectURL(selectedFile));
   };
 
   const handleContinue = (event) => {
@@ -73,7 +73,7 @@ export default function UploadDocumentModal({ studentId, onCancel, onSave }) {
       const newDocument = Array.isArray(created) ? created[0] : created;
       onSave(newDocument);
     } catch (err) {
-      const message = err.message || "Failed to upload the document. Please try again.";
+      const message = err?.details?.message || "Failed to upload the document. Please try again.";
       setUploadError(message);
       showToast("error", message);
     } finally {
