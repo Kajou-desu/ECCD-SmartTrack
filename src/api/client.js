@@ -1,0 +1,1073 @@
+import { API_BASE_URL } from "../config/api.js";
+import { compressImage, compressImages } from "../utils/compressImage.js";
+import { toDayKey } from "../utils/dateKeys.js";
+
+const REQUEST_TIMEOUT = 10000; // 10 seconds
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+const FILE_DOWNLOAD_TIMEOUT = 30000; // 30 seconds — files can be up to 10 MB
+const UPLOAD_TIMEOUT = 30000; // 30 seconds — FormData bodies (photos/documents) can be up to 10 MB each
+let onUnauthorized = null;
+
+export function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler;
+}
+
+function getAuthToken() {
+  return localStorage.getItem("authToken");
+}
+export class ApiError extends Error {
+  constructor(message, status, details = {}) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.details = details;
+  }
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function handleApiResponse(
+  response,
+  handleUnauthorized = true
+) {
+  const contentType = response.headers.get("content-type");
+  let data = {};
+
+  if (contentType?.includes("application/json")) {
+    data = await response.json().catch(() => ({}));
+  }
+
+  if (!response.ok) {
+    const genericMessage = "Something went wrong.";
+
+    if (response.status === 401 && handleUnauthorized) {
+      onUnauthorized?.();
+    }
+
+    throw new ApiError(
+      genericMessage,
+      response.status,
+      data
+    );
+  }
+
+  return data;
+}
+
+async function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+
+  // If caller provided an external signal, forward its abort to our internal controller
+  if (options.signal) {
+    if (options.signal.aborted) controller.abort();
+    else
+      options.signal.addEventListener("abort", () => {
+        try {
+          controller.abort();
+        } catch {
+          /* Ignore abort errors from an already-aborted controller. */
+        }
+      });
+  }
+
+  // Uploads (FormData bodies) can legitimately take longer than a plain JSON
+  // request — give them a longer fuse so a slow connection doesn't abort an
+  // upload that the server would otherwise have completed successfully.
+  const timeoutMs =
+    options.body instanceof FormData ? UPLOAD_TIMEOUT : REQUEST_TIMEOUT;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const token = getAuthToken();
+    const headers = new Headers(options.headers || {});
+
+    // Sign-in and password-reset requests are made without a session, so a
+    // leftover token must not be sent with them.
+    const unauthenticated = /\/api\/(v1\/)?(login|auth\/(login|forgot-password|reset-password))$/.test(url);
+    if (token && !unauthenticated) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    return await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function fetchWithRetry(
+  url,
+  options = {},
+  retries = MAX_RETRIES
+) {
+  const {
+    handleUnauthorized = true,
+    ...fetchOptions
+  } = options;
+
+  const method = (
+    fetchOptions.method || "GET"
+  ).toUpperCase();
+
+  const isRetryableMethod =
+    method === "GET" ||
+    method === "HEAD" ||
+    method === "OPTIONS";
+
+  try {
+    const response = await fetchWithTimeout(
+      url,
+      fetchOptions
+    );
+
+    return await handleApiResponse(
+      response,
+      handleUnauthorized
+    );
+  } catch (error) {
+    const canRetry =
+      isRetryableMethod &&
+      (
+        error.name === "AbortError" ||
+        (
+          error instanceof ApiError &&
+          error.status >= 500
+        )
+      );
+
+    if (canRetry && retries > 0) {
+      await delay(
+        RETRY_DELAY * (MAX_RETRIES - retries + 1)
+      );
+
+      return fetchWithRetry(
+        url,
+        options,
+        retries - 1
+      );
+    }
+
+    throw error;
+  }
+}
+
+function jsonHeaders() {
+  return { "Content-Type": "application/json" };
+}
+
+export const apiClient = {
+  async login(email, password) {
+    return fetchWithRetry(`${API_BASE_URL}/api/login`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({
+        email: email.toLowerCase().trim(),
+        password,
+      }),
+      handleUnauthorized: false,
+    });
+  },
+
+  async requestPasswordReset(email) {
+    return fetchWithRetry(`${API_BASE_URL}/api/auth/forgot-password`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ email: email.toLowerCase().trim() }),
+    });
+  },
+
+  async resetPassword(email, otpCode, newPassword) {
+    return fetchWithRetry(`${API_BASE_URL}/api/auth/reset-password`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ email: email.toLowerCase().trim(), otpCode, newPassword }),
+    });
+  },
+
+  async uploadFiles(files, endpoint) {
+    const formData = new FormData();
+    (await compressImages(files)).forEach((file) => formData.append("files", file));
+
+    return fetchWithRetry(`${API_BASE_URL}${endpoint}`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  async getStudents(filters = {}) {
+    const params = new URLSearchParams(filters);
+    return fetchWithRetry(`${API_BASE_URL}/api/students?${params}`, {
+      method: "GET",
+    });
+  },
+
+  async getStudent(id) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${id}`, {
+      method: "GET",
+    });
+  },
+
+  async createStudent(studentData) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(studentData),
+    });
+  },
+
+  async updateStudent(id, studentData) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${id}`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(studentData),
+    });
+  },
+
+  async importStudents(students) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/import`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ students }),
+    });
+  },
+
+  async deleteStudent(id) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  async postFormData(endpoint, formData, extraOptions = {}) {
+    return fetchWithRetry(`${API_BASE_URL}${endpoint}`, {
+      ...extraOptions,
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Fetch attendance records for a specific date
+   * @param {string|Date} date - Date in YYYY-MM-DD format or Date object
+   * @returns {Promise<Array>} Array of attendance records
+   * @example
+   * const records = await apiClient.getAttendance('2025-01-23');
+   * // or
+   * const records = await apiClient.getAttendance(new Date());
+   */
+  async getAttendance(date) {
+    const dateString = date instanceof Date ? toDayKey(date) : date;
+    // allow callers to pass fetch options (e.g., signal)
+    const options = arguments[1] || {};
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance?date=${dateString}`, {
+      method: "GET",
+      ...options,
+    });
+  },
+
+  /**
+   * Update a student's attendance status for a specific date
+   * @param {number|string} studentId - Student ID
+   * @param {string|Date} date - Date in YYYY-MM-DD format or Date object
+   * @param {string} status - Status: 'present', 'absent', or 'excused'
+   * @returns {Promise<Object>} Updated attendance record
+   * @example
+   * await apiClient.updateAttendance(1, '2025-01-23', 'present');
+   * // or
+   * await apiClient.updateAttendance(1, new Date(), 'absent');
+   */
+  async updateAttendance(studentId, date, status) {
+    const dateString = date instanceof Date
+      ? toDayKey(date)
+      : date;
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/${studentId}`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ date: dateString, status }),
+    });
+  },
+
+  /**
+   * Mark a student as departed for TODAY. The server only allows this for a
+   * student who arrived today and hasn't already departed, and it notifies
+   * the student's parents/guardians (in-app, email, SMS).
+   * @param {number|string} studentId - Student ID
+   * @returns {Promise<Object>} Updated attendance record (with departedAt)
+   */
+  async markDeparted(studentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/${studentId}/depart`, {
+      method: "PATCH",
+    });
+  },
+
+  /**
+   * Record attendance for multiple students (bulk operation)
+   * @param {Array<Object>} attendanceData - Array of attendance records
+   * @returns {Promise<Object>} Bulk operation result
+   * @example
+   * await apiClient.recordAttendance([
+   *   { studentId: 1, date: '2025-01-23', status: 'present' },
+   *   { studentId: 2, date: '2025-01-23', status: 'absent' }
+   * ]);
+   */
+  async recordAttendance(attendanceData) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(attendanceData),
+    });
+  },
+
+  /** Recorded attendance for a date range (max 92 days), optionally one student. */
+  async getAttendanceRange(from, to, studentId) {
+    const params = new URLSearchParams({ from, to });
+    if (studentId !== undefined) params.set("studentId", String(studentId));
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/range?${params}`, {
+      method: "GET",
+    });
+  },
+
+  /** CSV import. dryRun checks the rows and reports counts without saving. */
+  async importAttendance(records, dryRun = false) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/import`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ records, dryRun }),
+    });
+  },
+
+  /**
+   * Live attendance session (Start/Stop Attendance in the header). The server
+   * decides the session's date and owner; nothing is sent in the body.
+   * All three resolve to { session: {...} | null }.
+   */
+  async getAttendanceSession(options = {}) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/current`, {
+      method: "GET",
+      ...options,
+    });
+  },
+
+  async startAttendanceSession() {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/start`, {
+      method: "POST",
+    });
+  },
+
+  async stopAttendanceSession() {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/stop`, {
+      method: "POST",
+    });
+  },
+
+  /**
+   * BLE attendance tags registered to a student (teacher/admin only). The tag's
+   * address is validated again on the server; a tag belongs to exactly one student.
+   */
+  async getStudentBleDevices(studentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/ble-devices`, { method: "GET" });
+  },
+
+  async addStudentBleDevice(studentId, deviceIdentifier) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/ble-devices`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ deviceIdentifier }),
+    });
+  },
+
+  async setStudentBleDeviceEnabled(studentId, deviceId, enabled) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/ble-devices/${deviceId}`, {
+      method: "PATCH",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ enabled }),
+    });
+  },
+
+  async removeStudentBleDevice(studentId, deviceId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/ble-devices/${deviceId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Everything the live monitor shows, in one call: verified/waiting students
+   * plus whether the door tag reader and face recognition are available.
+   */
+  async getAttendanceMonitor(options = {}) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/monitor`, {
+      method: "GET",
+      ...options,
+    });
+  },
+
+  /**
+   * Sends one camera frame (a JPEG Blob) for recognition. Only pixels go up —
+   * the server decides who is in the frame. Not retried (POST): the next frame
+   * supersedes a lost one.
+   */
+  async sendAttendanceFrame(blob, options = {}) {
+    const formData = new FormData();
+    formData.append("frame", blob, "frame.jpg");
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/frame`, {
+      method: "POST",
+      body: formData,
+      signal: options.signal,
+    });
+  },
+
+  /**
+   * Fetch all photo albums (teacher + parent views share this list).
+   * @returns {Promise<Array>} Array of album records
+   */
+  async getAlbums() {
+    return fetchWithRetry(`${API_BASE_URL}/api/albums`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Create a new (empty) photo album.
+   * @param {string} title
+   * @param {{ type: "event" | "activity", id: number }} association
+   */
+  async createAlbum(title, association) {
+    return fetchWithRetry(`${API_BASE_URL}/api/albums`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({
+        title,
+        associationType: association.type,
+        associationId: association.id,
+      }),
+    });
+  },
+
+  /**
+   * Delete an album (and its photos).
+   * @param {number|string} albumId
+   */
+  async updateAlbum(albumId, payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify({
+        title: payload.title,
+        ...(payload.association && {
+          associationType: payload.association.type,
+          associationId: payload.association.id,
+        }),
+      }),
+    });
+  },
+
+  async deleteAlbum(albumId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Upload one or more photos into an album.
+   * @param {number|string} albumId
+   * @param {File[]} files
+   * @returns {Promise<Array>} Array of created photo records
+   */
+  async addAlbumPhotos(albumId, files) {
+    const formData = new FormData();
+    (await compressImages(files)).forEach((file) => formData.append("photos", file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}/photos`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Delete a single photo from an album.
+   * @param {number|string} albumId
+   * @param {number|string} photoId
+   */
+  async deleteAlbumPhoto(albumId, photoId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/albums/${albumId}/photos/${photoId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Fetch all learning materials (teacher + parent views share this list).
+   * @returns {Promise<Array>} Array of material records
+   */
+  async getMaterials() {
+    return fetchWithRetry(`${API_BASE_URL}/api/materials`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Create a new learning material.
+   * @param {Object} materialData - { title, category, description, file }
+   */
+  async createMaterial(materialData) {
+    const { file, ...fields } = materialData;
+    const formData = new FormData();
+    Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
+    if (file instanceof File) formData.append("file", await compressImage(file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/materials`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Update an existing material.
+   * @param {number|string} id
+   * @param {Object} materialData
+   */
+  async updateMaterial(id, materialData) {
+    const { file, ...fields } = materialData;
+    const formData = new FormData();
+    Object.entries(fields).forEach(([key, value]) => formData.append(key, value));
+    if (file instanceof File) formData.append("file", await compressImage(file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/materials/${id}`, {
+      method: "PUT",
+      body: formData,
+    });
+  },
+
+  /**
+   * Delete a material.
+   * @param {number|string} id
+   */
+  async deleteMaterial(id) {
+    return fetchWithRetry(`${API_BASE_URL}/api/materials/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Every student's uploaded work for one material (teacher/admin only).
+   * @param {number|string} materialId
+   * @returns {Promise<{ material: { id, title, category }, submissions: Array<{
+   *   id, studentId, studentName, fileName, fileUrl, submittedAt }> }>}
+   */
+  async getMaterialSubmissions(materialId, options = {}) {
+    return fetchWithRetry(
+      `${API_BASE_URL}/api/materials/${encodeURIComponent(materialId)}/submissions`,
+      { method: "GET", ...options },
+    );
+  },
+
+  /**
+   * Downloads a file from one of the signed URLs the API hands out, as a Blob.
+   * A Blob (rather than pointing an <iframe>/<img> at the API) lets the page
+   * preview and save the file even though the API is a different origin, and
+   * tells us whether the file is gone. The URL's signature is the credential,
+   * so no auth header is sent (nor needed).
+   * @param {string} fileUrl
+   * @returns {Promise<Blob|null>} the file, or null if it no longer exists
+   */
+  async getFileBlob(fileUrl, { signal } = {}) {
+    const controller = new AbortController();
+    if (signal?.aborted) controller.abort();
+    else signal?.addEventListener("abort", () => controller.abort(), { once: true });
+    const timeoutId = setTimeout(() => controller.abort(), FILE_DOWNLOAD_TIMEOUT);
+
+    try {
+      const response = await fetch(fileUrl, { signal: controller.signal, credentials: "omit" });
+      if (response.status === 404) return null;
+      if (!response.ok) throw new ApiError("Something went wrong.", response.status);
+      return await response.blob();
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  },
+
+  /**
+   * Fetch a child's submitted/completed work for materials.
+   * @param {number|string} childId
+   * @returns {Promise<Array>} Array of { materialId, fileUrl, submittedAt }
+   */
+  async getSubmissions(childId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${childId}/submissions`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Upload a child's completed work for a material.
+   * @param {Object} params - { materialId, studentId, file }
+   * @returns {Promise<Object>} Created submission record
+   */
+  async submitStudentWork({ materialId, studentId, file }) {
+    const formData = new FormData();
+    formData.append("materialId", materialId);
+    formData.append("studentId", studentId);
+    formData.append("file", await compressImage(file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/submissions`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Upload/replace a student's profile picture.
+   * @param {number|string} studentId
+   * @param {File} file
+   */
+  async uploadStudentPhoto(studentId, file) {
+    const formData = new FormData();
+    formData.append("photo", await compressImage(file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/photo`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Upload one or more documents to a student's profile.
+   * @param {number|string} studentId
+   * @param {File[]} files
+   * @returns {Promise<Array>} Array of created document records
+   */
+  async uploadStudentDocuments(studentId, files) {
+    const formData = new FormData();
+    (await compressImages(files)).forEach((file) => formData.append("documents", file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/documents`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Replace a student's face-recognition enrollment photos (1-8 photos).
+   * This REPLACES the student's whole enrollment set, not adds to it.
+   * Requires guardian consent to already be in place — this call does not
+   * track or verify consent itself.
+   * @param {number|string} studentId
+   * @param {File[]} files
+   * @returns {Promise<{studentId: number, photosReceived: number, enrolled: boolean}>}
+   */
+  async uploadEnrollmentPhotos(studentId, files) {
+    const formData = new FormData();
+    (await compressImages(files)).forEach((file) => formData.append("photos", file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/enrollment-photos`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Erase a student's face-recognition enrollment (photos and encoding).
+   * Resolves once the server answers 204; safe to call when nothing is enrolled.
+   * @param {number|string} studentId
+   */
+  async deleteEnrollmentPhotos(studentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/enrollment-photos`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * How many face-recognition enrollment photos are stored for a student.
+   * @param {number|string} studentId
+   * @returns {Promise<{count: number}>}
+   */
+  async getEnrollmentPhotoCount(studentId, { signal } = {}) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/enrollment-photos`, {
+      method: "GET",
+      signal,
+    });
+  },
+
+  /**
+   * One stored enrollment photo as a Blob. The API needs the bearer token, so
+   * this can't be an <img src>; the caller turns the Blob into a blob: URL.
+   * @returns {Promise<Blob|null>} the photo, or null if it no longer exists
+   */
+  async getEnrollmentPhotoBlob(studentId, index, { signal } = {}) {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/api/students/${studentId}/enrollment-photos/${index}`,
+      { method: "GET", signal },
+    );
+    if (response.status === 404) return null;
+    if (response.status === 401) onUnauthorized?.();
+    if (!response.ok) throw new ApiError("Something went wrong.", response.status);
+    return response.blob();
+  },
+
+  /**
+   * Delete a single document from a student's profile.
+   * @param {number|string} studentId
+   * @param {number|string} documentId
+   */
+  async deleteStudentDocument(studentId, documentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/documents/${documentId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /** Fetch the full account directory (admin/teacher account management). */
+  async getAccounts() {
+    return fetchWithRetry(`${API_BASE_URL}/api/users/all`, {
+      method: "GET",
+    });
+  },
+
+  /** @param {Object} payload - New account fields (name, email, password, role, ...) */
+  async createAccount(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/users/register`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** @param {Object} payload - Updated account fields, including the account id */
+  async updateAccount(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/update`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** @param {number|string} accountId */
+  async deleteAccount(accountId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/users/delete/${accountId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Self-service profile update (name/email/phone/address). Never accepts
+   * a role change — see users.controller.js on the backend.
+   * @param {Object} payload
+   */
+  async updateMyProfile(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+      // A wrong current password comes back as a 401; that must show as a
+      // form error, not sign the user out (same as changeMyPassword).
+      handleUnauthorized: false,
+    });
+  },
+
+  /**
+   * Self-service profile picture upload.
+   * @param {File} file
+   */
+  async uploadMyProfilePhoto(file) {
+    const formData = new FormData();
+    formData.append("photo", await compressImage(file));
+
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me/photo`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Self-service password change. Returns a fresh token on success (the
+   * old one is invalidated everywhere, including this session, unless the
+   * caller swaps in the returned token).
+   * @param {string} currentPassword
+   * @param {string} newPassword
+   */
+  async requestPasswordChangeOtp() {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me/password/request-otp`, { method: "POST" });
+  },
+
+  async changeMyPassword(currentPassword, newPassword, otpCode) {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me/password`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword, otpCode }),
+      handleUnauthorized: false,
+    });
+  },
+
+  /**
+   * Self-service account deletion (delete your own account). Requires
+   * re-entering the current password as confirmation.
+   * @param {string} password
+   */
+  async requestAccountDeletionOtp() {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me/delete/request-otp`, { method: "POST" });
+  },
+
+  async deleteMyAccount(password, otpCode) {
+    return fetchWithRetry(`${API_BASE_URL}/api/profile/me`, {
+      method: "DELETE",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ password, otpCode }),
+      handleUnauthorized: false,
+    });
+  },
+
+  // --- Endpoints without a confirmed backend contract yet ---
+  // Names/shapes not yet confirmed with backend; adjust once real contract exists.
+
+  /** @param {number|string} childId @param {string} monthKey e.g. "2026-08" */
+  async getChildAttendance(childId, monthKey) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${childId}/attendance?month=${monthKey}`, {
+      method: "GET",
+    });
+  },
+
+  /** @param {number|string} childId */
+  async getChildProgress(childId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${childId}/progress`, {
+      method: "GET",
+    });
+  },
+
+  /** List children linked to the logged-in parent account. */
+  async getChildren() {
+    return fetchWithRetry(`${API_BASE_URL}/api/parent/children`, {
+      method: "GET",
+    });
+  },
+
+  /** @param {string} monthKey e.g. "2026-08" */
+  async getEvents(monthKey) {
+    return fetchWithRetry(`${API_BASE_URL}/api/events?month=${monthKey}`, {
+      method: "GET",
+    });
+  },
+
+  /** List all events as options for album associations. */
+  async getEventOptions() {
+    return fetchWithRetry(`${API_BASE_URL}/api/events?all=true`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * @param {Object} payload
+   * @param {string} payload.title
+   * @param {string} payload.date - "YYYY-MM-DD"
+  * @param {"Holiday"|"Birthday"|"Event"} payload.category
+   * @param {string} [payload.description]
+   */
+  async createEvent(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/events`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async updateEvent(id, payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/events/${id}`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async deleteEvent(id) {
+    return fetchWithRetry(`${API_BASE_URL}/api/events/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  /** Aggregate counts for the teacher dashboard stat cards. */
+  async getDashboardStats() {
+    return fetchWithRetry(`${API_BASE_URL}/api/dashboard/stats`, {
+      method: "GET",
+    });
+  },
+
+  /** Today's lesson theme shown on the teacher dashboard. */
+  async getDailyTheme() {
+    return fetchWithRetry(`${API_BASE_URL}/api/dashboard/daily-theme`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Create or update the lesson theme for a given date (defaults to today).
+   * @param {Object} payload
+   * @param {string} [payload.date] - "YYYY-MM-DD", defaults to today
+   * @param {string} payload.letter
+   * @param {string} payload.label
+   * @param {string} [payload.subtitle]
+   * @param {string} payload.title
+   * @param {string} [payload.description]
+   * @param {string[]} [payload.objectives]
+   */
+  async saveDailyTheme(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/dashboard/daily-theme`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /**
+   * This week's classroom goals for a session, each with every active
+   * student's progress.
+   * @param {string} [week] - "YYYY-MM-DD", any day in the target week
+   * @param {"morning"|"afternoon"} [session]
+   */
+  async getWeeklyGoals(week, session = "morning") {
+    const params = new URLSearchParams({ session });
+    if (week) params.set("week", week);
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals?${params.toString()}`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * @param {Object} payload
+   * @param {string} [payload.weekStart] - "YYYY-MM-DD", any day in the target week
+   * @param {"morning"|"afternoon"} payload.session
+   * @param {string} payload.title
+   * @param {string} [payload.description]
+   * @param {string} [payload.category]
+   */
+  async createWeeklyGoal(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** @param {number|string} goalId @param {Object} payload */
+  async updateWeeklyGoal(goalId, payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals/${goalId}`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** @param {number|string} goalId */
+  async deleteWeeklyGoal(goalId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals/${goalId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * Bulk-grade students against a goal.
+   * @param {number|string} goalId
+   * @param {{studentId: number, progress: number, status: string}[]} updates
+   */
+  async updateGoalProgress(goalId, updates) {
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals/${goalId}/progress`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ updates }),
+    });
+  },
+
+  /** Fetch notifications for the current user. */
+  async getNotifications({ unreadOnly = false } = {}) {
+    const params = new URLSearchParams();
+
+    if (unreadOnly) {
+      params.set("unread", "true");
+    }
+
+    const queryString = params.toString();
+
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications${queryString ? `?${queryString}` : ""}`, {
+      method: "GET",
+    });
+  },
+
+  /** Mark a specific notification as read. */
+  async markNotificationRead(notificationId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {
+      method: "PATCH",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ read: true }),
+    });
+  },
+
+  /** Mark all notifications as read for the current user. */
+  async markAllNotificationsRead() {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/read-all`, {
+      method: "PATCH",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ read: true }),
+    });
+  },
+
+  /** Dismiss a single notification. */
+  async dismissNotification(notificationId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/${notificationId}`, {
+      method: "DELETE",
+    });
+  },
+
+  /** Remove all notifications for the current user. */
+  async dismissAllNotifications() {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications`, {
+      method: "DELETE",
+    });
+  },
+
+  /** Fetch the current user's email/SMS notification preferences. */
+  async getNotificationPreferences() {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/preferences`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Update the current user's email/SMS notification preferences.
+   * @param {{ notifyByEmail?: boolean, notifyBySms?: boolean }} preferences
+   */
+  async updateNotificationPreferences(preferences) {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/preferences`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(preferences),
+    });
+  },
+
+  /** The server's public Web Push key, or { publicKey: null } if push is off. */
+  async getPushPublicKey() {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/push/public-key`, {
+      method: "GET",
+    });
+  },
+
+  /**
+   * Register this browser for push alerts.
+   * @param {{ endpoint: string, keys: { p256dh: string, auth: string } }} subscription
+   */
+  async subscribePush(subscription) {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/push/subscribe`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(subscription),
+    });
+  },
+
+  /** Stop push alerts for the browser with this endpoint. */
+  async unsubscribePush(endpoint) {
+    return fetchWithRetry(`${API_BASE_URL}/api/notifications/push/unsubscribe`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ endpoint }),
+    });
+  },
+};
