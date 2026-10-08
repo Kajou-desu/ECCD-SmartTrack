@@ -98,7 +98,7 @@ function ParentStudentProfileView({ selectedChild }) {
       </div>
 
       <div className="mt-8">
-        <RequiredDocumentsCard documents={documents} />
+        <RequiredDocumentsCard documents={documents} studentId={selectedChild.id} />
       </div>
     </div>
   );

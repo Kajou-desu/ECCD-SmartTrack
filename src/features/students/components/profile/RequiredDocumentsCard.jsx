@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { apiClient } from "@api/client.js";
+import { getErrorMessage } from "@api/errorMessage.js";
 import { FileText, Upload } from "lucide-react";
 import DocumentCard from "./DocumentCard";
 import DocumentPreviewModal from "./DocumentPreviewModal";
@@ -6,11 +8,36 @@ import DeleteDocumentModal from "./DeleteDocumentModal";
 
 export default function RequiredDocumentsCard({
   documents,
+  studentId,
   onUpload,
   onRemove,
 }) {
   const [viewingDocument, setViewingDocument] = useState(null);
   const [deletingDocument, setDeletingDocument] = useState(null);
+  const [openingId, setOpeningId] = useState(null);
+  const [openError, setOpenError] = useState("");
+
+  // Document links last 5 minutes and are never cached, so the one that came
+  // with the profile may be stale (the page can sit open for an hour). Ask for
+  // a fresh one at the moment of opening. Without a studentId there is nothing
+  // to ask about, so the link from the list is used as before.
+  const openDocument = async (doc) => {
+    if (openingId !== null) return;
+    if (studentId == null) {
+      setViewingDocument(doc);
+      return;
+    }
+    setOpenError("");
+    setOpeningId(doc.id);
+    try {
+      const { url } = await apiClient.getStudentDocumentLink(studentId, doc.id);
+      setViewingDocument({ ...doc, url });
+    } catch (err) {
+      setOpenError(getErrorMessage(err, "Couldn't open this document. Please try again."));
+    } finally {
+      setOpeningId(null);
+    }
+  };
 
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-sm">
@@ -29,13 +56,19 @@ export default function RequiredDocumentsCard({
         ) : null}
       </div>
 
+      {openError && (
+        <p role="alert" className="mb-3 text-sm text-red-600">
+          {openError}
+        </p>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {documents && documents.length > 0 ? (
           documents.map((doc) => (
             <DocumentCard
               key={doc.id}
               document={doc}
-              onView={setViewingDocument}
+              onView={openDocument}
               onRemove={onRemove ? setDeletingDocument : undefined}
             />
           ))

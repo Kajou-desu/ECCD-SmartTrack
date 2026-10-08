@@ -150,6 +150,7 @@ function StudentDetailView({ studentId }) {
       <div className="mt-8">
         <RequiredDocumentsCard
           documents={documents}
+          studentId={studentId}
           onUpload={() => setActiveModal("upload")}
           onRemove={(docId) => {
             const removedDoc = profile.documents?.find((doc) => doc.id === docId);

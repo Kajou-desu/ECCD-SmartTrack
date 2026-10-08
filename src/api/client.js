@@ -711,6 +711,20 @@ export const apiClient = {
   },
 
   /**
+   * A fresh, short-lived link to ONE student document. Document links expire
+   * after 5 minutes and are never cached, so the link in the profile response
+   * can be stale by the time someone clicks; ask for one at the moment of
+   * opening. Resolves to { url }.
+   * @param {number|string} studentId
+   * @param {number|string} documentId
+   */
+  async getStudentDocumentLink(studentId, documentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/documents/${documentId}/link`, {
+      method: "GET",
+    });
+  },
+
+  /**
    * Delete a single document from a student's profile.
    * @param {number|string} studentId
    * @param {number|string} documentId

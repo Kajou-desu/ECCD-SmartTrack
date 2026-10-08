@@ -2,6 +2,7 @@ import { useState } from "react";
 import formatDate from "@utils/formatDate";
 import { Images, Pencil, Trash2 } from "lucide-react";
 import SafeImage from "@components/shared/SafeImage.jsx";
+import { thumbnailUrl } from "@utils/fileUrl.js";
 
 export default function AlbumCard({ album, onOpen, onDelete, onEdit }) {
   const [isCoverLoaded, setIsCoverLoaded] = useState(false);
@@ -36,7 +37,7 @@ export default function AlbumCard({ album, onOpen, onDelete, onEdit }) {
               <div className="absolute inset-0 animate-pulse bg-slate-200" />
             )}
             <SafeImage
-              src={coverPhoto.url}
+              src={thumbnailUrl(coverPhoto.url)}
               alt={`Cover photo for ${album.title}`}
               onLoad={() => setIsCoverLoaded(true)}
               onError={() => setIsCoverFailed(true)}

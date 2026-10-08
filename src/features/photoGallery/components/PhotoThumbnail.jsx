@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import SafeImage from "@components/shared/SafeImage.jsx";
+import { thumbnailUrl } from "@utils/fileUrl.js";
 
 export default function PhotoThumbnail({
   photo,
@@ -40,7 +41,7 @@ export default function PhotoThumbnail({
       )}
 
       <SafeImage
-        src={photo.url}
+        src={thumbnailUrl(photo.url)}
         alt={altText}
         loading="lazy"
         onLoad={() => setIsLoaded(true)}
