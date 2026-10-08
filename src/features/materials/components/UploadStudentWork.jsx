@@ -6,6 +6,7 @@ import Modal from "@components/ui/Modal";
 import { isAllowedStudentWorkFile, isFileSizeValid, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
 import { Loader2, Upload, X } from "lucide-react";
 import formatStudentName from "@utils/formatStudentName.js";
+import { getErrorMessage } from "@api/errorMessage.js";
 
 export default function UploadStudentWork({ material, onClose, onSuccess }) {
   const showToast = useToast();
@@ -91,7 +92,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
         `"${selectedFile.name}" was uploaded for ${formatStudentName(selectedStudent)}.`,
       );
     } catch (err) {
-      const message = err.message || "Failed to upload the file. Please try again.";
+      const message = getErrorMessage(err, "Failed to upload the file. Please try again.");
       setSubmitError(message);
       showToast("error", message);
     } finally {

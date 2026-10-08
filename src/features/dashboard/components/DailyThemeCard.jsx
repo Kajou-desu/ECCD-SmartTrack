@@ -4,6 +4,7 @@ import { apiClient } from "@api/client.js";
 import { ArrowRight, CircleCheck, Pencil } from "lucide-react";
 import EditDailyThemeModal from "./EditDailyThemeModal";
 import { Toast } from "@components/ui/Toast";
+import { getErrorMessage } from "@api/errorMessage.js";
 
 async function fetchDailyTheme() {
   return apiClient.getDailyTheme();
@@ -26,7 +27,7 @@ export function DailyThemeCard() {
       setIsEditing(false);
       setToast({ type: "success", message: "Today's theme was saved." });
     } catch (err) {
-      setToast({ type: "error", message: err.message || "Failed to save theme. Please try again." });
+      setToast({ type: "error", message: getErrorMessage(err, "Failed to save theme. Please try again.") });
     }
   };
 

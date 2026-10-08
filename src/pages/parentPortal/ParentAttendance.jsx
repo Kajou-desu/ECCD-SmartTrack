@@ -85,7 +85,7 @@ export default function ParentAttendance() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <StatCard
               Icon={Calendar}
-              label="Attendance Rate"
+              label={`Attendance Rate (of ${attendance.stats.recordedDays ?? 0} recorded days)`}
               value={`${attendance.stats.attendanceRate}%`}
               color="bg-emerald-100 text-emerald-600"
             />
@@ -151,7 +151,9 @@ export default function ParentAttendance() {
                 <p className="text-3xl font-bold text-blue-600">
                   {attendance.stats.attendanceRate}%
                 </p>
-                <p className="text-sm text-gray-600 mt-2">Attendance Rate</p>
+                <p className="text-sm text-gray-600 mt-2">
+                  Attendance Rate (of {attendance.stats.recordedDays ?? 0} recorded days)
+                </p>
               </div>
             </div>
           </div>

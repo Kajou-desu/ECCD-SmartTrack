@@ -6,6 +6,7 @@ import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { FileText, Upload, X } from "lucide-react";
 import { formatFileSize, isFileSizeValid, isPdfFile, MAX_MATERIAL_FILE_SIZE_BYTES } from "@features/materials/utils/fileValidation.js";
+import { getErrorMessage } from "@api/errorMessage.js";
 
 // A blank/placeholder theme (see dashboard.controller.js's getDailyTheme
 // fallback) has title "No theme set for today" and every other field
@@ -83,7 +84,7 @@ export default function EditDailyThemeModal({ theme, onCancel, onConfirm }) {
       setNewMaterial({ title: "", category: "", description: "", file: null });
       showToast("success", "Activity material was created.");
     } catch (error) {
-      const message = error.message || "Could not create the activity material.";
+      const message = getErrorMessage(error, "Could not create the activity material.");
       setMaterialError(message);
       showToast("error", message);
     } finally {

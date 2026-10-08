@@ -30,6 +30,7 @@ import {
   toTenDigitPhone,
 } from "@features/accounts/utils/accountUtils.js";
 import { splitAddress } from "@features/students/utils/address.js";
+import { getErrorMessage } from "@api/errorMessage.js";
 
 function EmptyAccounts({ onCreate }) {
   return (
@@ -141,7 +142,7 @@ export default function AccountsManagement() {
       setCreateOpen(false);
     } catch (err) {
       setCreateMessage({
-        text: err.message || "Failed to create account.",
+        text: getErrorMessage(err, "Failed to create account."),
         isError: true,
       });
     }
@@ -195,7 +196,7 @@ export default function AccountsManagement() {
     } catch (err) {
       setUpdateConfirmOpen(false);
       setEditMessage({
-        text: err.message || "Failed to update account.",
+        text: getErrorMessage(err, "Failed to update account."),
         isError: true,
       });
     }
