@@ -40,6 +40,24 @@ function enrolledMessage({ photosReceived, photosUsable, photosRejected }) {
   return `Enrolled from ${used} photo${plural(used)}. ${photosRejected} photo${plural(photosRejected)} could not be used (no face or more than one face) and ${photosRejected === 1 ? "was" : "were"} not saved.`;
 }
 
+// Lists the photos, then fetches each one pinned to the listed version. If the
+// set was replaced in between (another teacher re-enrolled), the server answers
+// 409 and the whole load starts again, so the grid is never a mix of two sets.
+const MAX_LOAD_ATTEMPTS = 3;
+
+async function loadEnrolledPhotos(studentId, signal) {
+  for (let attempt = 1; ; attempt += 1) {
+    const { count, version } = await apiClient.getEnrollmentPhotoCount(studentId, { signal });
+    try {
+      return await Promise.all(
+        Array.from({ length: count }, (_, i) => apiClient.getEnrollmentPhotoBlob(studentId, i, { signal, version })),
+      );
+    } catch (err) {
+      if (err?.status !== 409 || attempt >= MAX_LOAD_ATTEMPTS) throw err;
+    }
+  }
+}
+
 export default function StudentEnrollmentPhotosCard({ studentId }) {
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -62,10 +80,7 @@ export default function StudentEnrollmentPhotosCard({ studentId }) {
 
     (async () => {
       try {
-        const { count } = await apiClient.getEnrollmentPhotoCount(studentId, { signal });
-        const blobs = await Promise.all(
-          Array.from({ length: count }, (_, i) => apiClient.getEnrollmentPhotoBlob(studentId, i, { signal })),
-        );
+        const blobs = await loadEnrolledPhotos(studentId, signal);
         if (signal.aborted) return;
         urls = blobs.filter(Boolean).map((blob) => URL.createObjectURL(blob));
         setSaved({ urls, loaded: true });

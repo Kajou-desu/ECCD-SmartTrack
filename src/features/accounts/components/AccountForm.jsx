@@ -114,6 +114,9 @@ export default function AccountForm({
   loading,
   message,
   isEdit = false,
+  // Set when the person editing is not an Admin: the role and the email of an
+  // existing account are then read-only (the server refuses changes to them).
+  restrictedEdit = false,
   assignableRoles,
   students = [],
 }) {
@@ -140,9 +143,10 @@ export default function AccountForm({
             }
           }}
           className={inputClass}
+          disabled={restrictedEdit}
           required
         >
-          {assignableRoles.map((role) => (
+          {(restrictedEdit ? [normalizeRole(formData.role)] : assignableRoles).map((role) => (
             <option key={role} value={role}>
               {role}
             </option>
@@ -190,18 +194,27 @@ export default function AccountForm({
         </FormField>
       </div>
 
-      <FormField label="Email Address" required>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={onChange}
-          placeholder="Email Address"
-          className={inputClass}
-          autoComplete="email"
-          required
-        />
-      </FormField>
+      <div>
+        <FormField label="Email Address" required>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={onChange}
+            placeholder="Email Address"
+            className={inputClass}
+            autoComplete="email"
+            readOnly={restrictedEdit}
+            aria-describedby={restrictedEdit ? "account-email-locked" : undefined}
+            required
+          />
+        </FormField>
+        {restrictedEdit && (
+          <p id="account-email-locked" className="mt-1 text-xs text-slate-500">
+            Only an Admin can change an account&apos;s email. The account owner can change it in Settings.
+          </p>
+        )}
+      </div>
 
       {!isEdit && (
         <FormField label="Password" required>

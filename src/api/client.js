@@ -682,7 +682,9 @@ export const apiClient = {
   /**
    * How many face-recognition enrollment photos are stored for a student.
    * @param {number|string} studentId
-   * @returns {Promise<{count: number}>}
+   * @returns {Promise<{count: number, version?: string}>} `version` identifies the
+   *   photo set; pass it to getEnrollmentPhotoBlob so a re-enrollment in between
+   *   is detected (HTTP 409) instead of mixing two sets.
    */
   async getEnrollmentPhotoCount(studentId, { signal } = {}) {
     return fetchWithRetry(`${API_BASE_URL}/api/students/${studentId}/enrollment-photos`, {
@@ -696,9 +698,10 @@ export const apiClient = {
    * this can't be an <img src>; the caller turns the Blob into a blob: URL.
    * @returns {Promise<Blob|null>} the photo, or null if it no longer exists
    */
-  async getEnrollmentPhotoBlob(studentId, index, { signal } = {}) {
+  async getEnrollmentPhotoBlob(studentId, index, { signal, version } = {}) {
+    const query = version ? `?v=${encodeURIComponent(version)}` : "";
     const response = await fetchWithTimeout(
-      `${API_BASE_URL}/api/students/${studentId}/enrollment-photos/${index}`,
+      `${API_BASE_URL}/api/students/${studentId}/enrollment-photos/${index}${query}`,
       { method: "GET", signal },
     );
     if (response.status === 404) return null;

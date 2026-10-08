@@ -65,4 +65,41 @@ describe("StudentEnrollmentPhotosCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(api.deleteEnrollmentPhotos).not.toHaveBeenCalled();
   });
+
+  describe("a re-enrollment while the photos are loading", () => {
+    const stale = () => Object.assign(new Error("Something went wrong."), { name: "ApiError", status: 409 });
+
+    it("pins each photo request to the listed version", async () => {
+      api.getEnrollmentPhotoCount.mockResolvedValue({ count: 2, version: "aaaaaaaaaaaaaaaa" });
+      render(<Card studentId={5} />);
+      await waitFor(() => expect(api.getEnrollmentPhotoBlob).toHaveBeenCalledTimes(2));
+      for (const call of api.getEnrollmentPhotoBlob.mock.calls) {
+        expect(call[2]).toMatchObject({ version: "aaaaaaaaaaaaaaaa" });
+      }
+    });
+
+    it("lists again after a 409 and shows the new set, never a mix", async () => {
+      api.getEnrollmentPhotoCount
+        .mockResolvedValueOnce({ count: 3, version: "aaaaaaaaaaaaaaaa" })
+        .mockResolvedValueOnce({ count: 1, version: "bbbbbbbbbbbbbbbb" });
+      api.getEnrollmentPhotoBlob.mockImplementation(async (_id, _i, opts) => {
+        if (opts.version === "aaaaaaaaaaaaaaaa") throw stale();
+        return new Blob(["new"], { type: "image/jpeg" });
+      });
+      render(<Card studentId={5} />);
+
+      await waitFor(() => expect(screen.getAllByRole("img")).toHaveLength(1));
+      expect(api.getEnrollmentPhotoCount).toHaveBeenCalledTimes(2);
+    });
+
+    it("gives up after three attempts instead of looping forever", async () => {
+      api.getEnrollmentPhotoCount.mockResolvedValue({ count: 1, version: "aaaaaaaaaaaaaaaa" });
+      api.getEnrollmentPhotoBlob.mockRejectedValue(stale());
+      render(<Card studentId={5} />);
+      await waitFor(() => expect(api.getEnrollmentPhotoCount).toHaveBeenCalledTimes(3));
+      await new Promise((r) => setTimeout(r, 20));
+      expect(api.getEnrollmentPhotoCount).toHaveBeenCalledTimes(3);
+      expect(screen.queryAllByRole("img")).toHaveLength(0);
+    });
+  });
 });

@@ -368,6 +368,7 @@ export default function AccountsManagement() {
           onCancel={closeEdit}
           submitLabel="Review Update"
           isEdit
+          restrictedEdit={user?.role !== "Admin"}
           assignableRoles={assignableRoles}
           students={students}
         />

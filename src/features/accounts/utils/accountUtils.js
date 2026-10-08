@@ -44,11 +44,12 @@ export const INITIAL_DELETE = {
 
 export const ROLES = ["Parent", "Guardian", "Teacher", "Admin"];
 
-// Only an Admin can grant the Admin role. This is a UI convenience only —
-// the backend must independently reject any request that tries to assign
-// or keep a role the caller isn't allowed to grant.
+// Only an Admin can create Teacher or Admin accounts; a Teacher manages
+// families (Parent/Guardian). This is a UI convenience only — the backend
+// independently rejects any request that tries to assign or keep a role the
+// caller isn't allowed to grant.
 export function getAssignableRoles(actingRole) {
-    return actingRole === "Admin" ? ROLES : ROLES.filter((role) => role !== "Admin");
+    return actingRole === "Admin" ? ROLES : ["Parent", "Guardian"];
 }
 
 export function getAccountId(account) {
