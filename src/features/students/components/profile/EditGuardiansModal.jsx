@@ -3,6 +3,7 @@ import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { X, Trash2, Plus } from "lucide-react";
 import { combineAddress, splitAddress } from "../../utils/address.js";
+import AddressFields from "../form/AddressFields.jsx";
 
 function toFormGuardian(guardian) {
   const { province, municipality, barangay, details } = splitAddress(guardian.address);
@@ -231,25 +232,15 @@ export default function EditGuardiansModal({ guardians, onCancel, onSave }) {
                   />
                 </label>
 
-                {[
-                  ["province", "Province"],
-                  ["municipality", "Municipality / City"],
-                  ["barangay", "Barangay"],
-                  ["details", "Purok / House # / Street"],
-                ].map(([field, label]) => (
-                  <label key={field} className="text-xs font-semibold text-slate-600">
-                    {label}
-                    {field !== "details" && <span className="text-red-500"> *</span>}
-                    <input
-                      type="text"
-                      value={row[field]}
-                      onChange={(event) => updateRow(index, field, event.target.value)}
-                      required={field !== "details"}
-                      placeholder={label}
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-                    />
-                  </label>
-                ))}
+                <div className="sm:col-span-2">
+                  <AddressFields
+                    label="Address"
+                    fieldName={(suffix) => suffix.toLowerCase()}
+                    values={row}
+                    onChange={(event) => updateRow(index, event.target.name, event.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               <label className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-600">

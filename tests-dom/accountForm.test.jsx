@@ -13,6 +13,9 @@ const STUDENTS = [
 const BASE = {
   firstName: "Maria", middleName: "", lastName: "Dela Cruz", email: "maria@example.com",
   phone: "9171234567", address: "Angeles City", password: "", role: "Parent", studentIds: [],
+  // The form now asks for the home address in parts and marks them required, so
+  // a submit test needs them filled or the browser blocks the submit.
+  addressProvince: "Pampanga", addressMunicipality: "Angeles City", addressBarangay: "Balibago", addressDetails: "",
 };
 
 // Mirrors how AccountManagement feeds the form: onChange receives {target:{name,value}}.
@@ -147,7 +150,7 @@ describe("AccountForm phone hint", () => {
     render(<Harness role="Teacher" />);
     expect(screen.queryByText(/Philippine mobile number/)).toBeNull();
 
-    fireEvent.change(screen.getByRole("combobox"), { target: { name: "role", value: "Parent" } });
+    fireEvent.change(screen.getByLabelText(/System Role/i), { target: { name: "role", value: "Parent" } });
 
     expect(screen.getByText(/Philippine mobile number/)).toBeTruthy();
   });
