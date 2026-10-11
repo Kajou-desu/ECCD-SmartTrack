@@ -46,7 +46,7 @@ export default function Layout() {
 
         <main
           id="main-content"
-          className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-gray-100"
+          className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-gray-100 dark:bg-(--page)"
         >
           <Outlet />
         </main>

@@ -1,4 +1,5 @@
 import formatStudentName from "@utils/formatStudentName.js";
+import { getErrorMessage } from "@api/errorMessage.js";
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -42,7 +43,7 @@ function StatusMessage({ message }) {
 // Checkbox group so one Parent/Guardian can be connected to several students.
 // Toggling only touches the clicked id, so selections hidden by the search
 // filter are kept.
-function StudentPicker({ students, selectedIds, onChange }) {
+function StudentPicker({ students, selectedIds, onChange, emptyText = "No students found." }) {
   const [query, setQuery] = useState("");
   const selected = new Set(selectedIds.map(Number));
   const needle = query.trim().toLowerCase();
@@ -62,7 +63,9 @@ function StudentPicker({ students, selectedIds, onChange }) {
     <fieldset>
       <legend className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-500">
         Connect Students
+        <span aria-hidden="true" className="ml-0.5 text-red-500">*</span>
       </legend>
+      <p className="mb-1 text-xs text-slate-500">Select at least one student for this account.</p>
 
       <input
         type="search"
@@ -76,7 +79,7 @@ function StudentPicker({ students, selectedIds, onChange }) {
 
       <div className="mt-2 max-h-56 space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2">
         {visible.length === 0 && (
-          <p className="px-2 py-2 text-xs text-slate-500">No students found.</p>
+          <p className="px-2 py-2 text-xs text-slate-500">{needle ? "No students found." : emptyText}</p>
         )}
 
         {visible.map((student) => (
@@ -105,6 +108,105 @@ function StudentPicker({ students, selectedIds, onChange }) {
   );
 }
 
+// Admin only: which center the account belongs to. A new center can be added
+// right here, so the Admin is never stuck without the one they need.
+function CenterField({ centers, value, onChange, onCreateCenter, disabled }) {
+  const [adding, setAdding] = useState(false);
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const add = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const center = await onCreateCenter(name);
+      onChange({ target: { name: "centerId", value: String(center.id) } });
+      setAdding(false);
+      setName("");
+    } catch (err) {
+      setError(getErrorMessage(err, "Could not add the center."));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div>
+      <FormField label="Center" required>
+        <select
+          name="centerId"
+          value={value ?? ""}
+          onChange={onChange}
+          className={inputClass}
+          disabled={disabled}
+          required
+        >
+          <option value="">Select a center</option>
+          {centers.map((center) => (
+            <option key={center.id} value={String(center.id)}>
+              {center.name}
+            </option>
+          ))}
+        </select>
+      </FormField>
+
+      {!adding && onCreateCenter && (
+        <button
+          type="button"
+          onClick={() => setAdding(true)}
+          className="mt-1 text-xs font-semibold text-[#C2570C] underline"
+        >
+          Add a new center
+        </button>
+      )}
+
+      {adding && (
+        <div className="mt-2 flex gap-2">
+          <input
+            type="text"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                if (name.trim() && !saving) add();
+              }
+            }}
+            placeholder="New center name"
+            aria-label="New center name"
+            maxLength={100}
+            className={inputClass}
+          />
+          <button
+            type="button"
+            onClick={add}
+            disabled={saving || !name.trim()}
+            className="shrink-0 rounded-xl bg-[#C2570C] px-3 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Add
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAdding(false);
+              setError("");
+            }}
+            className="shrink-0 rounded-xl bg-slate-100 px-3 text-xs font-bold text-slate-700"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+      {error && (
+        <p role="alert" className="mt-1 text-xs font-semibold text-red-600">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function AccountForm({
   formData,
   onChange,
@@ -119,8 +221,25 @@ export default function AccountForm({
   restrictedEdit = false,
   assignableRoles,
   students = [],
+  // An Admin picks each account's center; `onCreateCenter(name)` adds one.
+  // Anyone else gets none of this: the server uses their own center.
+  showCenter = false,
+  centers = [],
+  onCreateCenter,
 }) {
   const receivesSms = SMS_ROLES.includes(normalizeRole(formData.role));
+
+  // An Admin connects students of the account's own center only (the server
+  // refuses any other), so that is all the list offers, and picking another
+  // center drops the selection made for the previous one.
+  const chosenCenter = String(formData.centerId ?? "");
+  const pickableStudents = showCenter
+    ? students.filter((student) => chosenCenter && String(student.teacherCenterId ?? "") === chosenCenter)
+    : students;
+  const handleCenterChange = (event) => {
+    if (event.target.value !== chosenCenter) onChange({ target: { name: "studentIds", value: [] } });
+    onChange(event);
+  };
 
   // Same {target:{name,value}} shape the page's handlers already read.
   const handlePhoneChange = (event) =>
@@ -153,6 +272,15 @@ export default function AccountForm({
           ))}
         </select>
       </FormField>
+
+      {showCenter && normalizeRole(formData.role) !== "Admin" && (
+        <CenterField
+          centers={centers}
+          value={formData.centerId}
+          onChange={handleCenterChange}
+          onCreateCenter={onCreateCenter}
+        />
+      )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <FormField label="Last Name" required>
@@ -267,23 +395,17 @@ export default function AccountForm({
       {(normalizeRole(formData.role) === "Parent" ||
         normalizeRole(formData.role) === "Guardian") && (
         <StudentPicker
-          students={students}
+          students={pickableStudents}
           selectedIds={formData.studentIds ?? []}
           onChange={onChange}
+          emptyText={
+            showCenter && !chosenCenter
+              ? "Choose a center to see its students."
+              : showCenter && students.length
+                ? "No students at this center yet."
+                : "No students found."
+          }
         />
-      )}
-
-      {normalizeRole(formData.role) === "Teacher" && (
-        <FormField label="Center Location">
-          <input
-            type="text"
-            name="centerLocation"
-            value={formData.centerLocation ?? ""}
-            onChange={onChange}
-            placeholder="Which ECCD center this teacher is based at"
-            className={inputClass}
-          />
-        </FormField>
       )}
 
       <StatusMessage message={message} />

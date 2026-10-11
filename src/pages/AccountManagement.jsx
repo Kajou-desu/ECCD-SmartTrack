@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAuth } from "@hooks/useAuth";
+import { apiClient } from "@api/client.js";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import useAccounts from "@features/accounts/hooks/useAccounts";
 import AccountSection from "@features/accounts/components/AccountSection";
@@ -28,6 +29,7 @@ import {
   canModifyAccount,
   canDeleteAccount,
   toTenDigitPhone,
+  validateNewAccount,
 } from "@features/accounts/utils/accountUtils.js";
 import { splitAddress } from "@features/students/utils/address.js";
 import { getErrorMessage } from "@api/errorMessage.js";
@@ -65,6 +67,27 @@ export default function AccountsManagement() {
   const { data: studentData } = useStudentsQuery();
   const students = studentData?.students ?? studentData ?? [];
   const canModify = (account) => canModifyAccount(account, user);
+
+  // An Admin chooses each account's center; everyone else's is set by the server.
+  const isAdmin = user?.role === "Admin";
+  const [centers, setCenters] = useState([]);
+  useEffect(() => {
+    if (!isAdmin) return undefined;
+    let isMounted = true;
+    apiClient
+      .getCenters()
+      .then((list) => isMounted && setCenters(Array.isArray(list) ? list : []))
+      .catch((error) => console.error(error));
+    return () => {
+      isMounted = false;
+    };
+  }, [isAdmin]);
+
+  const handleCreateCenter = async (name) => {
+    const center = await apiClient.createCenter({ name });
+    setCenters((current) => [...current, center].sort((a, b) => a.name.localeCompare(b.name)));
+    return center;
+  };
 
   const {
     accounts,
@@ -130,6 +153,12 @@ export default function AccountsManagement() {
     event.preventDefault();
     setCreateMessage(null);
 
+    const problem = validateNewAccount(createForm, user?.role);
+    if (problem) {
+      setCreateMessage({ text: problem, isError: true });
+      return;
+    }
+
     try {
       await createAccount(createForm);
 
@@ -164,7 +193,7 @@ export default function AccountsManagement() {
       addressMunicipality: accountAddress.municipality,
       addressBarangay: accountAddress.barangay,
       addressDetails: accountAddress.details,
-      centerLocation: account.centerLocation || "",
+      centerId: account.centerId != null ? String(account.centerId) : "",
       role: account.role || "Parent",
       studentIds: account.studentIds ?? account.children?.map((child) => child.id) ?? [],
     });
@@ -348,6 +377,9 @@ export default function AccountsManagement() {
           submitLabel="Create Account"
           assignableRoles={assignableRoles}
           students={students}
+          showCenter={isAdmin}
+          centers={centers}
+          onCreateCenter={handleCreateCenter}
         />
       )}
 
@@ -371,6 +403,9 @@ export default function AccountsManagement() {
           restrictedEdit={user?.role !== "Admin"}
           assignableRoles={assignableRoles}
           students={students}
+          showCenter={isAdmin}
+          centers={centers}
+          onCreateCenter={handleCreateCenter}
         />
       )}
 

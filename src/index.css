@@ -1,7 +1,19 @@
 @import "tailwindcss";
+@import "./dark-theme.css";
+
+/* Lets components opt in with dark: utilities; driven by the .dark class on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 html {
-  font-size: 14px;
+  font-size: 14px; /* Medium (default). Everything is rem-based, so this scales the whole UI. */
+}
+
+html[data-text-size="small"] {
+  font-size: 13px;
+}
+
+html[data-text-size="large"] {
+  font-size: 16px;
 }
 
 button:not(:disabled),

@@ -742,6 +742,20 @@ export const apiClient = {
     });
   },
 
+  /** @returns {Promise<Array<{id: number, name: string}>>} An Admin gets every center, a Teacher only their own. */
+  async getCenters() {
+    return fetchWithRetry(`${API_BASE_URL}/api/centers`, { method: "GET" });
+  },
+
+  /** Admin only. @param {{name: string}} payload */
+  async createCenter(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/centers`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
   /** @param {Object} payload - New account fields (name, email, password, role, ...) */
   async createAccount(payload) {
     return fetchWithRetry(`${API_BASE_URL}/api/users/register`, {

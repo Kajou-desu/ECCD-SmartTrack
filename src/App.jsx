@@ -3,6 +3,7 @@ import { BrowserRouter, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ErrorBoundary from "@components/shared/ErrorBoundary.jsx";
 import RouteSpinner from "@components/shared/RouteSpinner.jsx";
+import { AppearanceProvider } from "@context/AppearanceContext.jsx";
 import { AuthProvider } from "@context/AuthContext.jsx";
 import { NotificationProvider } from "@context/NotificationContext.jsx";
 import { ToastProvider } from "@context/ToastContext.jsx";
@@ -54,6 +55,7 @@ function ScrollToTop() {
 export default function App() {
   return (
     <ErrorBoundary>
+      <AppearanceProvider>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <ScrollToTop />
@@ -70,6 +72,7 @@ export default function App() {
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
+      </AppearanceProvider>
     </ErrorBoundary>
   );
 }

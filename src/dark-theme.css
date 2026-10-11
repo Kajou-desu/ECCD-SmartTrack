@@ -1,0 +1,273 @@
+/*
+ * Dark theme.
+ *
+ * The app is styled with hard-coded light Tailwind colours (bg-white,
+ * text-slate-900, border-gray-200, bg-orange-50 ...). Rather than add a dark:
+ * variant to every element, dark mode remaps those colours here, so every page
+ * and every role is covered, and any new component that uses the usual palette
+ * is dark-ready automatically.
+ *
+ *   - neutral (gray/slate) scale: remapped to dark surfaces + light text
+ *   - pale tints (50-300) of each hue: remapped to deep tints of the same hue
+ *   - solid fills (bg-red-600, bg-[#C2570C] + text-white ...) are left alone
+ *   - coloured *text* (500-900) is lightened so it stays readable
+ *   - bg-white and the page background (#f8f9ff) become surface / page
+ *
+ * Opt-outs: add `keep-white` to an element whose bg-white must stay white
+ * (e.g. the toggle knob), or give it its own `dark:` utility.
+ * Everything is scoped under `.dark` (set on <html> by the appearance code).
+ */
+
+.dark {
+  --page: #0b1120;
+  --surface: #131c2f;
+  --brand-text: #f0883e; /* #C2570C is only ~4:1 on dark; this is ~7:1 */
+
+  /* Neutral scale: light shades become dark surfaces, dark shades light text. */
+  --color-gray-50: #0f1729;
+  --color-gray-100: #182236;
+  --color-gray-200: #243049;
+  --color-gray-300: #33415c;
+  --color-gray-400: #7d8ba1;
+  --color-gray-500: #9aa7bb;
+  --color-gray-600: #b7c2d3;
+  --color-gray-700: #cdd5e1;
+  --color-gray-800: #e2e8f0;
+  --color-gray-900: #f1f5f9;
+  --color-gray-950: #f8fafc;
+  --color-slate-50: var(--color-gray-50);
+  --color-slate-100: var(--color-gray-100);
+  --color-slate-200: var(--color-gray-200);
+  --color-slate-300: var(--color-gray-300);
+  --color-slate-400: var(--color-gray-400);
+  --color-slate-500: var(--color-gray-500);
+  --color-slate-600: var(--color-gray-600);
+  --color-slate-700: var(--color-gray-700);
+  --color-slate-800: var(--color-gray-800);
+  --color-slate-900: var(--color-gray-900);
+  --color-slate-950: var(--color-gray-950);
+
+  /* Pale tints -> deep tints of the same hue (generated from Tailwind's palette). */
+  /* red */
+  --color-red-50: oklch(25.8% 0.092 26.042);
+  --color-red-100: oklch(39.6% 0.141 25.723);
+  --color-red-200: oklch(44.4% 0.177 26.899);
+  --color-red-300: oklch(50.5% 0.213 27.518);
+  /* orange */
+  --color-orange-50: oklch(26.6% 0.079 36.259);
+  --color-orange-100: oklch(40.8% 0.123 38.172);
+  --color-orange-200: oklch(47% 0.157 37.304);
+  --color-orange-300: oklch(55.3% 0.195 38.402);
+  /* amber */
+  --color-amber-50: oklch(27.9% 0.077 45.635);
+  --color-amber-100: oklch(41.4% 0.112 45.904);
+  --color-amber-200: oklch(47.3% 0.137 46.201);
+  --color-amber-300: oklch(55.5% 0.163 48.998);
+  /* yellow */
+  --color-yellow-50: oklch(28.6% 0.066 53.813);
+  --color-yellow-100: oklch(42.1% 0.095 57.708);
+  --color-yellow-200: oklch(47.6% 0.114 61.907);
+  --color-yellow-300: oklch(55.4% 0.135 66.442);
+  /* lime */
+  --color-lime-50: oklch(27.4% 0.072 132.109);
+  --color-lime-100: oklch(40.5% 0.101 131.063);
+  --color-lime-200: oklch(45.3% 0.124 130.933);
+  --color-lime-300: oklch(53.2% 0.157 131.589);
+  /* green */
+  --color-green-50: oklch(26.6% 0.065 152.934);
+  --color-green-100: oklch(39.3% 0.095 152.535);
+  --color-green-200: oklch(44.8% 0.119 151.328);
+  --color-green-300: oklch(52.7% 0.154 150.069);
+  /* emerald */
+  --color-emerald-50: oklch(26.2% 0.051 172.552);
+  --color-emerald-100: oklch(37.8% 0.077 168.94);
+  --color-emerald-200: oklch(43.2% 0.095 166.913);
+  --color-emerald-300: oklch(50.8% 0.118 165.612);
+  /* teal */
+  --color-teal-50: oklch(27.7% 0.046 192.524);
+  --color-teal-100: oklch(38.6% 0.063 188.416);
+  --color-teal-200: oklch(43.7% 0.078 188.216);
+  --color-teal-300: oklch(51.1% 0.096 186.391);
+  /* sky */
+  --color-sky-50: oklch(29.3% 0.066 243.157);
+  --color-sky-100: oklch(39.1% 0.09 240.876);
+  --color-sky-200: oklch(44.3% 0.11 240.79);
+  --color-sky-300: oklch(50% 0.134 242.749);
+  /* blue */
+  --color-blue-50: oklch(28.2% 0.091 267.935);
+  --color-blue-100: oklch(37.9% 0.146 265.522);
+  --color-blue-200: oklch(42.4% 0.199 265.638);
+  --color-blue-300: oklch(48.8% 0.243 264.376);
+  /* purple */
+  --color-purple-50: oklch(29.1% 0.149 302.717);
+  --color-purple-100: oklch(38.1% 0.176 304.987);
+  --color-purple-200: oklch(43.8% 0.218 303.724);
+  --color-purple-300: oklch(49.6% 0.265 301.924);
+  /* rose */
+  --color-rose-50: oklch(27.1% 0.105 12.094);
+  --color-rose-100: oklch(41% 0.159 10.272);
+  --color-rose-200: oklch(45.5% 0.188 13.697);
+  --color-rose-300: oklch(51.4% 0.222 16.935);
+}
+
+/* Focus rings use a white offset by default; match the page instead. */
+.dark * {
+  --tw-ring-offset-color: var(--page);
+}
+
+/* Surfaces */
+.dark .bg-white:not(.keep-white),
+.dark .hover\:bg-white:hover {
+  background-color: var(--surface);
+}
+.dark .border-white {
+  border-color: var(--surface);
+}
+.dark .ring-white {
+  --tw-ring-color: var(--surface);
+}
+.dark .bg-white\/80 {
+  background-color: color-mix(in oklab, var(--surface) 80%, transparent);
+}
+.dark .bg-white\/90 {
+  background-color: color-mix(in oklab, var(--surface) 90%, transparent);
+}
+.dark .hover\:bg-white\/70:hover {
+  background-color: color-mix(in oklab, var(--surface) 70%, transparent);
+}
+.dark .bg-\[\#f8f9ff\] {
+  background-color: var(--page);
+}
+.dark .bg-\[\#fef2e6\] {
+  background-color: var(--color-orange-50);
+}
+.dark .bg-\[\#e5eeff\] {
+  background-color: var(--color-blue-50);
+}
+
+/* Scrims: slate-900 is a light colour in dark mode, so keep them black. */
+.dark [class*="bg-slate-900/"] {
+  background-color: color-mix(in oklab, #000 55%, transparent);
+}
+
+/* Brand orange text */
+.dark :is(.text-\[\#C2570C\], .hover\:text-\[\#C2570C\]:hover, .peer-checked\:text-\[\#C2570C\]:is(:where(.peer):checked ~ *), .text-\[\#a3480a\], .hover\:text-\[\#a3480a\]:hover) {
+  color: var(--brand-text);
+}
+
+.dark .text-\[\#C2570C\]\/70 {
+  color: color-mix(in oklab, var(--brand-text) 70%, transparent);
+}
+.dark .text-orange-900\/75 {
+  color: color-mix(in oklab, oklch(90.1% 0.076 70.697) 75%, transparent); /* orange-200 */
+}
+
+/* Coloured text: lighter shades so it reads on dark surfaces. */
+.dark :is(.text-red-500, .hover\:text-red-500:hover, .group-hover\:text-red-500:is(:where(.group):hover *), .text-red-600, .hover\:text-red-600:hover, .group-hover\:text-red-600:is(:where(.group):hover *)) {
+  color: oklch(70.4% 0.191 22.216); /* red-400 */
+}
+.dark :is(.text-red-700, .hover\:text-red-700:hover, .group-hover\:text-red-700:is(:where(.group):hover *)) {
+  color: oklch(80.8% 0.114 19.571); /* red-300 */
+}
+.dark :is(.text-red-800, .hover\:text-red-800:hover, .group-hover\:text-red-800:is(:where(.group):hover *), .text-red-900, .hover\:text-red-900:hover, .group-hover\:text-red-900:is(:where(.group):hover *)) {
+  color: oklch(88.5% 0.062 18.334); /* red-200 */
+}
+.dark :is(.text-orange-500, .hover\:text-orange-500:hover, .group-hover\:text-orange-500:is(:where(.group):hover *), .text-orange-600, .hover\:text-orange-600:hover, .group-hover\:text-orange-600:is(:where(.group):hover *)) {
+  color: oklch(75% 0.183 55.934); /* orange-400 */
+}
+.dark :is(.text-orange-700, .hover\:text-orange-700:hover, .group-hover\:text-orange-700:is(:where(.group):hover *)) {
+  color: oklch(83.7% 0.128 66.29); /* orange-300 */
+}
+.dark :is(.text-orange-800, .hover\:text-orange-800:hover, .group-hover\:text-orange-800:is(:where(.group):hover *), .text-orange-900, .hover\:text-orange-900:hover, .group-hover\:text-orange-900:is(:where(.group):hover *)) {
+  color: oklch(90.1% 0.076 70.697); /* orange-200 */
+}
+.dark :is(.text-amber-500, .hover\:text-amber-500:hover, .group-hover\:text-amber-500:is(:where(.group):hover *), .text-amber-600, .hover\:text-amber-600:hover, .group-hover\:text-amber-600:is(:where(.group):hover *)) {
+  color: oklch(82.8% 0.189 84.429); /* amber-400 */
+}
+.dark :is(.text-amber-700, .hover\:text-amber-700:hover, .group-hover\:text-amber-700:is(:where(.group):hover *)) {
+  color: oklch(87.9% 0.169 91.605); /* amber-300 */
+}
+.dark :is(.text-amber-800, .hover\:text-amber-800:hover, .group-hover\:text-amber-800:is(:where(.group):hover *), .text-amber-900, .hover\:text-amber-900:hover, .group-hover\:text-amber-900:is(:where(.group):hover *)) {
+  color: oklch(92.4% 0.12 95.746); /* amber-200 */
+}
+.dark :is(.text-yellow-500, .hover\:text-yellow-500:hover, .group-hover\:text-yellow-500:is(:where(.group):hover *), .text-yellow-600, .hover\:text-yellow-600:hover, .group-hover\:text-yellow-600:is(:where(.group):hover *)) {
+  color: oklch(85.2% 0.199 91.936); /* yellow-400 */
+}
+.dark :is(.text-yellow-700, .hover\:text-yellow-700:hover, .group-hover\:text-yellow-700:is(:where(.group):hover *)) {
+  color: oklch(90.5% 0.182 98.111); /* yellow-300 */
+}
+.dark :is(.text-yellow-800, .hover\:text-yellow-800:hover, .group-hover\:text-yellow-800:is(:where(.group):hover *), .text-yellow-900, .hover\:text-yellow-900:hover, .group-hover\:text-yellow-900:is(:where(.group):hover *)) {
+  color: oklch(94.5% 0.129 101.54); /* yellow-200 */
+}
+.dark :is(.text-lime-500, .hover\:text-lime-500:hover, .group-hover\:text-lime-500:is(:where(.group):hover *), .text-lime-600, .hover\:text-lime-600:hover, .group-hover\:text-lime-600:is(:where(.group):hover *)) {
+  color: oklch(84.1% 0.238 128.85); /* lime-400 */
+}
+.dark :is(.text-lime-700, .hover\:text-lime-700:hover, .group-hover\:text-lime-700:is(:where(.group):hover *)) {
+  color: oklch(89.7% 0.196 126.665); /* lime-300 */
+}
+.dark :is(.text-lime-800, .hover\:text-lime-800:hover, .group-hover\:text-lime-800:is(:where(.group):hover *), .text-lime-900, .hover\:text-lime-900:hover, .group-hover\:text-lime-900:is(:where(.group):hover *)) {
+  color: oklch(93.8% 0.127 124.321); /* lime-200 */
+}
+.dark :is(.text-green-500, .hover\:text-green-500:hover, .group-hover\:text-green-500:is(:where(.group):hover *), .text-green-600, .hover\:text-green-600:hover, .group-hover\:text-green-600:is(:where(.group):hover *)) {
+  color: oklch(79.2% 0.209 151.711); /* green-400 */
+}
+.dark :is(.text-green-700, .hover\:text-green-700:hover, .group-hover\:text-green-700:is(:where(.group):hover *)) {
+  color: oklch(87.1% 0.15 154.449); /* green-300 */
+}
+.dark :is(.text-green-800, .hover\:text-green-800:hover, .group-hover\:text-green-800:is(:where(.group):hover *), .text-green-900, .hover\:text-green-900:hover, .group-hover\:text-green-900:is(:where(.group):hover *)) {
+  color: oklch(92.5% 0.084 155.995); /* green-200 */
+}
+.dark :is(.text-emerald-500, .hover\:text-emerald-500:hover, .group-hover\:text-emerald-500:is(:where(.group):hover *), .text-emerald-600, .hover\:text-emerald-600:hover, .group-hover\:text-emerald-600:is(:where(.group):hover *)) {
+  color: oklch(76.5% 0.177 163.223); /* emerald-400 */
+}
+.dark :is(.text-emerald-700, .hover\:text-emerald-700:hover, .group-hover\:text-emerald-700:is(:where(.group):hover *)) {
+  color: oklch(84.5% 0.143 164.978); /* emerald-300 */
+}
+.dark :is(.text-emerald-800, .hover\:text-emerald-800:hover, .group-hover\:text-emerald-800:is(:where(.group):hover *), .text-emerald-900, .hover\:text-emerald-900:hover, .group-hover\:text-emerald-900:is(:where(.group):hover *)) {
+  color: oklch(90.5% 0.093 164.15); /* emerald-200 */
+}
+.dark :is(.text-teal-500, .hover\:text-teal-500:hover, .group-hover\:text-teal-500:is(:where(.group):hover *), .text-teal-600, .hover\:text-teal-600:hover, .group-hover\:text-teal-600:is(:where(.group):hover *)) {
+  color: oklch(77.7% 0.152 181.912); /* teal-400 */
+}
+.dark :is(.text-teal-700, .hover\:text-teal-700:hover, .group-hover\:text-teal-700:is(:where(.group):hover *)) {
+  color: oklch(85.5% 0.138 181.071); /* teal-300 */
+}
+.dark :is(.text-teal-800, .hover\:text-teal-800:hover, .group-hover\:text-teal-800:is(:where(.group):hover *), .text-teal-900, .hover\:text-teal-900:hover, .group-hover\:text-teal-900:is(:where(.group):hover *)) {
+  color: oklch(91% 0.096 180.426); /* teal-200 */
+}
+.dark :is(.text-sky-500, .hover\:text-sky-500:hover, .group-hover\:text-sky-500:is(:where(.group):hover *), .text-sky-600, .hover\:text-sky-600:hover, .group-hover\:text-sky-600:is(:where(.group):hover *)) {
+  color: oklch(74.6% 0.16 232.661); /* sky-400 */
+}
+.dark :is(.text-sky-700, .hover\:text-sky-700:hover, .group-hover\:text-sky-700:is(:where(.group):hover *)) {
+  color: oklch(82.8% 0.111 230.318); /* sky-300 */
+}
+.dark :is(.text-sky-800, .hover\:text-sky-800:hover, .group-hover\:text-sky-800:is(:where(.group):hover *), .text-sky-900, .hover\:text-sky-900:hover, .group-hover\:text-sky-900:is(:where(.group):hover *)) {
+  color: oklch(90.1% 0.058 230.902); /* sky-200 */
+}
+.dark :is(.text-blue-500, .hover\:text-blue-500:hover, .group-hover\:text-blue-500:is(:where(.group):hover *), .text-blue-600, .hover\:text-blue-600:hover, .group-hover\:text-blue-600:is(:where(.group):hover *)) {
+  color: oklch(70.7% 0.165 254.624); /* blue-400 */
+}
+.dark :is(.text-blue-700, .hover\:text-blue-700:hover, .group-hover\:text-blue-700:is(:where(.group):hover *)) {
+  color: oklch(80.9% 0.105 251.813); /* blue-300 */
+}
+.dark :is(.text-blue-800, .hover\:text-blue-800:hover, .group-hover\:text-blue-800:is(:where(.group):hover *), .text-blue-900, .hover\:text-blue-900:hover, .group-hover\:text-blue-900:is(:where(.group):hover *)) {
+  color: oklch(88.2% 0.059 254.128); /* blue-200 */
+}
+.dark :is(.text-purple-500, .hover\:text-purple-500:hover, .group-hover\:text-purple-500:is(:where(.group):hover *), .text-purple-600, .hover\:text-purple-600:hover, .group-hover\:text-purple-600:is(:where(.group):hover *)) {
+  color: oklch(71.4% 0.203 305.504); /* purple-400 */
+}
+.dark :is(.text-purple-700, .hover\:text-purple-700:hover, .group-hover\:text-purple-700:is(:where(.group):hover *)) {
+  color: oklch(82.7% 0.119 306.383); /* purple-300 */
+}
+.dark :is(.text-purple-800, .hover\:text-purple-800:hover, .group-hover\:text-purple-800:is(:where(.group):hover *), .text-purple-900, .hover\:text-purple-900:hover, .group-hover\:text-purple-900:is(:where(.group):hover *)) {
+  color: oklch(90.2% 0.063 306.703); /* purple-200 */
+}
+.dark :is(.text-rose-500, .hover\:text-rose-500:hover, .group-hover\:text-rose-500:is(:where(.group):hover *), .text-rose-600, .hover\:text-rose-600:hover, .group-hover\:text-rose-600:is(:where(.group):hover *)) {
+  color: oklch(71.2% 0.194 13.428); /* rose-400 */
+}
+.dark :is(.text-rose-700, .hover\:text-rose-700:hover, .group-hover\:text-rose-700:is(:where(.group):hover *)) {
+  color: oklch(81% 0.117 11.638); /* rose-300 */
+}
+.dark :is(.text-rose-800, .hover\:text-rose-800:hover, .group-hover\:text-rose-800:is(:where(.group):hover *), .text-rose-900, .hover\:text-rose-900:hover, .group-hover\:text-rose-900:is(:where(.group):hover *)) {
+  color: oklch(89.2% 0.058 10.001); /* rose-200 */
+}

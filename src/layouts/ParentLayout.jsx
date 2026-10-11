@@ -57,7 +57,7 @@ export default function ParentLayout() {
 
           <main
             id="main-content"
-            className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-gray-100"
+            className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-gray-100 dark:bg-(--page)"
           >
             <Outlet />
           </main>

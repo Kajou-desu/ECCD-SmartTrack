@@ -2,6 +2,7 @@ import { useState } from "react";
 import NotificationModal from "@components/shared/NotificationModal";
 import ReminderBanner from "../shared/ReminderBanner";
 import ChildSelectorDropdown from "./ChildSelectorDropdown";
+import ThemeToggleButton from "@components/ui/ThemeToggleButton";
 import Logo from "@assets/ECCDST_Logo.png";
 import { useNotifications } from "@hooks/useNotifications";
 import { useParentChild } from "@hooks/useParentChild.js";
@@ -76,6 +77,8 @@ export default function ParentHeader({
             aria-hidden="true"
             className="mx-1 hidden h-6 w-px bg-slate-200 sm:block"
           />
+
+          <ThemeToggleButton />
 
           {/* Notifications */}
           <button

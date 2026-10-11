@@ -3,9 +3,10 @@ import ProfileSettings from "@features/settings/components/ProfileSettings.jsx";
 import SecuritySettings from "@features/settings/components/SecuritySettings.jsx";
 import NotificationSettings from "@features/settings/components/NotificationSettings.jsx";
 import AccountSettings from "@features/settings/components/AccountSettings.jsx";
+import AppearanceSettings from "@features/settings/components/AppearanceSettings.jsx";
 import { SettingsTabs, SettingsTabPanel } from "@features/settings/components/SettingsTabs.jsx";
 import { Toast } from "@components/ui/Toast.jsx";
-import { UserRound, Bell, Lock, Settings as SettingsIcon } from "lucide-react";
+import { UserRound, Bell, Lock, Palette, Settings as SettingsIcon } from "lucide-react";
 
 export default function ParentSettings() {
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -28,6 +29,11 @@ export default function ParentSettings() {
       id: "notifications",
       label: "Notifications",
       icon: Bell,
+    },
+    {
+      id: "general",
+      label: "General",
+      icon: Palette,
     },
     {
       id: "account",
@@ -75,6 +81,13 @@ export default function ParentSettings() {
         <SettingsTabPanel id="notifications" className="w-full sm:mx-auto">
           {/* Notification Settings */}
           <NotificationSettings />
+        </SettingsTabPanel>
+      )}
+
+      {activeTab === "general" && (
+        <SettingsTabPanel id="general" className="w-full sm:max-w-3xl sm:mx-auto">
+          {/* Theme and text size */}
+          <AppearanceSettings />
         </SettingsTabPanel>
       )}
 

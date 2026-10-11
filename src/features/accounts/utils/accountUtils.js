@@ -12,9 +12,10 @@ export const INITIAL_FORM = {
     addressMunicipality: "",
     addressBarangay: "",
     addressDetails: "",
-    // Which ECCD center a Teacher account is based at; not shown/used for
-    // other roles.
-    centerLocation: "",
+    // The ECCD center the account belongs to (id, as a string from the select).
+    // An Admin chooses it; for a Teacher creating an account the server uses
+    // the Teacher's own center.
+    centerId: "",
     role: "Parent",
     studentIds: [],
 };
@@ -31,7 +32,7 @@ export const INITIAL_EDIT_FORM = {
     addressMunicipality: "",
     addressBarangay: "",
     addressDetails: "",
-    centerLocation: "",
+    centerId: "",
     role: "Parent",
     studentIds: [],
 };
@@ -171,6 +172,27 @@ export function groupAccounts(accounts) {
     );
 }
 
+// The select holds the id as a string; the API wants a number, or nothing.
+export function toCenterId(value) {
+    const id = Number(value);
+    return Number.isInteger(id) && id > 0 ? id : undefined;
+}
+
+// Checks a NEW account before it is sent, with the same wording the server
+// uses, so the person sees what to fix without a round trip. Editing is left to
+// the server: a Teacher is shown only their own students on an account, so
+// "no students listed" does not mean the account has none.
+export function validateNewAccount(formData, actingRole) {
+    const role = normalizeRole(formData.role);
+    if (actingRole === "Admin" && role !== "Admin" && !toCenterId(formData.centerId)) {
+        return "Choose the center for this account.";
+    }
+    if (["Parent", "Guardian"].includes(role) && !(formData.studentIds ?? []).length) {
+        return "A Parent or Guardian account must be connected to at least one student. Select a student for this account.";
+    }
+    return "";
+}
+
 export function createAccountPayload(formData) {
     return {
         ...formData,
@@ -184,7 +206,7 @@ export function createAccountPayload(formData) {
             barangay: formData.addressBarangay,
             details: formData.addressDetails,
         }),
-        centerLocation: (formData.centerLocation ?? "").trim(),
+        centerId: toCenterId(formData.centerId),
         role: normalizeRole(formData.role),
         studentIds: formData.studentIds ?? [],
     };
@@ -204,7 +226,7 @@ export function updateAccountPayload(formData) {
             barangay: formData.addressBarangay,
             details: formData.addressDetails,
         }),
-        centerLocation: (formData.centerLocation ?? "").trim(),
+        centerId: toCenterId(formData.centerId),
         role: normalizeRole(formData.role),
         studentIds: formData.studentIds ?? [],
     };

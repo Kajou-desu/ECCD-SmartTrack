@@ -5,6 +5,7 @@ import NotificationModal from "../shared/NotificationModal";
 import Logo from "@assets/ECCDST_Logo.png";
 import { useNotifications } from "@hooks/useNotifications";
 import { Toast } from "@components/ui/Toast";
+import ThemeToggleButton from "@components/ui/ThemeToggleButton";
 import { useAttendanceSession } from "@features/smartAttendance/hooks/useAttendanceSession";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { useUpcomingReminders } from "@hooks/useUpcomingReminders.js";
@@ -111,6 +112,8 @@ export default function Header({
           >
             <CalendarDays aria-hidden="true" className="h-5 w-5" />
           </button>
+
+          <ThemeToggleButton />
 
           {/* Notifications button */}
           <button

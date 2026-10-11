@@ -67,7 +67,7 @@ export default function AttendanceCamera({ camera }) {
       )}
 
       <div
-        className="relative mx-auto mt-4 overflow-hidden rounded-lg bg-slate-900"
+        className="relative mx-auto mt-4 overflow-hidden rounded-lg bg-slate-900 dark:bg-black"
         style={{ aspectRatio: ratio, width: `min(100%, ${(70 * ratio).toFixed(2)}vh)` }}
       >
         <video
