@@ -67,7 +67,7 @@ describe("AttendanceLive page", () => {
     expect(screen.getByText("Marked present")).toBeTruthy();
     expect(screen.getByText("Face seen, waiting for tag")).toBeTruthy();
     expect(screen.getByText("1 marked present, 1 waiting for a second check")).toBeTruthy();
-    expect(screen.getByText("Not connected")).toBeTruthy(); // door tag reader offline is visible
+    expect(screen.getByText("Not connected")).toBeTruthy(); // tag reader offline is visible
     expect(screen.getByText("Ready")).toBeTruthy();           // face recognition
     expect(screen.getByText(/Arrived at \d{1,2}:\d{2}/)).toBeTruthy();
   });

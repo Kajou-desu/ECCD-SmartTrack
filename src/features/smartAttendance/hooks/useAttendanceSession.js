@@ -49,6 +49,10 @@ export function useAttendanceSession() {
   return {
     session: query.data ?? null,
     isActive: Boolean(query.data),
+    pickupChecks: query.data?.pickupChecks ?? [],
+    pickupWindow: query.data?.pickupWindow ?? { active: false, endsAt: null },
+    // When the prompts were fetched: their time left is counted from here.
+    receivedAt: query.dataUpdatedAt,
     isLoading: query.isLoading,
     isToggling: startMutation.isPending || stopMutation.isPending,
     start,

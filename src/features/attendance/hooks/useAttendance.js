@@ -4,7 +4,7 @@ import { apiClient } from "@api/client.js";
 import useTodayKey from "@hooks/useTodayKey.js";
 import { useAttendanceQuery } from "./useAttendanceQuery.js";
 import { normalizeAttendanceTime } from "../utils/attendanceFilters.js";
-import { formatTime } from "../utils/attendanceDeparture.js";
+import { formatTime } from "../utils/attendancePickup.js";
 import { useToast } from "@hooks/useToast.js";
 import { downloadCsv } from "@utils/exportCsv.js";
 import { getErrorMessage } from "@api/errorMessage.js";
@@ -103,7 +103,7 @@ export function useAttendance(initialDate) {
         return next;
       });
 
-      setAttendanceRecords((current) => current.map((record) => (record.id === id ? { ...record, status: nextStatus, verified: false, departedAt: null } : record)));
+      setAttendanceRecords((current) => current.map((record) => (record.id === id ? { ...record, status: nextStatus, verified: false, pickedUpAt: null } : record)));
 
       try {
         await apiClient.updateAttendance(id, selectedDate, nextStatus);
@@ -131,10 +131,10 @@ export function useAttendance(initialDate) {
     [savingIds, attendanceRecords, selectedDate, queryClient, showToast],
   );
 
-  // Marks a present student departed (today only — the server rejects other
+  // Marks a present student picked up (today only — the server rejects other
   // days, and the button isn't offered for them). Same optimistic-update /
   // rollback shape as handleStatusChange; the server also notifies the parents.
-  const handleDepart = useCallback(
+  const handlePickUp = useCallback(
     async (id) => {
       if (savingIds.has(id)) return;
 
@@ -142,18 +142,18 @@ export function useAttendance(initialDate) {
       const studentName = previousRecords.find((record) => record.id === id)?.name;
 
       setSavingIds((current) => new Set(current).add(id));
-      setAttendanceRecords((current) => current.map((record) => (record.id === id ? { ...record, departedAt: new Date().toISOString() } : record)));
+      setAttendanceRecords((current) => current.map((record) => (record.id === id ? { ...record, pickedUpAt: new Date().toISOString() } : record)));
 
       try {
-        await apiClient.markDeparted(id);
+        await apiClient.markPickedUp(id);
         queryClient.invalidateQueries({ queryKey: ["attendance", selectedDate] });
-        showToast("success", `${studentName || "Student"} was marked departed.`);
+        showToast("success", `${studentName || "Student"} was marked picked up.`);
       } catch (err) {
-        console.error("Failed to mark departed:", err);
+        console.error("Failed to mark picked up:", err);
         if (!mountedRef.current) return;
         setAttendanceRecords(previousRecords);
-        setError("Failed to mark departure. The student was not marked departed.");
-        showToast("error", "Failed to mark departure. The student was not marked departed.");
+        setError("Failed to mark pickup. The student was not marked picked up.");
+        showToast("error", "Failed to mark pickup. The student was not marked picked up.");
       } finally {
         setSavingIds((current) => {
           const next = new Set(current);
@@ -173,7 +173,7 @@ export function useAttendance(initialDate) {
 
       downloadCsv(
         `attendance_${selectedDate}${isFiltered ? "_filtered" : ""}.csv`,
-        ["Date", "Name", "Session", "Status", "Arrived", "Departed"],
+        ["Date", "Name", "Session", "Status", "Arrived", "Picked up"],
         filteredRecords.map((record) => [
           selectedDate,
           record.name,
@@ -183,7 +183,7 @@ export function useAttendance(initialDate) {
           // Local clock time, the same as the attendance cards — the raw value
           // is a UTC ISO string that reads as 00:05 for an 8:05 AM arrival.
           record.status === "present" ? formatTime(record.arrivedAt) : "",
-          record.status === "present" ? formatTime(record.departedAt) : "",
+          record.status === "present" ? formatTime(record.pickedUpAt) : "",
         ]),
       );
       showToast("success", "Attendance data was exported.");
@@ -248,7 +248,7 @@ export function useAttendance(initialDate) {
     setSelectedDate,
     savingIds,
     handleStatusChange,
-    handleDepart,
+    handlePickUp,
     todayKey,
     handleExport,
   };

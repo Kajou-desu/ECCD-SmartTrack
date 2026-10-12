@@ -42,8 +42,8 @@ test("filenames say what the file covers", () => {
 test("range rows use labels and only show times for present students", () => {
   const rows = rangeRows(
     [
-      { date: "2026-10-05", studentCode: "ECCD-2026-1", name: "Ana", session: "morning", status: "present", arrivedAt: "A", departedAt: "D" },
-      { date: "2026-10-05", studentCode: "ECCD-2026-2", name: "Ben", session: "afternoon", status: "absent", arrivedAt: "A", departedAt: null },
+      { date: "2026-10-05", studentCode: "ECCD-2026-1", name: "Ana", session: "morning", status: "present", arrivedAt: "A", pickedUpAt: "D" },
+      { date: "2026-10-05", studentCode: "ECCD-2026-2", name: "Ben", session: "afternoon", status: "absent", arrivedAt: "A", pickedUpAt: null },
     ],
     (v) => `t:${v}`,
   );
@@ -61,7 +61,7 @@ test("attendance CSV: accepts BOM, case-insensitive headers, aliases and loose d
 });
 
 test("attendance CSV: an attendance export can be re-imported (extra columns ignored)", () => {
-  const csv = '"Date","Student Code","Name","Session","Status","Arrived","Departed"\r\n"2026-10-05","ECCD-2026-1","Ana","Morning","Present","8:05 AM",""\r\n';
+  const csv = '"Date","Student Code","Name","Session","Status","Arrived","Picked up"\r\n"2026-10-05","ECCD-2026-1","Ana","Morning","Present","8:05 AM",""\r\n';
   assert.deepEqual(parseAttendanceCsv(csv), [{ studentCode: "ECCD-2026-1", date: "2026-10-05", status: "present" }]);
 });
 

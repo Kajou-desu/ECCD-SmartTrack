@@ -124,7 +124,7 @@ export default function NotificationSettings() {
   const pushBusy = turnOnPush.isPending || turnOffPush.isPending;
   const pushBlocked = pushSupported && getPushPermission() === "denied" && !deviceSubscribed;
 
-  let pushDescription = "Get arrival and departure alerts on this device, even when the app is closed";
+  let pushDescription = "Get arrival and pickup alerts on this device, even when the app is closed";
   let pushAvailable = true;
   if (!pushSupported) {
     pushDescription = "Not supported in this browser. On iPhone or iPad, add this site to your Home Screen first.";
@@ -187,7 +187,7 @@ export default function NotificationSettings() {
               <SettingToggle
                 id="email-notifications"
                 label="Email Notifications"
-                description="Receive arrival and departure alerts via email"
+                description="Receive arrival and pickup alerts via email"
                 checked={prefs.notifyByEmail}
                 onChange={() => handlePreferenceChange("notifyByEmail")}
               />
@@ -195,7 +195,7 @@ export default function NotificationSettings() {
               <SettingToggle
                 id="sms-notifications"
                 label="SMS Notifications"
-                description="Receive arrival and departure alerts by text message"
+                description="Receive arrival and pickup alerts by text message"
                 checked={prefs.notifyBySms}
                 onChange={() => handlePreferenceChange("notifyBySms")}
               />

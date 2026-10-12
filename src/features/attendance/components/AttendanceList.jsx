@@ -1,8 +1,8 @@
 import AttendanceCard from "./AttendanceCard";
 import AttendanceEmptyState from "./AttendanceEmptyState";
-import { canMarkDeparted } from "../utils/attendanceDeparture.js";
+import { canMarkPickedUp } from "../utils/attendancePickup.js";
 
-export default function AttendanceList({ filteredRecords, handleStatusChange, handleDepart, selectedDate, todayKey, savingIds, searchQuery }) {
+export default function AttendanceList({ filteredRecords, handleStatusChange, handlePickUp, selectedDate, todayKey, savingIds, searchQuery }) {
   if (!filteredRecords || filteredRecords.length === 0) {
     return <AttendanceEmptyState searchQuery={searchQuery} />;
   }
@@ -14,8 +14,8 @@ export default function AttendanceList({ filteredRecords, handleStatusChange, ha
           key={record.id}
           record={record}
           onMarkStatus={handleStatusChange}
-          onDepart={handleDepart}
-          canDepart={canMarkDeparted(record, selectedDate, todayKey)}
+          onPickUp={handlePickUp}
+          canPickUp={canMarkPickedUp(record, selectedDate, todayKey)}
           isSaving={savingIds.has(record.id)}
         />
       ))}

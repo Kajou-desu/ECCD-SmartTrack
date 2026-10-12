@@ -6,8 +6,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useTodayKey from "@hooks/useTodayKey.js";
 import { apiClient } from "@api/client.js";
 import { useAttendanceQuery } from "@features/attendance/hooks/useAttendanceQuery.js";
-import MarkDepartedButton from "@features/attendance/components/MarkDepartedButton";
-import { canMarkDeparted, formatTime } from "@features/attendance/utils/attendanceDeparture.js";
+import MarkPickedUpButton from "@features/attendance/components/MarkPickedUpButton";
+import { canMarkPickedUp, formatTime } from "@features/attendance/utils/attendancePickup.js";
 import { useToast } from "@hooks/useToast.js";
 import { Check, ArrowRight } from "lucide-react";
 
@@ -25,15 +25,15 @@ export function AttendanceList() {
   const records = useMemo(() => data?.records ?? [], [data]);
 
   // This widget reads the shared ["attendance", today] cache, so refetching it
-  // is enough to show the new departure here (and on the Attendance page).
+  // is enough to show the new pickup here (and on the Attendance page).
   const queryClient = useQueryClient();
-  const departMutation = useMutation({
-    mutationFn: (studentId) => apiClient.markDeparted(studentId),
-    onSuccess: () => showToast("success", "Student marked departed."),
-    onError: () => showToast("error", "Couldn't mark the student departed. Please try again."),
+  const pickUpMutation = useMutation({
+    mutationFn: (studentId) => apiClient.markPickedUp(studentId),
+    onSuccess: () => showToast("success", "Student marked picked up."),
+    onError: () => showToast("error", "Couldn't mark the student picked up. Please try again."),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["attendance", today] }),
   });
-  const departingId = departMutation.isPending ? departMutation.variables : null;
+  const pickingUpId = pickUpMutation.isPending ? pickUpMutation.variables : null;
 
   // Filter attendance morning to afternoon
   const [selectedPeriod, setSelectedPeriod] = useState("am");
@@ -102,9 +102,9 @@ export function AttendanceList() {
         </div>
       </div>
 
-      {departMutation.isError && (
+      {pickUpMutation.isError && (
         <p role="alert" className="shrink-0 text-xs text-red-600">
-          Couldn't mark the student departed. Please try again.
+          Couldn't mark the student picked up. Please try again.
         </p>
       )}
 
@@ -120,9 +120,9 @@ export function AttendanceList() {
             <AttendanceListItem
               key={attendance.id}
               attendance={attendance}
-              canDepart={canMarkDeparted(attendance, today, today)}
-              isDeparting={departingId === attendance.id}
-              onDepart={() => departMutation.mutate(attendance.id)}
+              canPickUp={canMarkPickedUp(attendance, today, today)}
+              isPickingUp={pickingUpId === attendance.id}
+              onPickUp={() => pickUpMutation.mutate(attendance.id)}
             />
           ))
         ) : (
@@ -137,7 +137,7 @@ export function AttendanceList() {
   );
 }
 
-function AttendanceListItem({ attendance, canDepart, isDeparting, onDepart }) {
+function AttendanceListItem({ attendance, canPickUp, isPickingUp, onPickUp }) {
   return (
     <div
       role="listitem"
@@ -171,14 +171,14 @@ function AttendanceListItem({ attendance, canDepart, isDeparting, onDepart }) {
             ? new Date(attendance.arrivedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
             : "Not recorded"}
         </p>
-        {attendance.departedAt && (
-          <p className="whitespace-nowrap text-xs text-gray-500">Departed {formatTime(attendance.departedAt)}</p>
+        {attendance.pickedUpAt && (
+          <p className="whitespace-nowrap text-xs text-gray-500">Picked up {formatTime(attendance.pickedUpAt)}</p>
         )}
-        {canDepart && (
-          <MarkDepartedButton
+        {canPickUp && (
+          <MarkPickedUpButton
             studentName={formatStudentName(attendance)}
-            onDepart={onDepart}
-            disabled={isDeparting}
+            onPickUp={onPickUp}
+            disabled={isPickingUp}
             className="rounded-md px-2 py-1 text-xs"
           />
         )}

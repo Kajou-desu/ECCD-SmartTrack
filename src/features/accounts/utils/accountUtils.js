@@ -113,13 +113,13 @@ export function getInitial(account) {
     ).toUpperCase();
 }
 
-// Parents/Guardians get arrival/departure text alerts (SMS reaches Philippine
+// Parents/Guardians get arrival/pickup text alerts (SMS reaches Philippine
 // mobile numbers only), and the backend rejects any other phone for these roles
 // — see SMS_ROLES in the backend users.controller.js. Shown up front so it
 // doesn't only surface as an error after Save.
 export const SMS_ROLES = ["Parent", "Guardian"];
 export const PH_MOBILE_HINT =
-    "Philippine mobile number, e.g. 0917 123 4567. Arrival and departure text alerts are sent to this number.";
+    "Philippine mobile number, e.g. 0917 123 4567. Arrival and pickup text alerts are sent to this number.";
 
 // The Contact Phone field holds the 10-digit mobile number without the country
 // or trunk prefix (9XXXXXXXXX) — the backend adds +63 when sending. Strips
@@ -138,7 +138,7 @@ export function toTenDigitPhone(value) {
 }
 
 export const ACCOUNT_PHONE_HINT =
-    "Philippine mobile number, 10 digits without the leading 0, e.g. 9171234567. Arrival and departure text alerts are sent to this number.";
+    "Philippine mobile number, 10 digits without the leading 0, e.g. 9171234567. Arrival and pickup text alerts are sent to this number.";
 
 export function normalizeRole(role) {
     return role === "Day Care Worker" ? "Teacher" : role || "Parent";

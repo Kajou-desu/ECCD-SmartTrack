@@ -88,7 +88,7 @@ export default function AttendanceCamera({ camera }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-6 text-center text-slate-300">
             <CameraOff aria-hidden="true" className="h-10 w-10" />
             <p className="max-w-xs text-sm">
-              Turn on this device's camera to recognise students as they arrive. Place it facing the door.
+              Turn on this device's camera to recognise students in the room. Place it where it can see the whole class.
             </p>
           </div>
         )}

@@ -7,6 +7,7 @@ import DashboardHeader from "@features/dashboard/components/DashboardHeader";
 import ChildOverviewCard from "@features/dashboard/components/ChildOverviewCard";
 import WeeklyGoalsCard from "@features/dashboard/components/WeeklyGoalsCard";
 import RecentActivitiesCard from "@features/dashboard/components/RecentActivitiesCard";
+import MilestonesCard from "@features/dashboard/components/MilestonesCard";
 import { EventCard } from "@features/dashboard/components/EventCard";
 import {
   ProgressLoadingState,
@@ -85,7 +86,7 @@ export default function ParentDashboard() {
       <ChildOverviewCard
         child={selectedChild}
         arrivalTime={todayAttendance?.arrivedAt}
-        departedTime={todayAttendance?.departedAt}
+        pickedUpTime={todayAttendance?.pickedUpAt}
       />
 
       {status === "loading" && <ProgressLoadingState />}
@@ -124,10 +125,16 @@ export default function ParentDashboard() {
           </div>
 
           <div className="lg:h-125 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <WeeklyGoalsCard goals={progress.weeklyGoals} />
+            <WeeklyGoalsCard goals={progress.weeklyGoals} totalGoals={progress.weeklyGoalsTotal} />
             <RecentActivitiesCard activities={progress.recentActivities} />
             <EventCard showBirthdays={false} />
           </div>
+
+          <MilestonesCard
+            milestones={progress.milestoneList}
+            total={progress.milestones}
+            childName={selectedChild.firstName ?? formatStudentName(selectedChild)}
+          />
         </>
       )}
     </div>

@@ -293,14 +293,14 @@ export const apiClient = {
   },
 
   /**
-   * Mark a student as departed for TODAY. The server only allows this for a
-   * student who arrived today and hasn't already departed, and it notifies
+   * Mark a student as picked up for TODAY. The server only allows this for a
+   * student who arrived today and hasn't already been picked up, and it notifies
    * the student's parents/guardians (in-app, email, SMS).
    * @param {number|string} studentId - Student ID
-   * @returns {Promise<Object>} Updated attendance record (with departedAt)
+   * @returns {Promise<Object>} Updated attendance record (with pickedUpAt)
    */
-  async markDeparted(studentId) {
-    return fetchWithRetry(`${API_BASE_URL}/api/attendance/${studentId}/depart`, {
+  async markPickedUp(studentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/${studentId}/pickup`, {
       method: "PATCH",
     });
   },
@@ -366,6 +366,20 @@ export const apiClient = {
   },
 
   /**
+   * Answer an "is this student still in the center?" prompt (they last 15 s).
+   * stillHere=true restarts the unseen clock; false marks the student picked up
+   * and notifies their parents. The server knows which student the prompt was
+   * for, so only the prompt id and the answer are sent.
+   */
+  async answerPickupCheck(checkId, stillHere) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/pickup-checks/${checkId}/answer`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ stillHere }),
+    });
+  },
+
+  /**
    * BLE attendance tags registered to a student (teacher/admin only). The tag's
    * address is validated again on the server; a tag belongs to exactly one student.
    */
@@ -397,7 +411,7 @@ export const apiClient = {
 
   /**
    * Everything the live monitor shows, in one call: verified/waiting students
-   * plus whether the door tag reader and face recognition are available.
+   * plus whether the tag reader and face recognition are available.
    */
   async getAttendanceMonitor(options = {}) {
     return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/monitor`, {

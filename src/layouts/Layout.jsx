@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "@components/navigation/Header";
 import Sidebar from "@components/navigation/Sidebar";
+import PickupCheckPrompt from "@features/smartAttendance/components/PickupCheckPrompt";
 
 export default function Layout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -51,6 +52,8 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      <PickupCheckPrompt />
     </div>
   );
 }

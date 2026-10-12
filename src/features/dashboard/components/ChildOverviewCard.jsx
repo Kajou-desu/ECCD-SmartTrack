@@ -10,7 +10,7 @@ function formatTime(value) {
     : date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
-export default function ChildOverviewCard({ child, arrivalTime, departedTime }) {
+export default function ChildOverviewCard({ child, arrivalTime, pickedUpTime }) {
   return (
     <div className="bg-linear-to-r from-orange-50 to-orange-100 rounded-3xl border border-orange-200 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
@@ -50,10 +50,10 @@ export default function ChildOverviewCard({ child, arrivalTime, departedTime }) 
             </div>
             <div>
               <p className="text-xs uppercase font-semibold text-gray-600">
-                Departed Time
+                Picked Up Time
               </p>
               <p className="font-medium text-orange-700">
-                {formatTime(departedTime ?? child.departedAt ?? child.departedTime)}
+                {formatTime(pickedUpTime ?? child.pickedUpAt ?? child.pickedUpTime)}
               </p>
             </div>
           </div>

@@ -1,7 +1,7 @@
 // Pure helpers for the live attendance monitor and camera loop. No React and no
 // aliased imports, so they can be unit tested with `node --test`.
 
-export const FRAME_INTERVAL_MS = 700; // ~1.4 frames/s: plenty for a door, and under the server's rate limit
+export const FRAME_INTERVAL_MS = 700; // ~1.4 frames/s: plenty for a classroom, and under the server's rate limit
 export const FRAME_MAX_WIDTH = 640; // a 640px JPEG is ~50 KB; the server rejects frames over 200 KB
 export const FRAME_JPEG_QUALITY = 0.7;
 export const MONITOR_POLL_MS = 2000;

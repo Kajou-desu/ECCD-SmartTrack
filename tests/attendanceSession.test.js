@@ -15,7 +15,11 @@ test("polls quickly while a session is active and slowly when idle", () => {
 
 test("normalizes the { session } envelope to an object or null", () => {
   const session = { id: 4, date: "2026-09-20", status: "active" };
-  assert.deepEqual(normalizeSessionResponse({ session }), session);
+  assert.deepEqual(normalizeSessionResponse({ session }), {
+    ...session,
+    pickupChecks: [],
+    pickupWindow: { active: false, endsAt: null },
+  });
   assert.equal(normalizeSessionResponse({ session: null }), null);
 });
 

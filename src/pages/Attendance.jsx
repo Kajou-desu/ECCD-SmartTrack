@@ -27,7 +27,7 @@ export default function Attendance() {
     setSelectedDate,
     savingIds,
     handleStatusChange,
-    handleDepart,
+    handlePickUp,
     todayKey,
     handleExport,
     exportPeriod,
@@ -172,7 +172,7 @@ export default function Attendance() {
         <AttendanceList
           filteredRecords={filteredRecords}
           handleStatusChange={handleStatusChange}
-          handleDepart={handleDepart}
+          handlePickUp={handlePickUp}
           selectedDate={selectedDate}
           todayKey={todayKey}
           savingIds={savingIds}

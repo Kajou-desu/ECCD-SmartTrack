@@ -35,7 +35,7 @@ export default function AttendanceStatusBar({ cameraStatus, recognitionAvailable
       />
       <StatusItem
         icon={RadioTower}
-        label="Door tag reader"
+        label="Tag reader"
         ok={gatewayOnline}
         text={gatewayOnline ? "Online" : "Not connected"}
       />

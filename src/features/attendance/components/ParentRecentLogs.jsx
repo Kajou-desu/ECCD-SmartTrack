@@ -31,7 +31,7 @@ function getLogStyles(status) {
   };
 }
 
-// The backend sends arrivedAt/departedAt (ISO timestamps), never a ready-made
+// The backend sends arrivedAt/pickedUpAt (ISO timestamps), never a ready-made
 // `time`; `log.time` is kept only as an override for any caller that has one.
 function formatLogTime(isoValue) {
   return isoValue
@@ -52,7 +52,7 @@ export default function ParentRecentLogs({ logs, childName, monthName }) {
         log.date,
         log.status ? log.status.charAt(0).toUpperCase() + log.status.slice(1) : "",
         log.time ?? formatLogTime(log.arrivedAt),
-        formatLogTime(log.departedAt),
+        formatLogTime(log.pickedUpAt),
       ]),
     );
   };

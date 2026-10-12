@@ -41,7 +41,7 @@ export default function StudentBleDevicesCard({ studentId }) {
       <h2 className="text-lg font-bold text-gray-800">Attendance tag</h2>
       <p className="mt-1 max-w-prose text-sm text-gray-600">
         The Bluetooth tag this child carries, for example on their bag. A child is marked present automatically
-        when their tag and their face are both seen at the door.
+        when their tag and their face are both seen in the classroom.
       </p>
 
       {error && (

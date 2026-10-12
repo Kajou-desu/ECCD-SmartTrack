@@ -43,7 +43,7 @@ export default function GradeGoalModal({ goal, onCancel, onConfirm }) {
             <h2 id="grade-goal-title" className="text-base font-bold text-slate-900">
               Grade Class — {goal.title}
             </h2>
-            <p className="mt-1 text-sm text-slate-600">Set each student's progress toward this goal.</p>
+            <p className="mt-1 text-sm text-slate-600">Set each student's progress toward this goal. At 100% the goal becomes a milestone on the parent's dashboard.</p>
           </div>
 
           <button

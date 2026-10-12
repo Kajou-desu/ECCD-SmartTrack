@@ -5,7 +5,7 @@ import { downloadCsv } from "@utils/exportCsv.js";
 import { toDayKey } from "@utils/dateKeys.js";
 import { getErrorMessage } from "@api/errorMessage.js";
 import { useToast } from "@hooks/useToast.js";
-import { formatTime } from "@features/attendance/utils/attendanceDeparture.js";
+import { formatTime } from "@features/attendance/utils/attendancePickup.js";
 import { RANGE_HEADERS, rangeRows } from "@features/attendance/utils/attendanceRange.js";
 import { PROFILE_HEADERS, profileRows, profileFilename } from "../utils/studentProfileExport.js";
 

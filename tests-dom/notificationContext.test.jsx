@@ -65,7 +65,7 @@ describe("NotificationProvider", () => {
     apiMock.getNotifications
       .mockResolvedValueOnce([row(1, "Ana arrived at school at 7:40 AM.")])
       .mockResolvedValue([
-        row(2, "Ana has departed from school at 11:30 AM."),
+        row(2, "Ana was picked up from school at 11:30 AM."),
         row(1, "Ana arrived at school at 7:40 AM."),
       ]);
 

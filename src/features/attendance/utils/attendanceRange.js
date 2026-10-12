@@ -36,7 +36,7 @@ export function rangeFilename(period, { from, to }) {
   return period === "day" ? `attendance_${from}.csv` : `attendance_${period}_${from}_to_${to}.csv`;
 }
 
-export const RANGE_HEADERS = ["Date", "Student Code", "Name", "Session", "Status", "Arrived", "Departed"];
+export const RANGE_HEADERS = ["Date", "Student Code", "Name", "Session", "Status", "Arrived", "Picked up"];
 // Same column set as the import template, so an export can be re-imported.
 export const IMPORT_HEADERS = ["studentCode", "date", "status"];
 
@@ -52,6 +52,6 @@ export function rangeRows(records, formatTime) {
     SESSION_LABELS[r.session] ?? "",
     titleCase(r.status),
     r.status === "present" ? formatTime(r.arrivedAt) : "",
-    r.status === "present" ? formatTime(r.departedAt) : "",
+    r.status === "present" ? formatTime(r.pickedUpAt) : "",
   ]);
 }

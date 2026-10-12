@@ -1,9 +1,9 @@
 import formatStudentName from "@utils/formatStudentName.js";
 import Avatar from "@components/shared/Avatar.jsx";
-import MarkDepartedButton from "./MarkDepartedButton";
-import { formatTime } from "../utils/attendanceDeparture.js";
+import MarkPickedUpButton from "./MarkPickedUpButton";
+import { formatTime } from "../utils/attendancePickup.js";
 
-export default function AttendanceCard({ record, onMarkStatus, onDepart, canDepart = false, isSaving }) {
+export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPickUp = false, isSaving }) {
   const studentName = formatStudentName(record) || "Unknown Student";
   const status = record.status || "absent";
 
@@ -46,15 +46,15 @@ export default function AttendanceCard({ record, onMarkStatus, onDepart, canDepa
                 })}`
               : "Not arrived"}
           </p>
-          {record.status === "present" && record.departedAt && (
-            <p className="text-sm text-gray-500">Departed at {formatTime(record.departedAt)}</p>
+          {record.status === "present" && record.pickedUpAt && (
+            <p className="text-sm text-gray-500">Picked up at {formatTime(record.pickedUpAt)}</p>
           )}
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-1">
           <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[status] || statusStyles.absent}`}>{statusLabel}</span>
           {record.verified && record.status === "present" && (
-            <span className="text-xs text-gray-500" title="Recorded automatically from the camera and the door tag reader">
+            <span className="text-xs text-gray-500" title="Recorded automatically from the camera and the tag reader">
               Verified automatically
             </span>
           )}
@@ -71,10 +71,10 @@ export default function AttendanceCard({ record, onMarkStatus, onDepart, canDepa
         ))}
       </div>
 
-      {canDepart && (
-        <MarkDepartedButton
+      {canPickUp && (
+        <MarkPickedUpButton
           studentName={studentName}
-          onDepart={() => onDepart(record.id)}
+          onPickUp={() => onPickUp(record.id)}
           disabled={isSaving}
           className="mt-2 w-full rounded-xl px-3 py-2.5 text-xs"
         />

@@ -37,6 +37,8 @@ export function useParentMaterials() {
     const [submissionsLoading, setSubmissionsLoading] = useState(true);
     const [submissionsError, setSubmissionsError] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    // "all" | "pending" (no work handed in by this child yet) | "completed"
+    const [statusFilter, setStatusFilter] = useState("all");
     const [reloadToken, setReloadToken] = useState(0);
 
     useEffect(() => {
@@ -90,23 +92,34 @@ export function useParentMaterials() {
         [materialsQueryData, submissions],
     );
 
+    const counts = useMemo(() => {
+        const completed = materials.filter((m) => m.completion.status === "completed").length;
+        return { all: materials.length, pending: materials.length - completed, completed };
+    }, [materials]);
+
     const filteredMaterials = useMemo(() => {
         const query = searchQuery.trim().toLowerCase();
 
-        if (!query) return materials;
+        return materials.filter((material) => {
+            const isCompleted = material.completion.status === "completed";
+            if (statusFilter === "pending" && isCompleted) return false;
+            if (statusFilter === "completed" && !isCompleted) return false;
+            if (!query) return true;
 
-        return materials.filter((material) =>
-            [material.title, material.category, material.description].some(
+            return [material.title, material.category, material.description].some(
                 (value) => value?.toLowerCase().includes(query),
-            ),
-        );
-    }, [materials, searchQuery]);
+            );
+        });
+    }, [materials, searchQuery, statusFilter]);
 
     return {
         materials,
         filteredMaterials,
         searchQuery,
         setSearchQuery,
+        statusFilter,
+        setStatusFilter,
+        counts,
         loading,
         error,
         retry,

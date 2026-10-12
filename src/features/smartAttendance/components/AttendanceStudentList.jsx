@@ -22,7 +22,7 @@ export default function AttendanceStudentList({ students = [], counts }) {
 
       {students.length === 0 ? (
         <p className="mt-6 rounded-lg bg-slate-50 px-4 py-6 text-center text-sm text-gray-500">
-          Nobody yet. Students appear here as the camera and the door tag reader pick them up.
+          Nobody yet. Students appear here as the camera and the tag reader pick them up.
         </p>
       ) : (
         <ul className="mt-4 divide-y divide-gray-100">

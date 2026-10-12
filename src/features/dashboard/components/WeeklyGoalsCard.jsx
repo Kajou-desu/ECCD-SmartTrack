@@ -1,9 +1,16 @@
-export default function WeeklyGoalsCard({ goals }) {
+export default function WeeklyGoalsCard({ goals, totalGoals = goals.length }) {
   return (
     <div className="lg:col-span-1 bg-white rounded-3xl border border-gray-200 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
       <h3 className="text-lg font-bold text-gray-800 mb-6">
         This Week's Goals
       </h3>
+      {goals.length === 0 && (
+        <p className="text-sm text-gray-600">
+          {totalGoals > 0
+            ? "All of this week's goals are achieved. See them under Milestones Reached."
+            : "No goals have been set for this week yet."}
+        </p>
+      )}
       <div className="space-y-4">
         {goals.map((goal) => (
           <div key={goal.id} className="space-y-2">

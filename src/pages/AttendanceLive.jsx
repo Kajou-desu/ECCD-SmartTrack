@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ClipboardList } from "lucide-react";
 import { useAttendanceSession } from "@features/smartAttendance/hooks/useAttendanceSession";
@@ -8,6 +8,7 @@ import AttendanceCamera from "@features/smartAttendance/components/AttendanceCam
 import AttendanceStatusBar from "@features/smartAttendance/components/AttendanceStatusBar";
 import AttendanceStudentList from "@features/smartAttendance/components/AttendanceStudentList";
 import { describeStopReason } from "@features/smartAttendance/utils/attendanceMonitor.js";
+import { shouldAutoStartCamera } from "@features/smartAttendance/utils/pickupChecks.js";
 import ErrorMsg from "@components/ui/ErrorMsg";
 
 function formatSessionDate(value) {
@@ -17,7 +18,7 @@ function formatSessionDate(value) {
 }
 
 export default function AttendanceLive() {
-  const { isActive, isLoading: isSessionLoading } = useAttendanceSession();
+  const { isActive, isLoading: isSessionLoading, pickupWindow } = useAttendanceSession();
   const { monitor, isError } = useAttendanceMonitor(isActive);
   // Spoken to screen-reader users when the camera verifies someone.
   const [announcement, setAnnouncement] = useState("");
@@ -35,6 +36,31 @@ export default function AttendanceLive() {
       stopCamera(describeStopReason("session-ended"));
     }
   }, [isSessionLoading, isActive, cameraStatus, stopCamera]);
+
+  // Automatic pickup only works while this page streams the camera, so when the
+  // pickup window is open turn it on — once per visit, so a teacher who turns it
+  // off isn't fought. (A browser that hasn't been given camera permission yet
+  // asks for it, or shows the usual "couldn't start" message.)
+  const { start: startCamera } = camera;
+  const triedAutoStart = useRef(false);
+  useEffect(() => {
+    const shouldStart = shouldAutoStartCamera({
+      isActive,
+      pickupActive: pickupWindow.active,
+      cameraStatus,
+      alreadyTried: triedAutoStart.current,
+    });
+    if (shouldStart) {
+      triedAutoStart.current = true;
+      startCamera();
+    }
+  }, [isActive, pickupWindow.active, cameraStatus, startCamera]);
+
+  const pickupEndsAt = useMemo(() => {
+    const date = pickupWindow.endsAt ? new Date(pickupWindow.endsAt) : null;
+    if (!date || Number.isNaN(date.getTime())) return "";
+    return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" }).format(date);
+  }, [pickupWindow.endsAt]);
 
   const sessionDate = useMemo(() => formatSessionDate(monitor?.session?.date), [monitor?.session?.date]);
 
@@ -70,7 +96,7 @@ export default function AttendanceLive() {
         <section className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
           <h2 className="text-base font-semibold text-gray-800">Attendance isn't running</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-gray-600">
-            Press Start Attendance in the top bar. Then turn on a camera facing the door, and students are marked
+            Press Start Attendance in the top bar. Then turn on a camera that can see the students, and they are marked
             present when both their face and their tag are seen.
           </p>
           {camera.message && (
@@ -87,6 +113,13 @@ export default function AttendanceLive() {
     <div className="space-y-6 p-6">
       {header}
       <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
+
+      {pickupWindow.active && (
+        <p role="status" className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Automatic pickup is on{pickupEndsAt ? ` until ${pickupEndsAt}` : ""}. Keep this page open with the camera
+          on, so students who are no longer seen can be checked on. You will be asked before anyone is marked picked up.
+        </p>
+      )}
 
       {isError && <ErrorMsg message="Live results couldn't be loaded. Retrying." onClose={() => {}} />}
 

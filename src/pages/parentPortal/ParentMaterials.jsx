@@ -5,8 +5,18 @@ import MaterialsLoadingState from "@features/materials/components/MaterialsLoadi
 import ErrorMsg from "@components/ui/ErrorMsg";
 
 export default function ParentMaterials() {
-  const { materials, filteredMaterials, searchQuery, setSearchQuery, loading, error, retry } =
-    useParentMaterials();
+  const {
+    materials,
+    filteredMaterials,
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter,
+    counts,
+    loading,
+    error,
+    retry,
+  } = useParentMaterials();
 
   const handleView = (material) => {
     const fileUrl = material.pdfUrl || material.fileUrl || material.url;
@@ -20,6 +30,9 @@ export default function ParentMaterials() {
         <ParentMaterialsToolbar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          counts={counts}
         />
 
         {error && <ErrorMsg message={error} onClose={retry} />}
@@ -31,7 +44,9 @@ export default function ParentMaterials() {
             materials={materials}
             filteredMaterials={filteredMaterials}
             searchQuery={searchQuery}
+            statusFilter={statusFilter}
             onClearSearch={() => setSearchQuery("")}
+            onClearFilter={() => setStatusFilter("all")}
             onView={handleView}
           />
         )}

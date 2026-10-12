@@ -12,8 +12,8 @@ afterEach(() => {
 });
 
 const logs = [
-  { date: "Oct 01, 2026", status: "present", arrivedAt: "2026-10-01T00:05:00.000Z", departedAt: "2026-10-01T04:00:00.000Z" },
-  { date: "Oct 02, 2026", status: "absent", arrivedAt: null, departedAt: null },
+  { date: "Oct 01, 2026", status: "present", arrivedAt: "2026-10-01T00:05:00.000Z", pickedUpAt: "2026-10-01T04:00:00.000Z" },
+  { date: "Oct 02, 2026", status: "absent", arrivedAt: null, pickedUpAt: null },
 ];
 
 describe("ParentRecentLogs export", () => {
