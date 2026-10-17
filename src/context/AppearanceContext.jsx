@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { AppearanceContext } from "./appearanceContextObject.js";
 import {
   applyAppearance,
@@ -17,6 +17,8 @@ const readSystemDark = () =>
 export function AppearanceProvider({ children }) {
   const [appearance, setAppearance] = useState(loadAppearance);
   const [systemDark, setSystemDark] = useState(readSystemDark);
+  // How many mounted screens currently demand the light theme (see lockLight).
+  const [lightLocks, setLightLocks] = useState(0);
 
   // Follow the OS setting live, so "System" tracks it without a reload.
   useEffect(() => {
@@ -27,9 +29,19 @@ export function AppearanceProvider({ children }) {
     return () => query.removeEventListener("change", onChange);
   }, []);
 
-  useEffect(() => {
-    applyAppearance(document.documentElement, appearance, systemDark);
-  }, [appearance, systemDark]);
+  // A layout effect, so the theme is on <html> before the browser paints:
+  // leaving the login page must not flash light on a dark dashboard.
+  useLayoutEffect(() => {
+    applyAppearance(document.documentElement, appearance, systemDark, { forceLight: lightLocks > 0 });
+  }, [appearance, systemDark, lightLocks]);
+
+  // Forces the light theme until the returned function is called, whatever the
+  // saved preference or the OS says. A count (not a flag) so overlapping
+  // screens can't unlock each other.
+  const lockLight = useCallback(() => {
+    setLightLocks((n) => n + 1);
+    return () => setLightLocks((n) => n - 1);
+  }, []);
 
   const update = useCallback((change) => {
     setAppearance((current) => {
@@ -51,8 +63,9 @@ export function AppearanceProvider({ children }) {
       resolvedTheme,
       setTheme,
       setTextSize,
+      lockLight,
     }),
-    [appearance, resolvedTheme, setTheme, setTextSize],
+    [appearance, resolvedTheme, setTheme, setTextSize, lockLight],
   );
 
   return (

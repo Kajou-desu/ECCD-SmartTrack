@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@hooks/useAuth";
+import { useForcedLightTheme } from "@hooks/useForcedLightTheme.js";
 import { apiClient } from "@api/client.js";
 import { getErrorMessage } from "@api/errorMessage.js";
 import { LoginSchema, PasswordResetSchema } from "@validation/auth.js";
@@ -12,6 +13,8 @@ import { Eye, EyeOff } from "lucide-react";
 const RESEND_COOLDOWN_SECONDS = 60;
 
 export default function Login() {
+  // The sign-in screen is always white, even when the app (or the OS) is dark.
+  useForcedLightTheme();
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

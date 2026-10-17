@@ -106,12 +106,12 @@ test("applyAppearance sets the dark class, colour-scheme and text size", () => {
 
 // public/appearance-init.js duplicates the logic so the theme is set before
 // first paint. Run it against the same inputs and require identical results.
-function runInitScript(stored, systemDark) {
+function runInitScript(stored, systemDark, pathname) {
   const root = fakeRoot();
   const sandbox = {
     document: { documentElement: root },
     localStorage: fakeStorage(stored === undefined ? {} : { [APPEARANCE_STORAGE_KEY]: stored }),
-    window: { matchMedia: () => ({ matches: systemDark }) },
+    window: { matchMedia: () => ({ matches: systemDark }), location: pathname === undefined ? undefined : { pathname } },
   };
   vm.runInNewContext(fs.readFileSync("public/appearance-init.js", "utf8"), sandbox);
   return root;
@@ -143,3 +143,36 @@ test("appearance-init.js matches applyAppearance for every combination", () => {
     }
   }
 });
+
+test("forceLight keeps the page light whatever the preference or the OS says", () => {
+  for (const theme of ["system", "light", "dark"]) {
+    for (const systemDark of [true, false]) {
+      const root = fakeRoot();
+      applyAppearance(root, { theme, textSize: "large" }, systemDark, { forceLight: true });
+      assert.equal(root.classes.has("dark"), false, `${theme} / ${systemDark}`);
+      assert.equal(root.style.colorScheme, "light");
+      assert.equal(root.dataset.textSize, "large"); // text size still follows the preference
+    }
+  }
+  // ...and it does not change what the same call does without it.
+  const root = fakeRoot();
+  applyAppearance(root, { theme: "dark", textSize: "medium" }, false, { forceLight: false });
+  assert.ok(root.classes.has("dark"));
+});
+
+test("appearance-init.js never paints the sign-in screen dark, and nothing else differently", () => {
+  const dark = JSON.stringify({ theme: "dark", textSize: "small" });
+  for (const path of ["/login", "/login/"]) {
+    for (const systemDark of [true, false]) {
+      const root = runInitScript(dark, systemDark, path);
+      assert.equal(root.classes.has("dark"), false, path);
+      assert.equal(root.style.colorScheme, "light");
+      assert.equal(root.dataset.textSize, "small");
+    }
+  }
+  assert.equal(runInitScript(JSON.stringify({ theme: "system" }), true, "/login").classes.has("dark"), false);
+  for (const path of ["/dashboard", "/", "/loginx", "/account/login", ""]) {
+    assert.equal(runInitScript(dark, false, path).classes.has("dark"), true, path);
+  }
+});
+

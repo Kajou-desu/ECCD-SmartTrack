@@ -9,7 +9,9 @@
  *
  *   - neutral (gray/slate) scale: remapped to dark surfaces + light text
  *   - pale tints (50-300) of each hue: remapped to deep tints of the same hue
- *   - solid fills (bg-red-600, bg-[#C2570C] + text-white ...) are left alone
+ *   - solid fills (bg-red-600 + text-white ...) are left alone, EXCEPT the brand
+ *     orange (bg-[#C2570C], bg-orange-500/600/700): a burnt orange vanishes on a
+ *     dark surface, so it becomes a light orange with dark text (--brand-fill)
  *   - coloured *text* (500-900) is lightened so it stays readable
  *   - bg-white and the page background (#f8f9ff) become surface / page
  *
@@ -21,7 +23,10 @@
 .dark {
   --page: #0b1120;
   --surface: #131c2f;
-  --brand-text: #f0883e; /* #C2570C is only ~4:1 on dark; this is ~7:1 */
+  --brand-fill: #f6a35f; /* light orange: buttons, active items, rings (replaces #C2570C) */
+  --brand-fill-hover: #f9b87e;
+  --on-brand: #2b1406; /* text on --brand-fill, ~9:1 */
+  --brand-text: #f6a35f; /* orange text on dark surfaces, ~9:1 (#C2570C is only ~4:1) */
 
   /* Neutral scale: light shades become dark surfaces, dark shades light text. */
   --color-gray-50: #0f1729;
@@ -53,16 +58,18 @@
   --color-red-100: oklch(39.6% 0.141 25.723);
   --color-red-200: oklch(44.4% 0.177 26.899);
   --color-red-300: oklch(50.5% 0.213 27.518);
-  /* orange */
-  --color-orange-50: oklch(26.6% 0.079 36.259);
-  --color-orange-100: oklch(40.8% 0.123 38.172);
-  --color-orange-200: oklch(47% 0.157 37.304);
-  --color-orange-300: oklch(55.3% 0.195 38.402);
-  /* amber */
-  --color-amber-50: oklch(27.9% 0.077 45.635);
-  --color-amber-100: oklch(41.4% 0.112 45.904);
-  --color-amber-200: oklch(47.3% 0.137 46.201);
-  --color-amber-300: oklch(55.5% 0.163 48.998);
+  /* orange: Tailwind's hue (~37) turns brick-brown when dark, so these use a
+     lighter, more golden hue (55) that reads as orange, matching --brand-fill. */
+  --color-orange-50: oklch(27% 0.035 55); /* big areas (banners, row highlights): a warm hint, not an orange block */
+  --color-orange-100: oklch(35% 0.08 55);
+  --color-orange-200: oklch(42% 0.1 55);
+  --color-orange-300: oklch(52% 0.12 55);
+  /* amber: same idea as orange above - a golden hue (80) instead of Tailwind's
+     reddish dark ambers (45), so warnings don't read as dark orange. */
+  --color-amber-50: oklch(28% 0.045 80);
+  --color-amber-100: oklch(34% 0.062 80);
+  --color-amber-200: oklch(41% 0.078 80);
+  --color-amber-300: oklch(50% 0.095 80);
   /* yellow */
   --color-yellow-50: oklch(28.6% 0.066 53.813);
   --color-yellow-100: oklch(42.1% 0.095 57.708);
@@ -148,6 +155,61 @@
 /* Scrims: slate-900 is a light colour in dark mode, so keep them black. */
 .dark [class*="bg-slate-900/"] {
   background-color: color-mix(in oklab, #000 55%, transparent);
+}
+
+/* Brand orange fills: light orange with dark text. The :disabled rule at the end
+   of this block puts disabled buttons (disabled:bg-slate-300) back to grey. */
+.dark :is(.bg-\[\#C2570C\], .bg-orange-500, .bg-orange-600, .bg-orange-700, .peer-checked\:bg-\[\#C2570C\]:is(:where(.peer):checked ~ *)) {
+  background-color: var(--brand-fill);
+  color: var(--on-brand);
+}
+.dark :is(.hover\:bg-\[\#a94709\], .hover\:bg-\[\#a3480a\], .hover\:bg-\[\#9f4709\], .hover\:bg-orange-700, .hover\:bg-orange-800):hover {
+  background-color: var(--brand-fill-hover);
+  color: var(--on-brand);
+}
+.dark .from-\[\#C2570C\] {
+  --tw-gradient-from: var(--brand-fill);
+  color: var(--on-brand);
+}
+.dark .to-orange-600 {
+  --tw-gradient-to: var(--brand-fill-hover);
+}
+.dark .disabled\:bg-slate-300:disabled {
+  background-color: var(--color-slate-300);
+  color: #fff;
+}
+
+/* Brand orange tints, borders, rings and native controls */
+.dark .bg-\[\#C2570C\]\/50 {
+  background-color: color-mix(in oklab, var(--brand-fill) 50%, transparent);
+  color: var(--on-brand);
+}
+.dark .bg-\[\#C2570C\]\/10 {
+  background-color: color-mix(in oklab, var(--brand-fill) 14%, transparent);
+}
+.dark .hover\:bg-\[\#C2570C\]\/20:hover {
+  background-color: color-mix(in oklab, var(--brand-fill) 24%, transparent);
+}
+.dark :is(.border-\[\#C2570C\], .hover\:border-\[\#C2570C\]:hover, .focus\:border-\[\#C2570C\]:focus, .peer-checked\:border-\[\#C2570C\]:is(:where(.peer):checked ~ *), .border-orange-600) {
+  border-color: var(--brand-fill);
+}
+.dark .hover\:border-\[\#C2570C\]\/60:hover {
+  border-color: color-mix(in oklab, var(--brand-fill) 60%, transparent);
+}
+.dark :is(.focus\:ring-\[\#C2570C\]:focus, .focus-visible\:ring-\[\#C2570C\]:focus-visible, .focus-within\:ring-\[\#C2570C\]:focus-within, .peer-focus-visible\:ring-\[\#C2570C\]:is(:where(.peer):focus-visible ~ *), .ring-orange-500) {
+  --tw-ring-color: var(--brand-fill);
+}
+.dark :is(.focus\:ring-\[\#C2570C\]\/40:focus) {
+  --tw-ring-color: color-mix(in oklab, var(--brand-fill) 40%, transparent);
+}
+.dark :is(.focus\:ring-\[\#C2570C\]\/15:focus) {
+  --tw-ring-color: color-mix(in oklab, var(--brand-fill) 15%, transparent);
+}
+.dark :is(.focus\:ring-\[\#C2570C\]\/10:focus) {
+  --tw-ring-color: color-mix(in oklab, var(--brand-fill) 10%, transparent);
+}
+.dark .accent-\[\#C2570C\] {
+  accent-color: var(--brand-fill);
 }
 
 /* Brand orange text */
@@ -270,4 +332,20 @@
 }
 .dark :is(.text-rose-800, .hover\:text-rose-800:hover, .group-hover\:text-rose-800:is(:where(.group):hover *), .text-rose-900, .hover\:text-rose-900:hover, .group-hover\:text-rose-900:is(:where(.group):hover *)) {
   color: oklch(89.2% 0.058 10.001); /* rose-200 */
+}
+
+/*
+ * Orange chips (avatars, badges, icon tiles): bg-orange-100/200 holding orange
+ * text or an orange icon. A deep brown chip reads as muddy on dark, so flip the
+ * pair: light orange fill, dark text. Kept last so it wins over the coloured-text
+ * rules above when one element carries both classes. `.dark.dark` doubles the
+ * specificity on purpose: those rules list hover variants inside :is(), which
+ * raises their specificity above a plain `.dark .x` selector.
+ */
+.dark.dark :is(.bg-orange-100, .bg-orange-200) {
+  background-color: var(--brand-fill);
+  color: var(--on-brand);
+}
+.dark.dark :is(.bg-orange-100, .bg-orange-200) :is([class*="text-orange-"], [class*="text-[#C2570C]"]) {
+  color: var(--on-brand);
 }

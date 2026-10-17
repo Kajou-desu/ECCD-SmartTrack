@@ -3,6 +3,7 @@ import { render, screen, cleanup, fireEvent, act } from "@testing-library/react"
 import { AppearanceProvider } from "@context/AppearanceContext.jsx";
 import ThemeToggleButton from "@components/ui/ThemeToggleButton.jsx";
 import AppearanceSettings from "@features/settings/components/AppearanceSettings.jsx";
+import { useForcedLightTheme } from "@hooks/useForcedLightTheme.js";
 import { APPEARANCE_STORAGE_KEY } from "@utils/appearance.js";
 
 let systemDark;
@@ -97,3 +98,64 @@ describe("System theme", () => {
     expect(isDark()).toBe(true);
   });
 });
+
+describe("forced light theme (the sign-in screen)", () => {
+  const Locked = () => {
+    useForcedLightTheme();
+    return <p>locked</p>;
+  };
+  const useDark = () => localStorage.setItem(APPEARANCE_STORAGE_KEY, JSON.stringify({ theme: "dark", textSize: "medium" }));
+
+  it("is light while mounted, even with a saved dark preference, and dark again after", () => {
+    useDark();
+    const { rerender } = renderWithProvider(<p>dashboard</p>);
+    expect(isDark()).toBe(true);
+
+    rerender(
+      <AppearanceProvider>
+        <Locked />
+      </AppearanceProvider>,
+    );
+    expect(isDark()).toBe(false);
+    expect(document.documentElement.style.colorScheme).toBe("light");
+    expect(stored().theme).toBe("dark"); // the preference itself is untouched
+
+    rerender(
+      <AppearanceProvider>
+        <p>dashboard</p>
+      </AppearanceProvider>,
+    );
+    expect(isDark()).toBe(true);
+    expect(document.documentElement.style.colorScheme).toBe("dark");
+  });
+
+  it("stays light when the OS switches to dark underneath it", () => {
+    renderWithProvider(<Locked />);
+    systemDark = true;
+    act(() => mediaListeners.forEach((fn) => fn({ matches: true })));
+    expect(isDark()).toBe(false);
+  });
+
+  it("holds until the last screen that wants it lets go", () => {
+    useDark();
+    const { rerender } = renderWithProvider(
+      <>
+        <Locked />
+        <Locked />
+      </>,
+    );
+    expect(isDark()).toBe(false);
+    rerender(
+      <AppearanceProvider>
+        <Locked />
+      </AppearanceProvider>,
+    );
+    expect(isDark()).toBe(false);
+  });
+
+  it("does nothing, without an AppearanceProvider, instead of throwing", () => {
+    render(<Locked />);
+    expect(screen.getByText("locked")).toBeTruthy();
+  });
+});
+

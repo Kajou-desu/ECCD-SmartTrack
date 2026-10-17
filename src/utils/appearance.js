@@ -54,9 +54,11 @@ export function resolveTheme(theme, systemPrefersDark) {
   return systemPrefersDark ? "dark" : "light";
 }
 
-export function applyAppearance(root, appearance, systemPrefersDark) {
+// `forceLight` is for screens that must always be light (the login page): it
+// beats the saved preference and the OS setting, without changing either.
+export function applyAppearance(root, appearance, systemPrefersDark, { forceLight = false } = {}) {
   const { theme, textSize } = sanitizeAppearance(appearance);
-  const isDark = resolveTheme(theme, systemPrefersDark) === "dark";
+  const isDark = !forceLight && resolveTheme(theme, systemPrefersDark) === "dark";
   root.classList.toggle("dark", isDark);
   // Tells the browser to draw native controls and scrollbars to match.
   root.style.colorScheme = isDark ? "dark" : "light";

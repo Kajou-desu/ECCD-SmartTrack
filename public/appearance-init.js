@@ -1,7 +1,8 @@
 // Runs before first paint so a saved dark theme / text size doesn't flash the
 // default look while the app loads. It is an external file (not inline) because
 // the production Content-Security-Policy only allows script-src 'self'.
-// Mirrors src/utils/appearance.js — keep the two in sync.
+// Mirrors src/utils/appearance.js (plus the login-is-always-light rule, which
+// the app applies through useForcedLightTheme) — keep the two in sync.
 (function () {
   var theme = "system";
   var textSize = "medium";
@@ -13,7 +14,9 @@
     // Blocked storage or corrupt JSON: fall back to the defaults.
   }
   var systemDark = !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  var isDark = theme === "dark" || (theme === "system" && systemDark);
+  // The sign-in screen is always light, so don't flash dark on a reload there.
+  var onLogin = /^\/login\/?$/.test((window.location && window.location.pathname) || "");
+  var isDark = !onLogin && (theme === "dark" || (theme === "system" && systemDark));
   var root = document.documentElement;
   root.classList.toggle("dark", isDark);
   root.style.colorScheme = isDark ? "dark" : "light";
