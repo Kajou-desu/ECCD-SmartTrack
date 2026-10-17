@@ -110,6 +110,7 @@ export function useStudents({ itemsPerPage = ITEMS_PER_PAGE } = {}) {
                     student.address,
                     student.status === "active" ? "Active" : "Inactive",
                 ]),
+                { kind: "students" },
             );
         } catch (err) {
             console.error("Failed to export students:", err);

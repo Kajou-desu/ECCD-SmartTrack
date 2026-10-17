@@ -185,6 +185,7 @@ export function useAttendance(initialDate) {
           record.status === "present" ? formatTime(record.arrivedAt) : "",
           record.status === "present" ? formatTime(record.pickedUpAt) : "",
         ]),
+        { kind: "attendance" },
       );
       showToast("success", "Attendance data was exported.");
     } catch (err) {
@@ -216,7 +217,9 @@ export function useAttendance(initialDate) {
         showToast("warning", "No attendance was recorded in that period.");
         return;
       }
-      downloadCsv(rangeFilename(exportPeriod, range), RANGE_HEADERS, rangeRows(records, formatTime));
+      downloadCsv(rangeFilename(exportPeriod, range), RANGE_HEADERS, rangeRows(records, formatTime), {
+        kind: "attendance_range",
+      });
       showToast("success", "Attendance data was exported.");
     } catch (err) {
       console.error("Failed to export attendance range:", err);

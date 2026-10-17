@@ -8,6 +8,8 @@ import Modal from "@components/ui/Modal";
 import ErrorMsg from "@components/ui/ErrorMsg";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { HOLIDAYS } from "@constants/holidays.js";
+import NoClassModal from "@features/calendar/components/NoClassModal.jsx";
+import { DAY_TYPES, countSchoolDays, dayType } from "@features/calendar/utils/schoolDays.js";
 import formatStudentName from "@utils/formatStudentName.js";
 import {
   ArrowLeft,
@@ -195,7 +197,7 @@ function AddEventModal({ eventToEdit, onCancel, onSaved }) {
   );
 }
 
-function EventDetailsModal({ details, onClose }) {
+function EventDetailsModal({ details, onClose, onSetNoClass }) {
   return (
     <Modal onClose={onClose} labelledBy="event-details-title">
       <div className="p-6">
@@ -234,7 +236,16 @@ function EventDetailsModal({ details, onClose }) {
           <p className="mt-4 text-sm text-gray-600">No events scheduled.</p>
         )}
 
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex justify-end gap-2">
+          {details.canSetNoClass && (
+            <button
+              type="button"
+              onClick={() => onSetNoClass(details.dateKey)}
+              className="cursor-pointer rounded-lg border border-purple-300 px-4 py-2 text-sm font-semibold text-purple-700 transition hover:bg-purple-50"
+            >
+              Set no class
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}
@@ -256,6 +267,8 @@ function getLegendBadgeClasses(legend) {
       return "bg-green-200 text-green-700";
     case "Birthday":
       return "bg-red-200 text-red-700";
+    case "No class":
+      return "bg-purple-200 text-purple-800";
     default:
       return "bg-blue-200 text-blue-700";
   }
@@ -275,6 +288,7 @@ export default function CalendarEvents() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [eventDetails, setEventDetails] = useState(null);
+  const [noClassFor, setNoClassFor] = useState(null); // null = closed, "" or a date = open
 
   const monthKey = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -285,6 +299,10 @@ export default function CalendarEvents() {
   const { data: attendanceData, isLoading, isError } = useQuery({
     queryKey: ["events", monthKey],
     queryFn: () => fetchEvents(monthKey),
+  });
+  const { data: noClassData } = useQuery({
+    queryKey: ["noClassDays", monthKey],
+    queryFn: () => apiClient.getNoClassDays(monthKey),
   });
   const { data: studentsData, isLoading: studentsLoading } = useStudentsQuery();
 
@@ -341,10 +359,17 @@ export default function CalendarEvents() {
 
   const getDayColor = (day) => {
     const dateKey = `${monthKey}-${String(day).padStart(2, "0")}`;
+    // A no-class day is the teacher's explicit statement, so it wins over any
+    // event colour on the same day.
+    if (noClassKeys.has(dateKey)) return "bg-purple-100 text-purple-800 border border-purple-300";
     const status =
       eventLogs.find((event) => event.dateKey === dateKey)?.legend ??
       attendanceData?.daily?.[day];
-    if (!status) return "bg-gray-50 text-gray-500";
+    if (!status) {
+      return dayType(dateKey, { holidayKeys, noClassKeys }) === DAY_TYPES.WEEKEND
+        ? "bg-gray-50 text-gray-400"
+        : "bg-white text-gray-800 border border-gray-200"; // an ordinary school day
+    }
     if (status === "Today")
       return "bg-orange-100 text-orange-700 border border-orange-300";
     if (status === "Holiday")
@@ -376,6 +401,8 @@ export default function CalendarEvents() {
         return "bg-green-50 border-green-200";
       case "Birthday":
         return "bg-red-50 border-red-200";
+      case "No class":
+        return "bg-purple-50 border-purple-200";
       default:
         return "bg-blue-50 border-blue-200";
     }
@@ -419,10 +446,27 @@ export default function CalendarEvents() {
       }];
     });
 
-    return [...savedEvents, ...holidayEvents, ...birthdayEvents].sort((a, b) =>
+    const noClassEvents = (noClassData ?? []).map((day) => ({
+      title: day.reason ? `No class: ${day.reason}` : "No class",
+      description: day.reason || undefined,
+      dateKey: day.dateKey,
+      date: formatEventDate(day.dateKey),
+      time: "---",
+      status: "No class",
+      legend: "No class",
+      noClassId: day.id,
+    }));
+
+    return [...savedEvents, ...holidayEvents, ...birthdayEvents, ...noClassEvents].sort((a, b) =>
       a.dateKey.localeCompare(b.dateKey),
     );
-  }, [attendanceData, monthKey, studentsData]);
+  }, [attendanceData, monthKey, studentsData, noClassData]);
+
+  // Cheap to derive on each render (a month's worth of days), so no memoisation.
+  const noClassKeys = new Set((noClassData ?? []).map((day) => day.dateKey));
+  // Holiday = the fixed national list plus anything staff saved as a Holiday event.
+  const holidayKeys = new Set(eventLogs.filter((log) => log.legend === "Holiday").map((log) => log.dateKey));
+  const schoolDaysThisMonth = countSchoolDays(monthKey, { holidayKeys, noClassKeys });
 
   const showDayDetails = (day) => {
     const dateKey = `${monthKey}-${String(day).padStart(2, "0")}`;
@@ -433,6 +477,10 @@ export default function CalendarEvents() {
     });
     setEventDetails({
       date,
+      dateKey,
+      // Only an ordinary school day can be cancelled: weekends, holidays and
+      // days already marked have nothing to set.
+      canSetNoClass: dayType(dateKey, { holidayKeys, noClassKeys }) === DAY_TYPES.SCHOOL,
       events: eventLogs.filter((event) => event.dateKey === dateKey),
     });
   };
@@ -449,6 +497,31 @@ export default function CalendarEvents() {
   const saveEvent = () => {
     queryClient.invalidateQueries({ queryKey: ["events"] });
     closeEventForm();
+  };
+
+  const closeNoClassForm = () => setNoClassFor(null);
+
+  const saveNoClass = ({ requested, created }) => {
+    queryClient.invalidateQueries({ queryKey: ["noClassDays"] });
+    closeNoClassForm();
+    const already = requested - created;
+    showToast(
+      "success",
+      already > 0
+        ? `Marked ${created} day${created === 1 ? "" : "s"} as no class (${already} already set).`
+        : `Marked ${created} day${created === 1 ? "" : "s"} as no class.`,
+    );
+  };
+
+  const removeNoClass = async (log) => {
+    try {
+      await apiClient.deleteNoClassDay(log.noClassId);
+      queryClient.invalidateQueries({ queryKey: ["noClassDays"] });
+      setEventDetails(null);
+      showToast("success", `${log.date} is a school day again.`);
+    } catch (err) {
+      showToast("error", err?.details?.message || "Could not remove the no-class day. Please try again.");
+    }
   };
 
   const removeEvent = async () => {
@@ -507,14 +580,19 @@ export default function CalendarEvents() {
         <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800">
-              {monthName}
-              {loading && (
-                <span className="ml-2 text-sm font-normal text-gray-500">
-                  Loading...
-                </span>
-              )}
-            </h2>
+            <div>
+              <h2 className="text-xl font-bold text-gray-800">
+                {monthName}
+                {loading && (
+                  <span className="ml-2 text-sm font-normal text-gray-500">
+                    Loading...
+                  </span>
+                )}
+              </h2>
+              <p className="mt-1 text-xs font-semibold text-gray-600">
+                {schoolDaysThisMonth} school day{schoolDaysThisMonth === 1 ? "" : "s"} this month
+              </p>
+            </div>
             <div className="flex gap-2">
               <button
                 onClick={prevMonth}
@@ -571,7 +649,15 @@ export default function CalendarEvents() {
             <p className="text-xs font-semibold text-gray-600 uppercase mb-3">
               Legend
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-white rounded border border-gray-300"></div>
+                <span className="text-xs text-gray-600">School day</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-purple-100 rounded border border-purple-300"></div>
+                <span className="text-xs text-gray-600">No class</span>
+              </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-orange-100 rounded border border-orange-300"></div>
                 <span className="text-xs text-gray-600">Today</span>
@@ -596,12 +682,21 @@ export default function CalendarEvents() {
         <div className="bg-white rounded-3xl border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-800">Event Logs</h3>
-            <button
-              onClick={() => setShowAddEventModal(true)}
-              className="text-sm font-semibold text-[#C2570C] hover:text-orange-800 cursor-pointer"
-            >
-              Add Event
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setNoClassFor("")}
+                className="text-sm font-semibold text-purple-700 hover:text-purple-900 cursor-pointer"
+              >
+                Set No Class
+              </button>
+              <button
+                onClick={() => setShowAddEventModal(true)}
+                className="text-sm font-semibold text-[#C2570C] hover:text-orange-800 cursor-pointer"
+              >
+                Add Event
+              </button>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -641,6 +736,17 @@ export default function CalendarEvents() {
                     </span>
                   )}
                 </button>
+                {log.noClassId && (
+                  <button
+                    type="button"
+                    onClick={() => removeNoClass(log)}
+                    className="shrink-0 cursor-pointer rounded p-1.5 text-red-600 transition hover:bg-white/70 hover:text-red-700"
+                    aria-label={`Remove no class on ${log.date}`}
+                    title="Make this a school day again"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                )}
                 {log.id && (
                   <div className="flex shrink-0 items-center gap-1">
                     <button
@@ -722,10 +828,18 @@ export default function CalendarEvents() {
         </Modal>
       )}
 
+      {noClassFor !== null && (
+        <NoClassModal initialDate={noClassFor} onCancel={closeNoClassForm} onSaved={saveNoClass} />
+      )}
+
       {eventDetails && (
         <EventDetailsModal
           details={eventDetails}
           onClose={() => setEventDetails(null)}
+          onSetNoClass={(dateKey) => {
+            setEventDetails(null);
+            setNoClassFor(dateKey);
+          }}
         />
       )}
     </div>

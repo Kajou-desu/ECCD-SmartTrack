@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { useAuth } from "@hooks/useAuth";
 import { apiClient } from "@api/client.js";
 import { exceedsMaxPasswordBytes, MAX_PASSWORD_MESSAGE } from "@validation/passwordLimits.js";
 import { Lock, ShieldQuestionMark, EyeOff, Eye, Save, Loader2 } from "lucide-react";
 
 export default function SecuritySettings({ onNotify }) {
-  const { updateToken } = useAuth();
   const [saving, setSaving] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState("");
@@ -78,12 +76,11 @@ export default function SecuritySettings({ onNotify }) {
         onNotify?.("error", "Enter the 6-digit verification code.");
         return;
       }
-      const result = await apiClient.changeMyPassword(
+      await apiClient.changeMyPassword(
         password.current,
         password.new,
         otpCode,
       );
-      updateToken(result.token);
       setPassword({ current: "", new: "", confirm: "" });
       setOtpCode("");
       setOtpSent(false);

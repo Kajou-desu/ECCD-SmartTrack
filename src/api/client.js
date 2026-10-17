@@ -13,9 +13,6 @@ export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler;
 }
 
-function getAuthToken() {
-  return localStorage.getItem("authToken");
-}
 export class ApiError extends Error {
   constructor(message, status, details = {}) {
     super(message);
@@ -81,19 +78,11 @@ async function fetchWithTimeout(url, options = {}) {
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const token = getAuthToken();
-    const headers = new Headers(options.headers || {});
-
-    // Sign-in and password-reset requests are made without a session, so a
-    // leftover token must not be sent with them.
-    const unauthenticated = /\/api\/(v1\/)?(login|auth\/(login|forgot-password|reset-password))$/.test(url);
-    if (token && !unauthenticated) {
-      headers.set("Authorization", `Bearer ${token}`);
-    }
-
+    // The session is an httpOnly cookie set by the API; the browser attaches it,
+    // and script (including injected script) never sees the token.
     return await fetch(url, {
       ...options,
-      headers,
+      credentials: "include",
       signal: controller.signal,
     });
   } finally {
@@ -170,6 +159,14 @@ export const apiClient = {
         email: email.toLowerCase().trim(),
         password,
       }),
+      handleUnauthorized: false,
+    });
+  },
+
+  async logout() {
+    // Clears the session cookie. A failure must not block signing out locally.
+    return fetchWithRetry(`${API_BASE_URL}/api/auth/logout`, {
+      method: "POST",
       handleUnauthorized: false,
     });
   },
@@ -708,8 +705,8 @@ export const apiClient = {
   },
 
   /**
-   * One stored enrollment photo as a Blob. The API needs the bearer token, so
-   * this can't be an <img src>; the caller turns the Blob into a blob: URL.
+   * One stored enrollment photo as a Blob. The request needs the session cookie plus
+   * error handling, so this isn't a bare <img src>; the caller turns the Blob into a blob: URL.
    * @returns {Promise<Blob|null>} the photo, or null if it no longer exists
    */
   async getEnrollmentPhotoBlob(studentId, index, { signal, version } = {}) {
@@ -770,6 +767,24 @@ export const apiClient = {
     });
   },
 
+  /** Admin only. One page of the activity log: {category, from, to, q, page, pageSize}. */
+  async getActivityLogs(filters = {}) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) {
+      if (value !== undefined && value !== null && value !== "") params.set(key, String(value));
+    }
+    return fetchWithRetry(`${API_BASE_URL}/api/activity-logs?${params}`, { method: "GET" });
+  },
+
+  /** Tells the server a CSV was exported (it can't see browser downloads). Fire-and-forget. */
+  async recordExport(kind, rows) {
+    return fetchWithRetry(`${API_BASE_URL}/api/activity-logs/export`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ kind, rows }),
+    });
+  },
+
   /** @param {Object} payload - New account fields (name, email, password, role, ...) */
   async createAccount(payload) {
     return fetchWithRetry(`${API_BASE_URL}/api/users/register`, {
@@ -826,9 +841,8 @@ export const apiClient = {
   },
 
   /**
-   * Self-service password change. Returns a fresh token on success (the
-   * old one is invalidated everywhere, including this session, unless the
-   * caller swaps in the returned token).
+   * Self-service password change. Re-issues the session cookie on success (the
+   * old one is invalidated everywhere, including this session).
    * @param {string} currentPassword
    * @param {string} newPassword
    */
@@ -926,6 +940,28 @@ export const apiClient = {
 
   async deleteEvent(id) {
     return fetchWithRetry(`${API_BASE_URL}/api/events/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  /** Days with no class in a month ("YYYY-MM"): [{ id, dateKey, reason }]. */
+  async getNoClassDays(monthKey) {
+    return fetchWithRetry(`${API_BASE_URL}/api/no-class-days?month=${monthKey}`, {
+      method: "GET",
+    });
+  },
+
+  /** Marks every weekday from..to (just `from` when `to` is omitted) as no class. */
+  async createNoClassDays(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/no-class-days`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async deleteNoClassDay(id) {
+    return fetchWithRetry(`${API_BASE_URL}/api/no-class-days/${id}`, {
       method: "DELETE",
     });
   },

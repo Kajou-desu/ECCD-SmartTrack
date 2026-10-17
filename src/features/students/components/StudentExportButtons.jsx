@@ -25,7 +25,7 @@ export default function StudentExportButtons({ student }) {
 
   const exportProfile = () => {
     try {
-      downloadCsv(profileFilename(student), PROFILE_HEADERS, profileRows(student));
+      downloadCsv(profileFilename(student), PROFILE_HEADERS, profileRows(student), { kind: "student_profile" });
     } catch (err) {
       console.error("Failed to export student profile:", err);
       showToast("error", "Failed to export the student profile.");
@@ -47,6 +47,7 @@ export default function StudentExportButtons({ student }) {
         `${profileFilename(student).replace(/\.csv$/, "")}_attendance_${from}_to_${to}.csv`,
         RANGE_HEADERS,
         rangeRows(records, formatTime),
+        { kind: "attendance_range" },
       );
     } catch (err) {
       console.error("Failed to export student attendance:", err);

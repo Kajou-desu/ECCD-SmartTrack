@@ -1,45 +1,33 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AuthContext } from "./authContextObject";
-import { setUnauthorizedHandler } from "@api/client";
+import { apiClient, setUnauthorizedHandler } from "@api/client";
 
-// A malformed or missing exp claim is treated as expired (fail closed).
-function isTokenExpired(token) {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    if (!payload.exp) return true;
-    return Date.now() >= payload.exp * 1000;
-  } catch {
-    return true;
-  }
-}
+// The sign-in token lives in an httpOnly cookie set by the API, so script can
+// never read it. Only the non-secret display profile is kept here, as a hint
+// to render the signed-in UI without a flash; the server stays the authority:
+// if the cookie has expired, the first API call returns 401 and signs us out.
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const clearStoredAuth = useCallback(() => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("authToken"); // legacy: tokens used to be stored here
     localStorage.removeItem("authUser");
   }, []);
 
-  // Initialize auth state from localStorage on mount
   useEffect(() => {
-    const initializeAuth = () => {
+    const restore = () => {
       try {
-        const storedToken = localStorage.getItem("authToken");
+        // Sessions from before the cookie change stored a token here; drop it
+        // so a leftover credential doesn't linger in the browser.
+        localStorage.removeItem("authToken");
         const storedUser = localStorage.getItem("authUser");
-
-        if (storedToken && storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          const trimmedToken = typeof storedToken === "string" ? storedToken.trim() : "";
-
-          if (trimmedToken && parsedUser && !isTokenExpired(trimmedToken)) {
-            setToken(trimmedToken);
-            setUser(parsedUser);
-          } else {
-            clearStoredAuth();
-          }
+        const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+        if (parsedUser && typeof parsedUser === "object") {
+          setUser(parsedUser);
+        } else if (storedUser) {
+          clearStoredAuth();
         }
       } catch (error) {
         console.error("Failed to restore auth state:", error);
@@ -49,14 +37,9 @@ export function AuthProvider({ children }) {
       }
     };
 
-    initializeAuth();
+    restore();
   }, [clearStoredAuth]);
 
-  // The token is written to localStorage synchronously in login() and
-  // updateToken(), NOT in an effect: the API client reads it from storage, and
-  // child effects (e.g. the notifications query) run before this provider's
-  // effects, so an effect-based write let the first request after login go out
-  // without an Authorization header -> 401 -> instant sign-out.
   // Only ever write here (never clear): clearing on a null initial state wiped
   // a valid stored session before it could be restored. logout() clears.
   useEffect(() => {
@@ -65,19 +48,13 @@ export function AuthProvider({ children }) {
     }
   }, [user]);
 
-  const login = useCallback((authToken, authUser) => {
-    const sanitizedToken = typeof authToken === "string" ? authToken.trim() : "";
-
-    if (!sanitizedToken) {
+  const login = useCallback((authUser) => {
+    if (!authUser || typeof authUser !== "object") {
       clearStoredAuth();
-      setToken(null);
       setUser(null);
       return;
     }
-
-    localStorage.setItem("authToken", sanitizedToken);
     localStorage.setItem("authUser", JSON.stringify(authUser));
-    setToken(sanitizedToken);
     setUser(authUser);
   }, [clearStoredAuth]);
 
@@ -88,20 +65,11 @@ export function AuthProvider({ children }) {
     setUser((current) => (current ? { ...current, ...patch } : current));
   }, []);
 
-  // Swaps in a fresh token without touching the stored user — for the
-  // self-service password-change flow, which issues a new token (its
-  // tokenVersion bump would otherwise sign this very session out too).
-  const updateToken = useCallback((newToken) => {
-    const sanitizedToken = typeof newToken === "string" ? newToken.trim() : "";
-    if (!sanitizedToken) return;
-    localStorage.setItem("authToken", sanitizedToken);
-    setToken(sanitizedToken);
-  }, []);
-
   const logout = useCallback(() => {
-    setToken(null);
     setUser(null);
     clearStoredAuth();
+    // Ask the server to clear the cookie; signing out here never waits on it.
+    apiClient.logout().catch(() => {});
   }, [clearStoredAuth]);
 
   useEffect(() => {
@@ -116,13 +84,11 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
-    token,
     isLoading,
-    isAuthenticated: !!token,
+    isAuthenticated: !!user,
     login,
     logout,
     updateUser,
-    updateToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

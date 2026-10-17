@@ -15,20 +15,22 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const authHeaderOf = (call) => new Headers(fetchMock.mock.calls[call][1].headers).get("Authorization");
+const optsOf = (call) => fetchMock.mock.calls[call][1];
 
-describe("Authorization header", () => {
-  it("is not sent with sign-in or password-reset requests", async () => {
+describe("session cookie", () => {
+  it("is sent with every request, and no Authorization header is ever built from storage", async () => {
     await apiClient.login("a@b.co", "pw");
-    await apiClient.requestPasswordReset("a@b.co");
-    await apiClient.resetPassword("a@b.co", "123456", "Sunshine2026ab");
-    expect(authHeaderOf(0)).toBeNull();
-    expect(authHeaderOf(1)).toBeNull();
-    expect(authHeaderOf(2)).toBeNull();
+    await apiClient.deleteStudent(5);
+    await apiClient.logout();
+    for (const i of [0, 1, 2]) {
+      expect(optsOf(i).credentials).toBe("include");
+      expect(new Headers(optsOf(i).headers).get("Authorization")).toBeNull();
+    }
   });
 
-  it("is still sent with ordinary requests", async () => {
-    await apiClient.deleteStudent(5);
-    expect(authHeaderOf(0)).toBe("Bearer stale-token");
+  it("logout posts to the server so it can clear the cookie", async () => {
+    await apiClient.logout();
+    expect(fetchMock.mock.calls[0][0]).toMatch(/\/api\/auth\/logout$/);
+    expect(optsOf(0).method).toBe("POST");
   });
 });

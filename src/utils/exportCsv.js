@@ -39,8 +39,11 @@ function toCell(value) {
 // accented names (Peña, Niño).
 const UTF8_BOM = "\uFEFF";
 
-// Triggers a client-side CSV download. No backend involved.
-export function downloadCsv(filename, headers, rows) {
+// Triggers a client-side CSV download. The file is built in the browser; when
+// `kind` is given (see EXPORT_KINDS on the server) the server is also told an
+// export happened so it shows in the Admin's Activity Logs. That report is
+// best-effort: it never delays or blocks the download.
+export function downloadCsv(filename, headers, rows, { kind } = {}) {
     const csvRows = rows.map((row) => row.map(toCell).join(","));
     // RFC 4180 line endings; headers quoted like every other cell.
     const csv = [headers.map(escapeCsvValue).join(","), ...csvRows].join("\r\n");
@@ -54,4 +57,10 @@ export function downloadCsv(filename, headers, rows) {
     link.click();
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
+
+    if (kind) {
+        import("../api/client.js")
+            .then(({ apiClient }) => apiClient.recordExport(kind, rows.length))
+            .catch(() => {});
+    }
 }

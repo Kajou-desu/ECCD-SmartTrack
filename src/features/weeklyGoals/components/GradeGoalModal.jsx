@@ -5,6 +5,7 @@ import SearchInput from "@components/ui/SearchInput";
 import { X } from "lucide-react";
 
 const STATUS_PRESETS = ["Not started", "In progress", "Almost there", "Mastered"];
+const MASTERED = "Mastered";
 
 export default function GradeGoalModal({ goal, onCancel, onConfirm }) {
   const [rows, setRows] = useState(() =>
@@ -18,7 +19,19 @@ export default function GradeGoalModal({ goal, onCancel, onConfirm }) {
 
   const handleProgressChange = (studentId, value) => {
     const progress = Math.min(100, Math.max(0, Number(value) || 0));
-    updateRow(studentId, { progress });
+    // "Mastered" is always 100%, so lowering the bar takes the student off it.
+    setRows((prev) =>
+      prev.map((row) =>
+        row.studentId !== studentId
+          ? row
+          : { ...row, progress, status: row.status === MASTERED && progress < 100 ? "In progress" : row.status },
+      ),
+    );
+  };
+
+  // Choosing "Mastered" completes the goal (the server enforces the same rule).
+  const handleStatusChange = (studentId, status) => {
+    updateRow(studentId, status === MASTERED ? { status, progress: 100 } : { status });
   };
 
   const filteredRows = useMemo(
@@ -100,7 +113,7 @@ export default function GradeGoalModal({ goal, onCancel, onConfirm }) {
 
               <select
                 value={row.status}
-                onChange={(event) => updateRow(row.studentId, { status: event.target.value })}
+                onChange={(event) => handleStatusChange(row.studentId, event.target.value)}
                 aria-label={`${row.name} status`}
                 className="shrink-0 rounded-lg border border-slate-300 px-2 py-1.5 text-sm text-slate-900 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
               >

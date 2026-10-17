@@ -71,7 +71,7 @@ export default function Login() {
     try {
       const email = data.email.trim().toLowerCase();
       const result = await apiClient.login(email, data.password);
-      login(result.token, result.user);
+      login(result.user);
       navigate(from, { replace: true });
     } catch (err) {
       setError(err?.status === 401 ? "Invalid email or password" : getErrorMessage(err, "Login failed"));

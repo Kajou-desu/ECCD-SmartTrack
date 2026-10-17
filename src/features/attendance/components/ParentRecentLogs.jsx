@@ -54,6 +54,7 @@ export default function ParentRecentLogs({ logs, childName, monthName }) {
         log.time ?? formatLogTime(log.arrivedAt),
         formatLogTime(log.pickedUpAt),
       ]),
+      { kind: "parent_attendance" },
     );
   };
 

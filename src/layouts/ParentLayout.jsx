@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import ParentHeader from "@components/navigation/ParentHeader";
 import ParentSidebar from "@components/navigation/ParentSidebar";
 import { ParentChildProvider } from "@context/ParentChildContext";
+import InstallPrompt from "@components/shared/InstallPrompt.jsx";
 
 export default function ParentLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -62,6 +63,7 @@ export default function ParentLayout() {
             <Outlet />
           </main>
         </div>
+        <InstallPrompt />
       </div>
     </ParentChildProvider>
   );
