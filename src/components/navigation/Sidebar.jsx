@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { canManageAccounts, isAdmin } from "@auth/permissions.js";
+import { canManageAccounts } from "@auth/permissions.js";
 import { useAuth } from "@hooks/useAuth.js";
 import logo from "@assets/ECCDST_Logo.png";
 import ProfileBox from "../shared/ProfileBox.jsx";
@@ -17,7 +17,6 @@ import {
   Images,
   Settings,
   Users2,
-  ScrollText,
   LogOut,
 } from "lucide-react";
 
@@ -63,9 +62,6 @@ const ADMIN_NAV_ITEMS = [
   },
 ];
 
-// Only an Admin can read the activity log (the server enforces it too).
-const ACTIVITY_LOG_NAV_ITEM = { icon: ScrollText, label: "Activity Logs", href: "/activity-logs" };
-
 export default function Sidebar({
   isMobileOpen,
   onCloseMobile,
@@ -87,7 +83,6 @@ export default function Sidebar({
   const navItems = [
     ...NAV_ITEMS,
     ...(adminOnly ? ADMIN_NAV_ITEMS : []),
-    ...(isAdmin(user?.role) ? [ACTIVITY_LOG_NAV_ITEM] : []),
   ];
 
   // Close sidebar when navigation links are clicked (via onNavigate callback)

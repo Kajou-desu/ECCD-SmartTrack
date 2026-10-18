@@ -18,7 +18,6 @@ const CalendarEvents = lazy(() => import("@pages/CalendarEvents.jsx"));
 const EventPhotos = lazy(() => import("@pages/EventPhotos.jsx"));
 const PhotoGallery = lazy(() => import("@pages/PhotoGallery.jsx"));
 const AccountsManagement = lazy(() => import("@pages/AccountManagement.jsx"));
-const ActivityLogs = lazy(() => import("@pages/ActivityLogs.jsx"));
 const Settings = lazy(() => import("@pages/Settings.jsx"));
 
 export function TeacherRoutes() {
@@ -45,12 +44,6 @@ export function TeacherRoutes() {
           </Route>
           <Route path="/settings" element={<Settings />} />
           <Route path="/accounts-management" element={<AccountsManagement />} />
-        </Route>
-      </Route>
-      {/* Admin only: the log shows every account's activity. */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
-        <Route element={<Layout />}>
-          <Route path="/activity-logs" element={<ActivityLogs />} />
         </Route>
       </Route>
     </>

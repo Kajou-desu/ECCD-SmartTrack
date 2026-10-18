@@ -21,25 +21,25 @@
  */
 
 .dark {
-  --page: #0b1120;
-  --surface: #131c2f;
+  --page: #121212;
+  --surface: #1e1e1e;
   --brand-fill: #f6a35f; /* light orange: buttons, active items, rings (replaces #C2570C) */
   --brand-fill-hover: #f9b87e;
   --on-brand: #2b1406; /* text on --brand-fill, ~9:1 */
   --brand-text: #f6a35f; /* orange text on dark surfaces, ~9:1 (#C2570C is only ~4:1) */
 
   /* Neutral scale: light shades become dark surfaces, dark shades light text. */
-  --color-gray-50: #0f1729;
-  --color-gray-100: #182236;
-  --color-gray-200: #243049;
-  --color-gray-300: #33415c;
-  --color-gray-400: #7d8ba1;
-  --color-gray-500: #9aa7bb;
-  --color-gray-600: #b7c2d3;
-  --color-gray-700: #cdd5e1;
-  --color-gray-800: #e2e8f0;
-  --color-gray-900: #f1f5f9;
-  --color-gray-950: #f8fafc;
+  --color-gray-50: #181818;
+  --color-gray-100: #262626;
+  --color-gray-200: #333333;
+  --color-gray-300: #454545;
+  --color-gray-400: #8f8f8f;
+  --color-gray-500: #a8a8a8;
+  --color-gray-600: #bfbfbf;
+  --color-gray-700: #d2d2d2;
+  --color-gray-800: #e5e5e5;
+  --color-gray-900: #f2f2f2;
+  --color-gray-950: #fafafa;
   --color-slate-50: var(--color-gray-50);
   --color-slate-100: var(--color-gray-100);
   --color-slate-200: var(--color-gray-200);

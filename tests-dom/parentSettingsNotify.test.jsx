@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { AuthContext } from "@context/authContextObject.js";
 
 // Stand-ins that report through the onNotify prop the way the real forms do.
 vi.mock("@features/settings/components/ProfileSettings.jsx", () => ({
@@ -23,15 +24,23 @@ const { default: ParentSettings } = await import("@pages/parentPortal/ParentSett
 
 afterEach(cleanup);
 
+// ParentSettings picks its tabs from the signed-in user's role.
+const renderAsParent = () =>
+  render(
+    <AuthContext.Provider value={{ user: { role: "Parent" } }}>
+      <ParentSettings />
+    </AuthContext.Provider>,
+  );
+
 describe("ParentSettings feedback", () => {
   it("shows a profile save result to the parent", () => {
-    render(<ParentSettings />);
+    renderAsParent();
     fireEvent.click(screen.getByRole("button", { name: "save-profile" }));
     expect(screen.getByText("Profile updated successfully.")).toBeTruthy();
   });
 
   it("shows a password change error to the parent", () => {
-    render(<ParentSettings />);
+    renderAsParent();
     fireEvent.click(screen.getByRole("tab", { name: "Security" }));
     fireEvent.click(screen.getByRole("button", { name: "save-password" }));
     expect(screen.getByText("Failed to update password.")).toBeTruthy();

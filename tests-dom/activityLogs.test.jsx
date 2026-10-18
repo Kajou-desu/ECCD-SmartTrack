@@ -9,7 +9,7 @@ vi.mock("@api/client.js", () => ({
   apiClient: { getActivityLogs: (...a) => getActivityLogs(...a), recordExport: (...a) => recordExport(...a) },
 }));
 
-const { default: ActivityLogs } = await import("@pages/ActivityLogs.jsx");
+const { default: ActivityLogs } = await import("@features/activityLogs/components/ActivityLogsPanel.jsx");
 const { downloadCsv } = await import("@utils/exportCsv.js");
 
 function renderPage() {
@@ -34,7 +34,7 @@ const row = (id, over = {}) => ({
 beforeEach(() => vi.clearAllMocks());
 afterEach(cleanup);
 
-describe("ActivityLogs page", () => {
+describe("ActivityLogs panel", () => {
   it("shows who did what, with the type in words", async () => {
     getActivityLogs.mockResolvedValue({ logs: [row(1)], total: 1, page: 1, pageSize: 25 });
     renderPage();

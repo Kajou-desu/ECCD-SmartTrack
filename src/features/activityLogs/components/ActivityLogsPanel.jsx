@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, ScrollText, Search } from "lucide-react";
 
-import PageHeader from "@components/shared/PageHeader";
 import LoadingState from "@components/shared/LoadingState";
 import useActivityLogs from "@features/activityLogs/hooks/useActivityLogs.js";
 import {
@@ -17,7 +16,8 @@ import {
 const FIELD =
   "rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200";
 
-export default function ActivityLogs() {
+// The Admin's activity trail, shown in Settings > Logs.
+export default function ActivityLogsPanel() {
   // `draft` is what the controls show; `filters` is what was applied, so the
   // table doesn't refetch on every keystroke.
   const [draft, setDraft] = useState(EMPTY_FILTERS);
@@ -46,10 +46,15 @@ export default function ActivityLogs() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Activity Logs"
-        subtitle="Who signed in, added, changed, removed or exported records. Entries can't be edited or deleted here."
-      />
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-3">
+          <ScrollText aria-hidden="true" className="h-6 w-6 text-[#C2570C]" />
+          <h2 className="text-lg font-bold text-gray-800 sm:text-xl">Activity Logs</h2>
+        </div>
+        <p className="text-sm text-gray-600">
+          Who signed in, added, changed, removed or exported records. Entries can&apos;t be edited or deleted here.
+        </p>
+      </div>
 
       <form onSubmit={apply} className="flex flex-wrap items-end gap-3 rounded-2xl border border-gray-200 bg-white p-4">
         <label className="flex flex-col gap-1 text-xs font-semibold text-gray-600">
