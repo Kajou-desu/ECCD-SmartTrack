@@ -1000,15 +1000,15 @@ export const apiClient = {
   },
 
   /**
-   * This week's classroom goals for a session, each with every active
-   * student's progress.
+   * This week's classroom goals (shared by the morning and afternoon
+   * sessions), each with every active student's progress.
    * @param {string} [week] - "YYYY-MM-DD", any day in the target week
-   * @param {"morning"|"afternoon"} [session]
    */
-  async getWeeklyGoals(week, session = "morning") {
-    const params = new URLSearchParams({ session });
+  async getWeeklyGoals(week) {
+    const params = new URLSearchParams();
     if (week) params.set("week", week);
-    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals?${params.toString()}`, {
+    const query = params.toString();
+    return fetchWithRetry(`${API_BASE_URL}/api/weekly-goals${query ? `?${query}` : ""}`, {
       method: "GET",
     });
   },
@@ -1016,7 +1016,6 @@ export const apiClient = {
   /**
    * @param {Object} payload
    * @param {string} [payload.weekStart] - "YYYY-MM-DD", any day in the target week
-   * @param {"morning"|"afternoon"} payload.session
    * @param {string} payload.title
    * @param {string} [payload.description]
    * @param {string} [payload.category]

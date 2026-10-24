@@ -16,10 +16,9 @@ export function useWeeklyGoals() {
   const queryClient = useQueryClient();
 
   const [weekStart, setWeekStart] = useState(() => mondayOf());
-  const [session, setSession] = useState("morning");
   const weekKey = useMemo(() => toWeekKey(weekStart), [weekStart]);
 
-  const { data: goals = [], isLoading, isError, refetch } = useWeeklyGoalsQuery(weekKey, session);
+  const { data: goals = [], isLoading, isError, refetch } = useWeeklyGoalsQuery(weekKey);
 
   const [modalType, setModalType] = useState(GOAL_MODAL.NONE);
   const [selectedGoal, setSelectedGoal] = useState(null);
@@ -65,7 +64,7 @@ export function useWeeklyGoals() {
   const confirmAdd = useCallback(
     async ({ title, description, category }) => {
       try {
-        await apiClient.createWeeklyGoal({ weekStart: weekKey, session, title, description, category });
+        await apiClient.createWeeklyGoal({ weekStart: weekKey, title, description, category });
         invalidate();
         closeModal();
         showToast("success", `"${title}" was added.`);
@@ -73,7 +72,7 @@ export function useWeeklyGoals() {
         showToast("error", err.message || "Failed to add goal. Please try again.");
       }
     },
-    [weekKey, session, invalidate, closeModal, showToast],
+    [weekKey, invalidate, closeModal, showToast],
   );
 
   const confirmEdit = useCallback(
@@ -125,8 +124,6 @@ export function useWeeklyGoals() {
     retry: refetch,
     weekStart,
     weekKey,
-    session,
-    setSession,
     goToPreviousWeek,
     goToNextWeek,
     goToCurrentWeek,

@@ -15,8 +15,6 @@ export default function WeeklyGoals() {
     error,
     retry,
     weekStart,
-    session,
-    setSession,
     goToPreviousWeek,
     goToNextWeek,
     goToCurrentWeek,
@@ -50,8 +48,6 @@ export default function WeeklyGoals() {
           onPreviousWeek={goToPreviousWeek}
           onNextWeek={goToNextWeek}
           onCurrentWeek={goToCurrentWeek}
-          session={session}
-          onSessionChange={setSession}
           onAddGoal={openCreateModal}
         />
 

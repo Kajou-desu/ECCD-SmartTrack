@@ -3,12 +3,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 import useTodayKey from "@hooks/useTodayKey.js";
 import { useAttendanceQuery } from "./useAttendanceQuery.js";
+import { useAttendanceRangeQuery } from "./useAttendanceRangeQuery.js";
 import { normalizeAttendanceTime } from "../utils/attendanceFilters.js";
 import { formatTime } from "../utils/attendancePickup.js";
 import { useToast } from "@hooks/useToast.js";
 import { downloadCsv } from "@utils/exportCsv.js";
 import { getErrorMessage } from "@api/errorMessage.js";
 import { rangeForPeriod, rangeFilename, rangeRows, RANGE_HEADERS } from "../utils/attendanceRange.js";
+import { buildAttendanceTable, filterTableRows } from "../utils/attendanceTable.js";
 
 const SESSION_LABELS = { morning: "Morning", afternoon: "Afternoon" };
 
@@ -35,6 +37,16 @@ export function useAttendance(initialDate) {
   const [error, setError] = useState("");
   const [savingIds, setSavingIds] = useState(() => new Set());
 
+  // "day" shows the cards for selectedDate; "week" and "month" show a table of
+  // the whole period instead. The same choice decides what Export downloads.
+  const [period, setPeriod] = useState("day");
+  const range = useMemo(() => rangeForPeriod(selectedDate, period), [selectedDate, period]);
+  const {
+    data: rangeRecords = [],
+    isLoading: rangeLoading,
+    isError: rangeFailed,
+  } = useAttendanceRangeQuery(range, period !== "day");
+
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -55,6 +67,12 @@ export function useAttendance(initialDate) {
   }
 
   const loading = isLoading || (loadedDate !== selectedDate && !isError);
+
+  const periodTable = useMemo(() => {
+    if (period === "day") return null;
+    const table = buildAttendanceTable({ period, selectedDate, roster: attendanceRecords, records: rangeRecords });
+    return filterTableRows(table, { searchQuery, filterTime });
+  }, [period, selectedDate, attendanceRecords, rangeRecords, searchQuery, filterTime]);
 
   const filteredRecords = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -198,10 +216,10 @@ export function useAttendance(initialDate) {
   // Reloads the page's day after records were changed outside it (CSV import).
   const refreshAttendance = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ["attendance"] });
+    await queryClient.invalidateQueries({ queryKey: ["attendanceRange"] });
     setLoadedDate(null); // lets the render-phase sync above take the fresh data
   }, [queryClient]);
 
-  const [exportPeriod, setExportPeriod] = useState("day");
   const [exportingRange, setExportingRange] = useState(false);
 
   // Week and month exports read a whole range from the server in one request
@@ -209,15 +227,15 @@ export function useAttendance(initialDate) {
   // included: there is no school calendar to tell a holiday from a missed day.
   const handleExportRange = useCallback(async () => {
     if (exportingRange) return;
-    const range = rangeForPeriod(selectedDate, exportPeriod);
+    const exportRange = rangeForPeriod(selectedDate, period);
     setExportingRange(true);
     try {
-      const { records } = await apiClient.getAttendanceRange(range.from, range.to);
+      const { records } = await apiClient.getAttendanceRange(exportRange.from, exportRange.to);
       if (!records?.length) {
         showToast("warning", "No attendance was recorded in that period.");
         return;
       }
-      downloadCsv(rangeFilename(exportPeriod, range), RANGE_HEADERS, rangeRows(records, formatTime), {
+      downloadCsv(rangeFilename(period, exportRange), RANGE_HEADERS, rangeRows(records, formatTime), {
         kind: "attendance_range",
       });
       showToast("success", "Attendance data was exported.");
@@ -227,11 +245,14 @@ export function useAttendance(initialDate) {
     } finally {
       setExportingRange(false);
     }
-  }, [exportPeriod, exportingRange, selectedDate, showToast]);
+  }, [period, exportingRange, selectedDate, showToast]);
 
   return {
-    exportPeriod,
-    setExportPeriod,
+    period,
+    setPeriod,
+    periodTable,
+    rangeLoading,
+    rangeError: rangeFailed ? "Unable to load attendance for this period. Please try again." : "",
     exportingRange,
     handleExportRange,
     refreshAttendance,

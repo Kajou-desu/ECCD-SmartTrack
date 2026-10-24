@@ -28,7 +28,7 @@ export default function GoalFormModal({ mode, goal, onCancel, onConfirm }) {
               {isEdit ? "Edit Goal" : "Add Goal"}
             </h2>
             <p className="mt-1 text-sm text-slate-600">
-              {isEdit ? "Update this weekly goal." : "Set a new goal for this week's session."}
+              {isEdit ? "Update this weekly goal." : "Set a new goal for this week. It applies to both the morning and afternoon sessions."}
             </p>
           </div>
 

@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 
-async function fetchWeeklyGoals(weekKey, session) {
-  const data = await apiClient.getWeeklyGoals(weekKey, session);
+async function fetchWeeklyGoals(weekKey) {
+  const data = await apiClient.getWeeklyGoals(weekKey);
   return Array.isArray(data?.goals) ? data.goals : [];
 }
 
-export function useWeeklyGoalsQuery(weekKey, session) {
+export function useWeeklyGoalsQuery(weekKey) {
   return useQuery({
-    queryKey: ["weeklyGoals", weekKey, session],
-    queryFn: () => fetchWeeklyGoals(weekKey, session),
+    queryKey: ["weeklyGoals", weekKey],
+    queryFn: () => fetchWeeklyGoals(weekKey),
   });
 }
 

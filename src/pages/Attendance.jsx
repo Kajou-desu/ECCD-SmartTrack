@@ -3,7 +3,9 @@ import useAttendance from "@features/attendance/hooks/useAttendance";
 import AttendanceControls from "@features/attendance/components/AttendanceControls";
 import AttendanceStats from "@features/attendance/components/AttendanceStats";
 import AttendanceList from "@features/attendance/components/AttendanceList";
+import AttendancePeriodTable from "@features/attendance/components/AttendancePeriodTable";
 import AttendanceLoadingState from "@features/attendance/components/AttendanceLoadingState";
+import AttendanceEmptyState from "@features/attendance/components/AttendanceEmptyState";
 import ErrorMsg from "@components/ui/ErrorMsg";
 import { PrimaryButton } from "@components/ui/Button";
 import ImportAttendanceModal from "@features/attendance/components/ImportAttendanceModal";
@@ -30,11 +32,14 @@ export default function Attendance() {
     handlePickUp,
     todayKey,
     handleExport,
-    exportPeriod,
-    setExportPeriod,
     exportingRange,
     handleExportRange,
     refreshAttendance,
+    period,
+    setPeriod,
+    periodTable,
+    rangeLoading,
+    rangeError,
   } = useAttendance();
   const [importOpen, setImportOpen] = useState(false);
 
@@ -47,13 +52,23 @@ export default function Attendance() {
       return "Invalid date";
     }
 
+    if (period === "month") {
+      return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long" }).format(date);
+    }
+
+    if (period === "week" && periodTable) {
+      const format = (dateKey) =>
+        new Date(`${dateKey}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      return `Week of ${format(periodTable.range.from)} – ${format(periodTable.range.to)}`;
+    }
+
     return new Intl.DateTimeFormat("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
     }).format(date);
-  }, [selectedDate]);
+  }, [selectedDate, period, periodTable]);
 
   const pageHeader = (
     <header className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -79,9 +94,9 @@ export default function Attendance() {
         </div>
 
         <select
-          value={exportPeriod}
-          onChange={(event) => setExportPeriod(event.target.value)}
-          aria-label="Export period"
+          value={period}
+          onChange={(event) => setPeriod(event.target.value)}
+          aria-label="Attendance period"
           className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 shadow-sm"
         >
           <option value="day">Day</option>
@@ -92,8 +107,8 @@ export default function Attendance() {
         <PrimaryButton
           icon={<Download className="h-5 w-5" />}
           label={exportingRange ? "Exporting..." : "Export"}
-          onClick={exportPeriod === "day" ? handleExport : handleExportRange}
-          disabled={exportPeriod === "day" ? filteredRecords.length === 0 : exportingRange}
+          onClick={period === "day" ? handleExport : handleExportRange}
+          disabled={period === "day" ? filteredRecords.length === 0 : exportingRange}
           ariaLabel="Export Attendance Data"
         />
 
@@ -149,12 +164,12 @@ export default function Attendance() {
 
       {error && <ErrorMsg message={error} onClose={() => setError("")} />}
 
-      <AttendanceStats attendanceStats={attendanceStats} />
+      {period === "day" && <AttendanceStats attendanceStats={attendanceStats} />}
 
       <section className="flex min-w-0 flex-col gap-6 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
         <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <h2 className="text-base font-bold text-gray-800">
-            Attendance Records
+            {period === "week" ? "Weekly Attendance" : period === "month" ? "Monthly Attendance" : "Attendance Records"}
           </h2>
 
           <div className="min-w-0 w-full xl:w-auto">
@@ -165,19 +180,34 @@ export default function Attendance() {
               setFilterTime={setFilterTime}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
+              showStatusFilter={period === "day"}
             />
           </div>
         </div>
 
-        <AttendanceList
-          filteredRecords={filteredRecords}
-          handleStatusChange={handleStatusChange}
-          handlePickUp={handlePickUp}
-          selectedDate={selectedDate}
-          todayKey={todayKey}
-          savingIds={savingIds}
-          searchQuery={searchQuery}
-        />
+        {period === "day" ? (
+          <AttendanceList
+            filteredRecords={filteredRecords}
+            handleStatusChange={handleStatusChange}
+            handlePickUp={handlePickUp}
+            selectedDate={selectedDate}
+            todayKey={todayKey}
+            savingIds={savingIds}
+            searchQuery={searchQuery}
+          />
+        ) : rangeLoading ? (
+          <p className="py-10 text-center text-sm text-gray-500" role="status">
+            Loading attendance...
+          </p>
+        ) : rangeError ? (
+          <p role="alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            {rangeError}
+          </p>
+        ) : periodTable.rows.length === 0 ? (
+          <AttendanceEmptyState searchQuery={searchQuery} />
+        ) : (
+          <AttendancePeriodTable table={periodTable} period={period} caption={formattedDate} />
+        )}
       </section>
     </main>
   );

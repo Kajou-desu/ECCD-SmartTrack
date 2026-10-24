@@ -9,7 +9,13 @@ const MASTERED = "Mastered";
 
 export default function GradeGoalModal({ goal, onCancel, onConfirm }) {
   const [rows, setRows] = useState(() =>
-    goal.students.map((s) => ({ studentId: s.studentId, name: s.name, progress: s.progress, status: s.status })),
+    goal.students.map((s) => ({
+      studentId: s.studentId,
+      name: s.name,
+      session: s.session,
+      progress: s.progress,
+      status: s.status,
+    })),
   );
   const [search, setSearch] = useState("");
 
@@ -86,7 +92,10 @@ export default function GradeGoalModal({ goal, onCancel, onConfirm }) {
 
           {filteredRows.map((row) => (
             <div key={row.studentId} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
-              <p className="min-w-0 shrink-0 text-sm font-semibold text-slate-800 sm:w-40">{row.name}</p>
+              <div className="min-w-0 shrink-0 sm:w-40">
+                <p className="text-sm font-semibold text-slate-800">{row.name}</p>
+                {row.session && <p className="text-xs capitalize text-slate-500">{row.session}</p>}
+              </div>
 
               <div className="flex flex-1 items-center gap-3">
                 <input

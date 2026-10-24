@@ -145,6 +145,10 @@
 .dark .bg-\[\#f8f9ff\] {
   background-color: var(--page);
 }
+/* Translucent page background (e.g. the sticky action bar on the student form). */
+.dark .bg-\[\#f8f9ff\]\/95 {
+  background-color: color-mix(in oklab, var(--page) 95%, transparent);
+}
 .dark .bg-\[\#fef2e6\] {
   background-color: var(--color-orange-50);
 }
