@@ -43,7 +43,7 @@ function StatusMessage({ message }) {
 // Checkbox group so one Parent/Guardian can be connected to several students.
 // Toggling only touches the clicked id, so selections hidden by the search
 // filter are kept.
-function StudentPicker({ students, selectedIds, onChange, emptyText = "No students found." }) {
+function StudentPicker({ students, selectedIds, onChange, emptyText = "No students found.", note }) {
   const [query, setQuery] = useState("");
   const selected = new Set(selectedIds.map(Number));
   const needle = query.trim().toLowerCase();
@@ -66,6 +66,7 @@ function StudentPicker({ students, selectedIds, onChange, emptyText = "No studen
         <span aria-hidden="true" className="ml-0.5 text-red-500">*</span>
       </legend>
       <p className="mb-1 text-xs text-slate-500">Select at least one student for this account.</p>
+      {note && <p className="mb-1 text-xs font-semibold text-slate-600">{note}</p>}
 
       <input
         type="search"
@@ -108,8 +109,10 @@ function StudentPicker({ students, selectedIds, onChange, emptyText = "No studen
   );
 }
 
-// Admin only: which center the account belongs to. A new center can be added
-// right here, so the Admin is never stuck without the one they need.
+// Admin only, and only for a Teacher account: which center the Teacher works at.
+// (A Parent/Guardian's center follows their students, so it is never picked.)
+// A new center can be added right here, so the Admin is never stuck without
+// the one they need.
 function CenterField({ centers, value, onChange, onCreateCenter, disabled }) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
@@ -221,25 +224,35 @@ export default function AccountForm({
   restrictedEdit = false,
   assignableRoles,
   students = [],
-  // An Admin picks each account's center; `onCreateCenter(name)` adds one.
-  // Anyone else gets none of this: the server uses their own center.
+  // An Admin picks a TEACHER's center; `onCreateCenter(name)` adds one. A
+  // Parent/Guardian's center is never picked: it is the center of their students.
   showCenter = false,
   centers = [],
   onCreateCenter,
 }) {
   const receivesSms = SMS_ROLES.includes(normalizeRole(formData.role));
 
-  // An Admin connects students of the account's own center only (the server
-  // refuses any other), so that is all the list offers, and picking another
-  // center drops the selection made for the previous one.
-  const chosenCenter = String(formData.centerId ?? "");
+  const role = normalizeRole(formData.role);
+
+  // An account's students must all be at one center (the server refuses a mix),
+  // and that center becomes the account's. So an Admin sees the students who
+  // have a teacher at a center, and once one is ticked only that center's.
+  const selectedIds = new Set((formData.studentIds ?? []).map(Number));
+  const derivedCenterId = showCenter
+    ? (students.find((student) => selectedIds.has(Number(student.id)))?.teacherCenterId ?? null)
+    : null;
   const pickableStudents = showCenter
-    ? students.filter((student) => chosenCenter && String(student.teacherCenterId ?? "") === chosenCenter)
+    ? students.filter(
+        (student) =>
+          student.teacherCenterId != null && (derivedCenterId == null || student.teacherCenterId === derivedCenterId),
+      )
     : students;
-  const handleCenterChange = (event) => {
-    if (event.target.value !== chosenCenter) onChange({ target: { name: "studentIds", value: [] } });
-    onChange(event);
-  };
+  const derivedCenterName = centers.find((center) => center.id === derivedCenterId)?.name;
+  const centerNote = !showCenter
+    ? null
+    : derivedCenterName
+      ? `Center: ${derivedCenterName} (set from the selected students)`
+      : "The account's center is set from the students you select.";
 
   // Same {target:{name,value}} shape the page's handlers already read.
   const handlePhoneChange = (event) =>
@@ -273,11 +286,11 @@ export default function AccountForm({
         </select>
       </FormField>
 
-      {showCenter && normalizeRole(formData.role) !== "Admin" && (
+      {showCenter && role === "Teacher" && (
         <CenterField
           centers={centers}
           value={formData.centerId}
-          onChange={handleCenterChange}
+          onChange={onChange}
           onCreateCenter={onCreateCenter}
         />
       )}
@@ -398,12 +411,11 @@ export default function AccountForm({
           students={pickableStudents}
           selectedIds={formData.studentIds ?? []}
           onChange={onChange}
+          note={centerNote}
           emptyText={
-            showCenter && !chosenCenter
-              ? "Choose a center to see its students."
-              : showCenter && students.length
-                ? "No students at this center yet."
-                : "No students found."
+            showCenter && students.length
+              ? "No students with an assigned teacher yet."
+              : "No students found."
           }
         />
       )}

@@ -12,9 +12,9 @@ export const INITIAL_FORM = {
     addressMunicipality: "",
     addressBarangay: "",
     addressDetails: "",
-    // The ECCD center the account belongs to (id, as a string from the select).
-    // An Admin chooses it; for a Teacher creating an account the server uses
-    // the Teacher's own center.
+    // The ECCD center of a TEACHER account (id, as a string from the select),
+    // chosen by an Admin. A Parent/Guardian never has one picked: the server
+    // takes it from their students' teacher.
     centerId: "",
     role: "Parent",
     studentIds: [],
@@ -33,6 +33,10 @@ export const INITIAL_EDIT_FORM = {
     addressBarangay: "",
     addressDetails: "",
     centerId: "",
+    // Only when an Admin moves a Teacher who has enrolled students: what happens
+    // to them ("move" with the Teacher, or "transfer" to `newTeacherId`).
+    studentAction: "",
+    newTeacherId: "",
     role: "Parent",
     studentIds: [],
 };
@@ -184,7 +188,7 @@ export function toCenterId(value) {
 // "no students listed" does not mean the account has none.
 export function validateNewAccount(formData, actingRole) {
     const role = normalizeRole(formData.role);
-    if (actingRole === "Admin" && role !== "Admin" && !toCenterId(formData.centerId)) {
+    if (actingRole === "Admin" && role === "Teacher" && !toCenterId(formData.centerId)) {
         return "Choose the center for this account.";
     }
     if (["Parent", "Guardian"].includes(role) && !(formData.studentIds ?? []).length) {
@@ -193,9 +197,19 @@ export function validateNewAccount(formData, actingRole) {
     return "";
 }
 
+// Only a Teacher account carries a center; a Parent/Guardian's follows their
+// students, so it is never sent (the server ignores it anyway).
+function centerForRole(formData) {
+    return normalizeRole(formData.role) === "Teacher" ? toCenterId(formData.centerId) : undefined;
+}
+
 export function createAccountPayload(formData) {
+    // The edit-only fields stay out of a new account.
+    const rest = { ...formData };
+    delete rest.studentAction;
+    delete rest.newTeacherId;
     return {
-        ...formData,
+        ...rest,
         email: formData.email.trim().toLowerCase(),
         firstName: formData.firstName.trim(),
         middleName: formData.middleName.trim(),
@@ -206,7 +220,7 @@ export function createAccountPayload(formData) {
             barangay: formData.addressBarangay,
             details: formData.addressDetails,
         }),
-        centerId: toCenterId(formData.centerId),
+        centerId: centerForRole(formData),
         role: normalizeRole(formData.role),
         studentIds: formData.studentIds ?? [],
     };
@@ -226,8 +240,50 @@ export function updateAccountPayload(formData) {
             barangay: formData.addressBarangay,
             details: formData.addressDetails,
         }),
-        centerId: toCenterId(formData.centerId),
+        centerId: centerForRole(formData),
         role: normalizeRole(formData.role),
         studentIds: formData.studentIds ?? [],
+        ...studentActionFields(formData),
     };
+}
+
+// What the Admin decided for a moved Teacher's students (see getTeacherMove).
+function studentActionFields(formData) {
+    if (normalizeRole(formData.role) !== "Teacher") return {};
+    if (formData.studentAction === "move") return { studentAction: "move" };
+    if (formData.studentAction === "transfer") {
+        return { studentAction: "transfer", newTeacherId: Number(formData.newTeacherId) || undefined };
+    }
+    return {};
+}
+
+// When saving a Teacher's account would move them to another center while
+// students are enrolled with them, the Admin has to choose what happens to
+// those students first. Returns null when no such choice is needed.
+// `candidates` are the teachers who could take the students over: active
+// Teachers at the CURRENT center (transferred students stay where they are).
+// None means the transfer option is unavailable.
+export function getTeacherMove(formData, account, students, accounts) {
+    if (!account || normalizeRole(account.role) !== "Teacher" || normalizeRole(formData.role) !== "Teacher") return null;
+
+    const oldCenterId = account.centerId ?? null;
+    const newCenterId = toCenterId(formData.centerId) ?? null;
+    if (newCenterId == null || newCenterId === oldCenterId) return null;
+
+    const teacherId = Number(getAccountId(account));
+    const enrolled = students.filter((student) => Number(student.teacherId) === teacherId).length;
+    if (!enrolled) return null;
+
+    const candidates =
+        oldCenterId == null
+            ? []
+            : accounts.filter(
+                  (other) =>
+                      normalizeRole(other.role) === "Teacher" &&
+                      Number(getAccountId(other)) !== teacherId &&
+                      other.centerId === oldCenterId &&
+                      other.isActive !== false,
+              );
+
+    return { enrolled, oldCenterId, newCenterId, candidates };
 }

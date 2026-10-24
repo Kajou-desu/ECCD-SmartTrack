@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useAuth } from "@hooks/useAuth";
 import { apiClient } from "@api/client.js";
@@ -9,6 +10,7 @@ import AccountViewModal from "@features/accounts/components/AccountViewModal";
 import AccountForm from "@features/accounts/components/AccountForm";
 import ConfirmDeleteModal from "@features/accounts/components/ConfirmDeleteModal";
 import ConfirmUpdateModal from "@features/accounts/components/ConfirmUpdateModal";
+import TeacherCenterChangeModal from "@features/accounts/components/TeacherCenterChangeModal";
 import PageHeader from "@components/shared/PageHeader";
 
 import {
@@ -27,6 +29,7 @@ import {
   getAccountName,
   getAssignableRoles,
   canModifyAccount,
+  getTeacherMove,
   canDeleteAccount,
   toTenDigitPhone,
   validateNewAccount,
@@ -64,11 +67,12 @@ function EmptyAccounts({ onCreate }) {
 export default function AccountsManagement() {
   const { user } = useAuth();
   const assignableRoles = getAssignableRoles(user?.role);
+  const queryClient = useQueryClient();
   const { data: studentData } = useStudentsQuery();
   const students = studentData?.students ?? studentData ?? [];
   const canModify = (account) => canModifyAccount(account, user);
 
-  // An Admin chooses each account's center; everyone else's is set by the server.
+  // An Admin chooses a Teacher's center; a Parent/Guardian's follows their students.
   const isAdmin = user?.role === "Admin";
   const [centers, setCenters] = useState([]);
   useEffect(() => {
@@ -111,6 +115,9 @@ export default function AccountsManagement() {
   const [editForm, setEditForm] = useState(INITIAL_EDIT_FORM);
   const [editMessage, setEditMessage] = useState(null);
   const [updateConfirmOpen, setUpdateConfirmOpen] = useState(false);
+  // Set while an Admin decides what happens to the students of a Teacher being
+  // moved to another center (see getTeacherMove).
+  const [teacherMove, setTeacherMove] = useState(null);
 
   const [deleteAccountData, setDeleteAccountData] = useState(null);
 
@@ -199,6 +206,7 @@ export default function AccountsManagement() {
     });
     setEditMessage(null);
     setUpdateConfirmOpen(false);
+    setTeacherMove(null);
   };
 
   const closeEdit = () => {
@@ -207,23 +215,40 @@ export default function AccountsManagement() {
     setEditAccount(null);
     setEditMessage(null);
     setUpdateConfirmOpen(false);
+    setTeacherMove(null);
   };
 
   const handleEditSubmit = (event) => {
     event.preventDefault();
     setEditMessage(null);
+
+    // A Teacher with enrolled students being moved to another center: ask what
+    // happens to those students before the usual confirmation.
+    const move = isAdmin ? getTeacherMove(editForm, editAccount, students, accounts) : null;
+    if (move) {
+      setTeacherMove(move);
+      return;
+    }
     setUpdateConfirmOpen(true);
   };
 
-  const handleUpdateConfirm = async () => {
+  const centerName = (id) => centers.find((center) => center.id === id)?.name ?? "the selected center";
+
+  // `choice` is the Admin's answer from the teacher-move modal, if there was one.
+  const handleUpdateConfirm = async (choice = {}) => {
     try {
-      await updateAccount(editForm);
+      await updateAccount({ ...editForm, ...choice });
+
+      // Students and their families may have changed teacher or center.
+      if (choice.studentAction) queryClient.invalidateQueries({ queryKey: ["students"] });
 
       setUpdateConfirmOpen(false);
+      setTeacherMove(null);
       setEditAccount(null);
       setEditMessage(null);
     } catch (err) {
       setUpdateConfirmOpen(false);
+      setTeacherMove(null);
       setEditMessage({
         text: getErrorMessage(err, "Failed to update account."),
         isError: true,
@@ -412,8 +437,21 @@ export default function AccountsManagement() {
       {updateConfirmOpen && (
         <ConfirmUpdateModal
           loading={mutating}
-          onConfirm={handleUpdateConfirm}
+          onConfirm={() => handleUpdateConfirm()}
           onClose={() => setUpdateConfirmOpen(false)}
+        />
+      )}
+
+      {teacherMove && (
+        <TeacherCenterChangeModal
+          teacherName={getAccountName(editAccount)}
+          enrolled={teacherMove.enrolled}
+          oldCenterName={centerName(teacherMove.oldCenterId)}
+          newCenterName={centerName(teacherMove.newCenterId)}
+          candidates={teacherMove.candidates}
+          loading={mutating}
+          onConfirm={handleUpdateConfirm}
+          onClose={() => setTeacherMove(null)}
         />
       )}
 
