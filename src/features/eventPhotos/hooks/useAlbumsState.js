@@ -80,7 +80,7 @@ export function useAlbumsState() {
     );
 
     const createAlbum = useCallback(
-        (title, association) => {
+        (title, association, centerId) => {
             const trimmedTitle = title.trim();
 
             if (!trimmedTitle) {
@@ -117,7 +117,7 @@ export function useAlbumsState() {
             setAlbums((current) => [optimisticAlbum, ...current]);
 
             apiClient
-                .createAlbum(trimmedTitle, association)
+                .createAlbum(trimmedTitle, association, centerId)
                 .then((saved) => {
                     setAlbums((current) =>
                         current.map((album) =>

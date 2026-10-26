@@ -54,8 +54,8 @@ export default function EventPhotos() {
     navigate(`/event-photos/${album.id}`);
   };
 
-  const handleCreateAlbum = (name, association) => {
-    const result = createAlbum(name, association);
+  const handleCreateAlbum = (name, association, centerId) => {
+    const result = createAlbum(name, association, centerId);
 
     if (result.success) {
       closeModal();

@@ -3,6 +3,9 @@ import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { Plus } from "lucide-react";
 import AlbumAssociationSelect from "./AlbumAssociationSelect";
+import { useAuth } from "@hooks/useAuth.js";
+import { isAdmin } from "@auth/permissions.js";
+import CenterSelect from "@features/centers/components/CenterSelect";
 
 // Resolving the target album by title (rather than the id captured at
 // selection time) sidesteps a race: a brand-new album is added to state
@@ -19,6 +22,10 @@ export default function AddPhotoModal({ albums, createAlbum, addPhotos, onClose 
   const [association, setAssociation] = useState({ type: "event", id: "", name: "" });
   const [error, setError] = useState("");
   const pendingTitleRef = useRef(null);
+  const { user } = useAuth();
+  // An Admin has no center of their own, so a new album needs one chosen.
+  const needsCenter = isAdmin(user?.role);
+  const [centerId, setCenterId] = useState("");
 
   const handleChoosePhotos = () => {
     setError("");
@@ -31,7 +38,12 @@ export default function AddPhotoModal({ albums, createAlbum, addPhotos, onClose 
         return;
       }
 
-      const result = createAlbum(trimmedName, association);
+      if (needsCenter && !centerId) {
+        setError("Choose a center for this album.");
+        return;
+      }
+
+      const result = createAlbum(trimmedName, association, needsCenter ? centerId : undefined);
 
       if (!result.success) {
         setError(result.error);
@@ -149,7 +161,22 @@ export default function AddPhotoModal({ albums, createAlbum, addPhotos, onClose 
                 autoFocus
                 className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
               />
-              <AlbumAssociationSelect value={association} onChange={setAssociation} />
+              {needsCenter && (
+                <CenterSelect
+                  id="add-photo-center"
+                  value={centerId}
+                  onChange={(next) => {
+                    setCenterId(next);
+                    setAssociation((current) => (current.type === "activity" ? { ...current, id: "", name: "" } : current));
+                    setError("");
+                  }}
+                />
+              )}
+              <AlbumAssociationSelect
+                value={association}
+                onChange={setAssociation}
+                centerId={needsCenter ? centerId : undefined}
+              />
             </div>
           )}
 

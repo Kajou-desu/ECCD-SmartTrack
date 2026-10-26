@@ -105,7 +105,6 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
       onClose={onClose}
       labelledBy="upload-work-title"
       overlayClassName="items-end p-0 sm:items-center sm:justify-center sm:p-4"
-      className="max-h-dvh w-full rounded-t-2xl sm:max-w-lg sm:rounded-2xl"
       closeOnEscape={!isUploading}
     >
       <div className="flex shrink-0 items-center justify-between border-b border-slate-200 p-4">

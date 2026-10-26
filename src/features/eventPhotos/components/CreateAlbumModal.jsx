@@ -2,16 +2,28 @@ import { useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import AlbumAssociationSelect from "./AlbumAssociationSelect";
+import { useAuth } from "@hooks/useAuth.js";
+import { isAdmin } from "@auth/permissions.js";
+import CenterSelect from "@features/centers/components/CenterSelect";
 
 export default function CreateAlbumModal({ onCancel, onConfirm }) {
   const [name, setName] = useState("");
   const [association, setAssociation] = useState({ type: "event", id: "", name: "" });
   const [error, setError] = useState("");
+  const { user } = useAuth();
+  // An Admin has no center of their own, so they choose; a Teacher's is automatic.
+  const needsCenter = isAdmin(user?.role);
+  const [centerId, setCenterId] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    const result = onConfirm(name, association);
+    if (needsCenter && !centerId) {
+      setError("Choose a center for this album.");
+      return;
+    }
+
+    const result = onConfirm(name, association, needsCenter ? centerId : undefined);
 
     if (!result.success) {
       setError(result.error);
@@ -64,8 +76,27 @@ export default function CreateAlbumModal({ onCancel, onConfirm }) {
             className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
           />
 
+          {needsCenter && (
+            <div className="mt-5">
+              <CenterSelect
+                id="album-center"
+                value={centerId}
+                onChange={(next) => {
+                  setCenterId(next);
+                  // The activity list follows the center, so a previous pick no longer applies.
+                  setAssociation((current) => (current.type === "activity" ? { ...current, id: "", name: "" } : current));
+                  setError("");
+                }}
+              />
+            </div>
+          )}
+
           <div className="mt-5">
-            <AlbumAssociationSelect value={association} onChange={setAssociation} />
+            <AlbumAssociationSelect
+              value={association}
+              onChange={setAssociation}
+              centerId={needsCenter ? centerId : undefined}
+            />
           </div>
 
           {error && (

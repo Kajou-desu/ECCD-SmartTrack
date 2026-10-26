@@ -3,9 +3,16 @@ import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { isPdfFile, isFileSizeValid, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
 import { FileText, Upload, X } from "lucide-react";
+import { useAuth } from "@hooks/useAuth.js";
+import { isAdmin } from "@auth/permissions.js";
+import CenterSelect from "@features/centers/components/CenterSelect";
 
 export default function AddMaterial({ onCancel, onConfirm }) {
   const fileInputRef = useRef(null);
+  const { user } = useAuth();
+  // An Admin has no center of their own, so they choose; a Teacher's is automatic.
+  const needsCenter = isAdmin(user?.role);
+  const [centerId, setCenterId] = useState("");
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -27,6 +34,7 @@ export default function AddMaterial({ onCancel, onConfirm }) {
       description: description.trim(),
       category: category.trim(),
       file,
+      ...(needsCenter ? { centerId } : {}),
     });
   };
 
@@ -82,6 +90,8 @@ export default function AddMaterial({ onCancel, onConfirm }) {
         </div>
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5">
+          {needsCenter && <CenterSelect id="material-center" value={centerId} onChange={setCenterId} />}
+
           <div>
             <label
               htmlFor="material-file"

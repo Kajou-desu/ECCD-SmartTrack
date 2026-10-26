@@ -1,15 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@api/client.js";
 
-export default function AlbumAssociationSelect({ value, onChange }) {
+// `centerId` (an Admin's chosen center) limits the activities offered to that
+// center's, since an album can only be connected to an activity of its own
+// center. For a Teacher the server already returns only their center's.
+export default function AlbumAssociationSelect({ value, onChange, centerId }) {
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ["albumAssociationOptions", "events"],
     queryFn: () => apiClient.getEventOptions(),
   });
-  const { data: activities = [], isLoading: activitiesLoading } = useQuery({
+  const { data: allActivities = [], isLoading: activitiesLoading } = useQuery({
     queryKey: ["materials"],
     queryFn: () => apiClient.getMaterials(),
   });
+  const activities = centerId
+    ? allActivities.filter((activity) => String(activity.centerId) === String(centerId))
+    : allActivities;
 
   const options = value.type === "event" ? events : activities;
   const isLoading = value.type === "event" ? eventsLoading : activitiesLoading;

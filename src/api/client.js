@@ -446,8 +446,9 @@ export const apiClient = {
    * Create a new (empty) photo album.
    * @param {string} title
    * @param {{ type: "event" | "activity", id: number }} association
+   * @param {number|string} [centerId] Admin only: the center the album belongs to.
    */
-  async createAlbum(title, association) {
+  async createAlbum(title, association, centerId) {
     return fetchWithRetry(`${API_BASE_URL}/api/albums`, {
       method: "POST",
       headers: jsonHeaders(),
@@ -455,6 +456,8 @@ export const apiClient = {
         title,
         associationType: association.type,
         associationId: association.id,
+        // Only an Admin names a center; for a Teacher the server uses their own.
+        ...(centerId ? { centerId } : {}),
       }),
     });
   },
