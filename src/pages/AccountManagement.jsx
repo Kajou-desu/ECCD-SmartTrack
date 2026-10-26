@@ -8,6 +8,7 @@ import useAccounts from "@features/accounts/hooks/useAccounts";
 import AccountSection from "@features/accounts/components/AccountSection";
 import AccountViewModal from "@features/accounts/components/AccountViewModal";
 import AccountForm from "@features/accounts/components/AccountForm";
+import AccountFormModal from "@features/accounts/components/AccountFormModal";
 import ConfirmDeleteModal from "@features/accounts/components/ConfirmDeleteModal";
 import ConfirmUpdateModal from "@features/accounts/components/ConfirmUpdateModal";
 import TeacherCenterChangeModal from "@features/accounts/components/TeacherCenterChangeModal";
@@ -392,20 +393,27 @@ export default function AccountsManagement() {
       )}
 
       {createOpen && (
-        <AccountForm
-          formData={createForm}
-          message={createMessage}
-          loading={mutating}
-          onChange={handleCreateChange}
-          onSubmit={handleCreateSubmit}
-          onCancel={closeCreate}
-          submitLabel="Create Account"
-          assignableRoles={assignableRoles}
-          students={students}
-          showCenter={isAdmin}
-          centers={centers}
-          onCreateCenter={handleCreateCenter}
-        />
+        <AccountFormModal
+          title="New Account"
+          subtitle="Create a system account and set its access role."
+          onClose={closeCreate}
+          disabled={mutating}
+        >
+          <AccountForm
+            formData={createForm}
+            message={createMessage}
+            loading={mutating}
+            onChange={handleCreateChange}
+            onSubmit={handleCreateSubmit}
+            onCancel={closeCreate}
+            submitLabel="Create Account"
+            assignableRoles={assignableRoles}
+            students={students}
+            showCenter={isAdmin}
+            centers={centers}
+            onCreateCenter={handleCreateCenter}
+          />
+        </AccountFormModal>
       )}
 
       {viewAccount && (
@@ -416,22 +424,31 @@ export default function AccountsManagement() {
       )}
 
       {editAccount && (
-        <AccountForm
-          formData={editForm}
-          message={editMessage}
-          loading={mutating}
-          onChange={handleEditChange}
-          onSubmit={handleEditSubmit}
-          onCancel={closeEdit}
-          submitLabel="Review Update"
-          isEdit
-          restrictedEdit={user?.role !== "Admin"}
-          assignableRoles={assignableRoles}
-          students={students}
-          showCenter={isAdmin}
-          centers={centers}
-          onCreateCenter={handleCreateCenter}
-        />
+        <AccountFormModal
+          title="Edit Account"
+          subtitle={getAccountName(editAccount)}
+          onClose={closeEdit}
+          // The confirmation popups sit on top: Escape belongs to them, not to this form.
+          closeOnEscape={!updateConfirmOpen && !teacherMove}
+          disabled={mutating}
+        >
+          <AccountForm
+            formData={editForm}
+            message={editMessage}
+            loading={mutating}
+            onChange={handleEditChange}
+            onSubmit={handleEditSubmit}
+            onCancel={closeEdit}
+            submitLabel="Review Update"
+            isEdit
+            restrictedEdit={user?.role !== "Admin"}
+            assignableRoles={assignableRoles}
+            students={students}
+            showCenter={isAdmin}
+            centers={centers}
+            onCreateCenter={handleCreateCenter}
+          />
+        </AccountFormModal>
       )}
 
       {updateConfirmOpen && (
