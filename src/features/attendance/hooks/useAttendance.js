@@ -92,6 +92,8 @@ export function useAttendance(initialDate) {
         switch (record.status) {
           case "present":
             stats.present += 1;
+            // Late is a subset of present: they did arrive, just after the cutoff.
+            if (record.late) stats.late += 1;
             break;
           case "absent":
             stats.absent += 1;
@@ -104,7 +106,7 @@ export function useAttendance(initialDate) {
         }
         return stats;
       },
-      { total: 0, present: 0, absent: 0, excused: 0 },
+      { total: 0, present: 0, late: 0, absent: 0, excused: 0 },
     );
   }, [attendanceRecords]);
 
