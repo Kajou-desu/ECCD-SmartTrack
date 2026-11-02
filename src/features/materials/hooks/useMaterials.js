@@ -87,7 +87,7 @@ export function useMaterials({ initialModalType = MATERIAL_MODAL.NONE } = {}) {
       const fileUrl = material.fileUrl || material.pdfUrl || material.url;
 
       if (!fileUrl) {
-        showToast("error", "This material does not have a PDF file assigned.");
+        showToast("error", "This material does not have a file assigned.");
         return;
       }
 
@@ -100,7 +100,7 @@ export function useMaterials({ initialModalType = MATERIAL_MODAL.NONE } = {}) {
 
       showToast(
         "error",
-        "The PDF could not be opened. Please allow pop-ups and try again.",
+        "The file could not be opened. Please allow pop-ups and try again.",
       );
     },
     [showToast],
@@ -109,7 +109,7 @@ export function useMaterials({ initialModalType = MATERIAL_MODAL.NONE } = {}) {
   const confirmAdd = useCallback(
     async (newMaterial) => {
       if (!(newMaterial.file instanceof File)) {
-        showToast("error", "Please select a valid PDF file.");
+        showToast("error", "Please select a valid PDF or image file.");
         return;
       }
 

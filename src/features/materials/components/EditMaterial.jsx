@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
-import { isPdfFile, isFileSizeValid, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
+import { isAllowedMaterialFile, isFileSizeValid, MATERIAL_FILE_ACCEPT, MATERIAL_FILE_TYPES_LABEL, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
 import { FileText, Upload, X } from "lucide-react";
 
 export default function EditMaterial({ material, onCancel, onConfirm }) {
@@ -32,8 +32,8 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
 
     if (!selectedFile) return;
 
-    if (!isPdfFile(selectedFile)) {
-      setFileError("Only PDF files are supported.");
+    if (!isAllowedMaterialFile(selectedFile)) {
+      setFileError(`Only ${MATERIAL_FILE_TYPES_LABEL} files are supported.`);
       return;
     }
 
@@ -89,7 +89,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
               ref={fileInputRef}
               id="edit-material-file"
               type="file"
-              accept=".pdf"
+              accept={MATERIAL_FILE_ACCEPT}
               onChange={handleFileChange}
               className="hidden"
             />
@@ -109,7 +109,7 @@ export default function EditMaterial({ material, onCancel, onConfirm }) {
 
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-slate-800">
-                  {file?.name || material.fileName || "Current PDF file"}
+                  {file?.name || material.fileName || "Current file"}
                 </p>
 
                 <p className="text-xs text-slate-500">

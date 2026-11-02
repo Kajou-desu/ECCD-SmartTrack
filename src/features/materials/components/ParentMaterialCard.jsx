@@ -79,7 +79,7 @@ export default function ParentMaterialCard({ material, onView }) {
             icon={<FileText className="h-5 w-5" aria-hidden="true" />}
             label="View Material"
             onClick={onView}
-            ariaLabel={`View ${material.title} PDF`}
+            ariaLabel={`View ${material.title}`}
           />
 
           <SecondaryButton

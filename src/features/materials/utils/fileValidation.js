@@ -5,6 +5,13 @@
 const PDF_MIME_TYPE = "application/pdf";
 const PDF_EXTENSION = ".pdf";
 
+// Learning materials (what teachers upload) may be a PDF or a picture, e.g. a
+// photographed worksheet. Mirrors the backend whitelist in storage/mimeTypes.js.
+const MATERIAL_MIME_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/webp"];
+const MATERIAL_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg", ".webp"];
+export const MATERIAL_FILE_ACCEPT = MATERIAL_EXTENSIONS.join(",");
+export const MATERIAL_FILE_TYPES_LABEL = "PDF, PNG, JPG, or WebP";
+
 const STUDENT_WORK_MIME_TYPES = ["application/pdf", "image/png", "image/jpeg"];
 const STUDENT_WORK_EXTENSIONS = [".pdf", ".png", ".jpg", ".jpeg"];
 
@@ -29,6 +36,15 @@ export function isPdfFile(file) {
     return (
         file.type === PDF_MIME_TYPE ||
         getFileExtension(file.name) === PDF_EXTENSION
+    );
+}
+
+export function isAllowedMaterialFile(file) {
+    if (!file) return false;
+
+    return (
+        MATERIAL_MIME_TYPES.includes(file.type) ||
+        MATERIAL_EXTENSIONS.includes(getFileExtension(file.name))
     );
 }
 

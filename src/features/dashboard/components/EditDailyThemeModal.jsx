@@ -5,7 +5,7 @@ import { useToast } from "@hooks/useToast.js";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
 import { FileText, Upload, X } from "lucide-react";
-import { formatFileSize, isFileSizeValid, isPdfFile, MAX_MATERIAL_FILE_SIZE_BYTES } from "@features/materials/utils/fileValidation.js";
+import { formatFileSize, isAllowedMaterialFile, isFileSizeValid, MATERIAL_FILE_ACCEPT, MATERIAL_FILE_TYPES_LABEL, MAX_MATERIAL_FILE_SIZE_BYTES } from "@features/materials/utils/fileValidation.js";
 import { getErrorMessage } from "@api/errorMessage.js";
 
 // A blank/placeholder theme (see dashboard.controller.js's getDailyTheme
@@ -66,11 +66,11 @@ export default function EditDailyThemeModal({ theme, onCancel, onConfirm }) {
       return;
     }
     if (!newMaterial.file) {
-      setMaterialError("Choose a PDF activity file.");
+      setMaterialError("Choose a PDF or image activity file.");
       return;
     }
-    if (!isPdfFile(newMaterial.file) || !isFileSizeValid(newMaterial.file, MAX_MATERIAL_FILE_SIZE_BYTES)) {
-      setMaterialError(`Choose a PDF file up to ${formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}.`);
+    if (!isAllowedMaterialFile(newMaterial.file) || !isFileSizeValid(newMaterial.file, MAX_MATERIAL_FILE_SIZE_BYTES)) {
+      setMaterialError(`Choose a ${MATERIAL_FILE_TYPES_LABEL} file up to ${formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}.`);
       return;
     }
 
@@ -290,11 +290,11 @@ export default function EditDailyThemeModal({ theme, onCancel, onConfirm }) {
                 />
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
                   <FileText size={18} />
-                  <span className="min-w-0 flex-1 truncate">{newMaterial.file?.name || "Choose PDF activity"}</span>
+                  <span className="min-w-0 flex-1 truncate">{newMaterial.file?.name || "Choose PDF or image activity"}</span>
                   <Upload size={16} />
                   <input
                     type="file"
-                    accept=".pdf,application/pdf"
+                    accept={MATERIAL_FILE_ACCEPT}
                     onChange={(event) => setNewMaterial({ ...newMaterial, file: event.target.files?.[0] ?? null })}
                     className="sr-only"
                   />

@@ -96,7 +96,7 @@ export default function LearningMaterialCard({
             icon={<FileText className="h-5 w-5" aria-hidden="true" />}
             label="View Material"
             onClick={onView}
-            ariaLabel={`View ${material.title} PDF`}
+            ariaLabel={`View ${material.title}`}
           />
 
           <SecondaryButton

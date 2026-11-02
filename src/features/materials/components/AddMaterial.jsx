@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import Modal from "@components/ui/Modal";
 import { PrimaryButton, SecondaryButton } from "@components/ui/Button";
-import { isPdfFile, isFileSizeValid, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
+import { isAllowedMaterialFile, isFileSizeValid, MATERIAL_FILE_ACCEPT, MATERIAL_FILE_TYPES_LABEL, MAX_MATERIAL_FILE_SIZE_BYTES, formatFileSize } from "@features/materials/utils/fileValidation";
 import { FileText, Upload, X } from "lucide-react";
 import { useAuth } from "@hooks/useAuth.js";
 import { isAdmin } from "@auth/permissions.js";
@@ -24,7 +24,7 @@ export default function AddMaterial({ onCancel, onConfirm }) {
     event.preventDefault();
 
     if (!file) {
-      setFileError("Please choose a PDF file.");
+      setFileError("Please choose a PDF or image file.");
       fileInputRef.current?.click();
       return;
     }
@@ -43,9 +43,9 @@ export default function AddMaterial({ onCancel, onConfirm }) {
 
     if (!selectedFile) return;
 
-    if (!isPdfFile(selectedFile)) {
+    if (!isAllowedMaterialFile(selectedFile)) {
       event.target.value = "";
-      setFileError("Only PDF files are supported.");
+      setFileError(`Only ${MATERIAL_FILE_TYPES_LABEL} files are supported.`);
       return;
     }
 
@@ -105,7 +105,7 @@ export default function AddMaterial({ onCancel, onConfirm }) {
               ref={fileInputRef}
               id="material-file"
               type="file"
-              accept=".pdf"
+              accept={MATERIAL_FILE_ACCEPT}
               onChange={handleFileChange}
               className="hidden"
             />
@@ -125,11 +125,11 @@ export default function AddMaterial({ onCancel, onConfirm }) {
 
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-slate-800">
-                  {file?.name || "Choose a PDF file"}
+                  {file?.name || "Choose a PDF or image file"}
                 </p>
 
                 <p className="text-xs text-slate-500">
-                  PDF only, up to {formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}
+                  {MATERIAL_FILE_TYPES_LABEL}, up to {formatFileSize(MAX_MATERIAL_FILE_SIZE_BYTES)}
                 </p>
               </div>
             </button>
