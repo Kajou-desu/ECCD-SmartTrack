@@ -363,6 +363,23 @@ export const apiClient = {
   },
 
   /**
+   * Start / stop automatic pickup (button on the Live attendance page). The
+   * server acts on the caller's own center; nothing is sent in the body.
+   * Both resolve to { pickupWindow: { active, endsAt, mode } }.
+   */
+  async startPickupWatch() {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/pickup-watch/start`, {
+      method: "POST",
+    });
+  },
+
+  async stopPickupWatch() {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/pickup-watch/stop`, {
+      method: "POST",
+    });
+  },
+
+  /**
    * Answer an "is this student still in the center?" prompt (they last 15 s).
    * stillHere=true restarts the unseen clock; false marks the student picked up
    * and notifies their parents. The server knows which student the prompt was

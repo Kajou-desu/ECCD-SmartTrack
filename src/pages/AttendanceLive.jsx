@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ClipboardList } from "lucide-react";
 import { useAttendanceSession } from "@features/smartAttendance/hooks/useAttendanceSession";
+import { usePickupWatch } from "@features/smartAttendance/hooks/usePickupWatch";
 import { useAttendanceMonitor } from "@features/smartAttendance/hooks/useAttendanceMonitor";
 import { useFaceRecognition } from "@features/smartAttendance/hooks/useFaceRecognition";
 import AttendanceCamera from "@features/smartAttendance/components/AttendanceCamera";
+import PickupWatchControl from "@features/smartAttendance/components/PickupWatchControl";
 import AttendanceStatusBar from "@features/smartAttendance/components/AttendanceStatusBar";
 import AttendanceStudentList from "@features/smartAttendance/components/AttendanceStudentList";
 import { describeStopReason } from "@features/smartAttendance/utils/attendanceMonitor.js";
@@ -19,6 +21,7 @@ function formatSessionDate(value) {
 
 export default function AttendanceLive() {
   const { isActive, isLoading: isSessionLoading, pickupWindow } = useAttendanceSession();
+  const pickupWatch = usePickupWatch();
   const { monitor, isError } = useAttendanceMonitor(isActive);
   // Spoken to screen-reader users when the camera verifies someone.
   const [announcement, setAnnouncement] = useState("");
@@ -114,12 +117,13 @@ export default function AttendanceLive() {
       {header}
       <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
 
-      {pickupWindow.active && (
-        <p role="status" className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Automatic pickup is on{pickupEndsAt ? ` until ${pickupEndsAt}` : ""}. Keep this page open with the camera
-          on, so students who are no longer seen can be checked on. You will be asked before anyone is marked picked up.
-        </p>
-      )}
+      <PickupWatchControl
+        pickupWindow={pickupWindow}
+        endsAtLabel={pickupEndsAt}
+        isToggling={pickupWatch.isToggling}
+        onStart={pickupWatch.start}
+        onStop={pickupWatch.stop}
+      />
 
       {isError && <ErrorMsg message="Live results couldn't be loaded. Retrying." onClose={() => {}} />}
 

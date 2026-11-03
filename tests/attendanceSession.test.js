@@ -18,7 +18,7 @@ test("normalizes the { session } envelope to an object or null", () => {
   assert.deepEqual(normalizeSessionResponse({ session }), {
     ...session,
     pickupChecks: [],
-    pickupWindow: { active: false, endsAt: null },
+    pickupWindow: { active: false, endsAt: null, mode: "auto" },
   });
   assert.equal(normalizeSessionResponse({ session: null }), null);
 });
@@ -27,4 +27,12 @@ test("never returns undefined (React Query treats undefined as an error)", () =>
   for (const bad of [undefined, null, {}, { session: undefined }, { session: "x" }, "oops", 42]) {
     assert.equal(normalizeSessionResponse(bad), null, `input: ${JSON.stringify(bad)}`);
   }
+});
+
+test("keeps a known pickup mode and falls back to the schedule for anything else", () => {
+  const session = { id: 4, date: "2026-09-20", status: "active" };
+  const mode = (m) => normalizeSessionResponse({ session, pickupWindow: { active: false, mode: m } }).pickupWindow.mode;
+  assert.equal(mode("off"), "off");
+  assert.equal(mode("on"), "on");
+  for (const bad of ["paused", undefined, null, 1, {}]) assert.equal(mode(bad), "auto");
 });

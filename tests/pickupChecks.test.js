@@ -51,9 +51,9 @@ test("reminds the teacher to open the live page from every other page", () => {
 test("normalizes prompts and the window, dropping anything malformed", () => {
   assert.deepEqual(normalizePickupChecks([check(), { id: "x" }, null, { id: 2, name: "B", expiresInMs: "soon" }]), [check()]);
   assert.deepEqual(normalizePickupChecks(undefined), []);
-  assert.deepEqual(normalizePickupWindow({ active: true, endsAt: "2026-10-12T04:30:00.000Z" }), { active: true, endsAt: "2026-10-12T04:30:00.000Z" });
-  assert.deepEqual(normalizePickupWindow(null), { active: false, endsAt: null });
-  assert.deepEqual(normalizePickupWindow({ active: "yes" }), { active: false, endsAt: null });
+  assert.deepEqual(normalizePickupWindow({ active: true, endsAt: "2026-10-12T04:30:00.000Z" }), { active: true, endsAt: "2026-10-12T04:30:00.000Z", mode: "auto" });
+  assert.deepEqual(normalizePickupWindow(null), { active: false, endsAt: null, mode: "auto" });
+  assert.deepEqual(normalizePickupWindow({ active: "yes" }), { active: false, endsAt: null, mode: "auto" });
 });
 
 test("a session response carries its prompts and window", () => {

@@ -22,10 +22,14 @@ export function normalizePickupChecks(value) {
   );
 }
 
+// mode: "auto" (the schedule), "on" or "off" (the teacher pressed Start / Stop).
+const PICKUP_MODES = ["auto", "on", "off"];
+
 export function normalizePickupWindow(value) {
   return {
     active: value?.active === true,
     endsAt: typeof value?.endsAt === "string" ? value.endsAt : null,
+    mode: PICKUP_MODES.includes(value?.mode) ? value.mode : "auto",
   };
 }
 
