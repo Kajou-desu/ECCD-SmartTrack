@@ -52,8 +52,6 @@ export default function Materials() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onAddMaterial={openCreateModal}
-          sessionFilter={sessionFilter}
-          onSessionFilterChange={setSessionFilter}
         />
 
         {error && <ErrorMsg message={error} onClose={dismissError} />}
@@ -66,6 +64,7 @@ export default function Materials() {
             filteredMaterials={filteredMaterials}
             searchQuery={searchQuery}
             sessionFilter={sessionFilter}
+            onSessionFilterChange={setSessionFilter}
             onClearSearch={() => setSearchQuery("")}
             onAddMaterial={openCreateModal}
             onView={viewMaterial}

@@ -37,7 +37,7 @@ export default function PresentStudentsTable({ students = [], detectionActive = 
         </p>
       ) : (
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[32rem] text-left text-sm">
+          <table className="w-full min-w-lg text-left text-sm">
             <caption className="sr-only">Students marked present today and whether they are still inside</caption>
             <thead>
               <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500">
