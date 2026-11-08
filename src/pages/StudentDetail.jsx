@@ -16,8 +16,11 @@ import StudentEnrollmentPhotosCard from "@features/smartAttendance/components/St
 import PageHeader from "@components/shared/PageHeader";
 import LoadingState from "@components/shared/LoadingState";
 import ErrorMsg from "@components/ui/ErrorMsg";
+import TransferStudentModal from "@features/transfers/components/TransferStudentModal";
+import { useAuth } from "@hooks/useAuth";
+import { isAdmin } from "@auth/permissions.js";
 import { useToast } from "@hooks/useToast.js";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRightLeft } from "lucide-react";
 
 export default function StudentDetail() {
   const { studentId: studentCode } = useParams();
@@ -55,11 +58,12 @@ function StudentNotFound() {
 function StudentDetailView({ studentId }) {
   const navigate = useNavigate();
   const showToast = useToast();
+  const { user } = useAuth();
 
   const { data: queryData, isLoading, isError, refetch } = useStudentProfileQuery(studentId);
   const [profile, setProfile] = useState(null);
   const [initialized, setInitialized] = useState(false);
-  const [activeModal, setActiveModal] = useState(null); // "guardians" | "medical" | "upload" | null
+  const [activeModal, setActiveModal] = useState(null); // "guardians" | "medical" | "upload" | "transfer" | null
   const [docError, setDocError] = useState("");
 
   if (queryData && !initialized) {
@@ -103,6 +107,9 @@ function StudentDetailView({ studentId }) {
   if (!profile?.student) return <StudentNotFound />;
 
   const { student, guardians, medical, documents } = profile;
+  // A transfer starts with the student's own teacher (an Admin may start any).
+  // The server enforces this too; this only decides whether to show the button.
+  const canTransfer = isAdmin(user?.role) || (user?.role === "Teacher" && student.teacherId === user.id);
 
   return (
     <div className="min-h-[calc(100vh-70px)] bg-[#f8f9ff] p-4 sm:p-6 lg:p-8">
@@ -125,6 +132,17 @@ function StudentDetailView({ studentId }) {
       {docError && <ErrorMsg message={docError} onClose={() => setDocError("")} />}
 
       <StudentExportButtons student={student} />
+
+      {canTransfer && (
+        <button
+          type="button"
+          onClick={() => setActiveModal("transfer")}
+          className="mb-4 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-[#C2570C] px-4 py-2 text-sm font-semibold text-[#C2570C] transition hover:bg-orange-50"
+        >
+          <ArrowRightLeft aria-hidden="true" size={16} />
+          Transfer student
+        </button>
+      )}
 
       <StudentProfileHeader student={student} />
 
@@ -175,6 +193,15 @@ function StudentDetailView({ studentId }) {
           }}
         />
       </div>
+
+      {activeModal === "transfer" && (
+        <TransferStudentModal
+          student={student}
+          studentCenterId={student.teacherCenterId ?? null}
+          isAdmin={isAdmin(user?.role)}
+          onClose={() => setActiveModal(null)}
+        />
+      )}
 
       {activeModal === "guardians" && (
         <EditGuardiansModal

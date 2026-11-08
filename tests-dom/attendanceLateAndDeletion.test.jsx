@@ -27,15 +27,17 @@ const record = (over = {}) => ({
 });
 
 describe("AttendanceCard late badge", () => {
-  it("shows a Late tag beside Present for a late arrival", () => {
+  it("shows just Late, not Present as well, for a late arrival", () => {
     render(<AttendanceCard record={record({ late: true })} onMarkStatus={() => {}} onPickUp={() => {}} />);
-    expect(screen.getByText("Late")).toBeTruthy();
-    expect(screen.getByText(/\(late\)/)).toBeTruthy();
+    expect(screen.getAllByText("Late")).toHaveLength(1);
+    expect(screen.queryByText("Present", { selector: "span" })).toBeNull();
+    expect(screen.queryByText(/\(late\)/)).toBeNull();
   });
 
-  it("shows no Late tag for an on-time arrival", () => {
+  it("shows Present and no Late for an on-time arrival", () => {
     render(<AttendanceCard record={record()} onMarkStatus={() => {}} onPickUp={() => {}} />);
     expect(screen.queryByText("Late")).toBeNull();
+    expect(screen.getByText("Present", { selector: "span" })).toBeTruthy();
   });
 
   it("never shows Late for a record that isn't present", () => {

@@ -791,6 +791,41 @@ export const apiClient = {
     return fetchWithRetry(`${API_BASE_URL}/api/school-times${query}`, { method: "GET" });
   },
 
+  /**
+   * Student transfers (new session, teacher or center). The server decides who
+   * may start and who must accept; nothing about identity is sent.
+   * getStudentTransfers -> { incoming: [...], outgoing: [...] } (pending only)
+   * createStudentTransfer resolves to the transfer: status "accepted" (applied
+   * at once) or "pending" (waiting for a teacher at another center).
+   */
+  async getStudentTransfers() {
+    return fetchWithRetry(`${API_BASE_URL}/api/student-transfers`, { method: "GET" });
+  },
+
+  /** The Teachers a student can be moved to: [{ id, name, centerId, centerName }]. */
+  async getTransferTeachers() {
+    return fetchWithRetry(`${API_BASE_URL}/api/student-transfers/teachers`, { method: "GET" });
+  },
+
+  /** @param {{studentId: number, toTeacherId?: number, toSession?: "morning"|"afternoon"}} payload */
+  async createStudentTransfer(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/student-transfers`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async answerStudentTransfer(id, action) {
+    // action: "accept" | "decline" | "cancel" (a fixed list, never user text)
+    if (!["accept", "decline", "cancel"].includes(action)) throw new Error("Unknown transfer action");
+    return fetchWithRetry(`${API_BASE_URL}/api/student-transfers/${encodeURIComponent(id)}/${action}`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({}),
+    });
+  },
+
   /** @param {{morningStart: string, morningEnd: string, afternoonStart: string, afternoonEnd: string, centerId?: number}} payload centerId: Admin only. */
   async updateSchoolTimes(payload) {
     return fetchWithRetry(`${API_BASE_URL}/api/school-times`, {

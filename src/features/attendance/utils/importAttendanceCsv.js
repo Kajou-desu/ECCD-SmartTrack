@@ -9,7 +9,7 @@ export { MAX_IMPORT_BYTES };
 
 // "Student Name", "student_name" and "studentName" are all the same column.
 const REQUIRED = ["studentName", "date", "status"];
-const STATUS_ALIASES = { present: "present", p: "present", absent: "absent", a: "absent", excused: "excused", e: "excused" };
+const STATUS_ALIASES = { present: "present", p: "present", absent: "absent", a: "absent", excused: "excused", e: "excused", late: "present", l: "present" };
 const MAX_DATE_PROBLEMS_SHOWN = 5;
 
 export function parseAttendanceCsv(rawText) {

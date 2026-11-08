@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { rangeForPeriod, rangeFilename, rangeRows, lateCell, RANGE_HEADERS, IMPORT_HEADERS } from "../src/features/attendance/utils/attendanceRange.js";
+import { rangeForPeriod, rangeFilename, rangeRows, statusCell, RANGE_HEADERS, IMPORT_HEADERS } from "../src/features/attendance/utils/attendanceRange.js";
 import { parseAttendanceCsv } from "../src/features/attendance/utils/importAttendanceCsv.js";
 import { profileRows, profileFilename } from "../src/features/students/utils/studentProfileExport.js";
 
@@ -49,17 +49,18 @@ test("range rows use labels, MM/DD/YYYY dates, a Late column, and only show time
     (v) => `t:${v}`,
   );
   assert.equal(RANGE_HEADERS.length, rows[0].length);
-  assert.equal(RANGE_HEADERS[5], "Late");
-  assert.deepEqual(rows[0], ["10/05/2026", "ECCD-2026-1", "Ana", "Morning", "Present", "No", "t:A", "t:D"]);
-  assert.deepEqual(rows[1], ["10/05/2026", "ECCD-2026-2", "Ben", "Afternoon", "Absent", "", "", ""]);
-  assert.equal(rows[2][5], "Yes");
+  assert.ok(!RANGE_HEADERS.includes("Late")); // no separate Late column
+  assert.deepEqual(rows[0], ["10/05/2026", "ECCD-2026-1", "Ana", "Morning", "Present", "t:A", "t:D"]);
+  assert.deepEqual(rows[1], ["10/05/2026", "ECCD-2026-2", "Ben", "Afternoon", "Absent", "", ""]);
+  assert.equal(rows[2][4], "Late");
 });
 
-test("lateCell is only filled for present students", () => {
-  assert.equal(lateCell({ status: "present", late: true }), "Yes");
-  assert.equal(lateCell({ status: "present", late: false }), "No");
-  assert.equal(lateCell({ status: "excused", late: false }), "");
-  assert.equal(lateCell({ status: "absent" }), "");
+test("statusCell says Late only for a present student who was late", () => {
+  assert.equal(statusCell({ status: "present", late: true }), "Late");
+  assert.equal(statusCell({ status: "present", late: false }), "Present");
+  assert.equal(statusCell({ status: "excused", late: true }), "Excused");
+  assert.equal(statusCell({ status: "absent" }), "Absent");
+  assert.equal(statusCell({}), "Not recorded");
 });
 
 test("the import template's columns are named as in the exports", () => {
@@ -76,7 +77,7 @@ test("attendance CSV: accepts BOM, case-insensitive headers, aliases and M/D/YYY
 });
 
 test("attendance CSV: an attendance export can be re-imported (extra columns ignored)", () => {
-  const csv = '"Date","Student Code","Student Name","Session","Status","Late","Arrived","Picked up"\r\n"10/05/2026","ECCD-2026-1","Ana","Morning","Present","No","8:05 AM",""\r\n';
+  const csv = '"Date","Student Code","Student Name","Session","Status","Arrived","Picked up"\r\n"10/05/2026","ECCD-2026-1","Ana","Morning","Late","8:05 AM",""\r\n';
   assert.deepEqual(parseAttendanceCsv(csv), [{ studentName: "Ana", date: "2026-10-05", status: "present" }]);
 });
 
@@ -104,8 +105,8 @@ test("attendance CSV: names keep their commas and quotes", () => {
 });
 
 test("attendance CSV: leaves unknown statuses for the server to name", () => {
-  const [row] = parseAttendanceCsv("Student Name,Date,Status\nX,10/05/2026,late\n");
-  assert.equal(row.status, "late");
+  const [row] = parseAttendanceCsv("Student Name,Date,Status\nX,10/05/2026,tardy\n");
+  assert.equal(row.status, "tardy");
 });
 
 test("attendance CSV: only MM/DD/YYYY dates are accepted, and the error says which rows", () => {
@@ -161,4 +162,9 @@ test("profile export: labels, listed guardians only, filename is sanitized", () 
   assert.deepEqual(map["Mother phone"], { csvText: "09171234567" }); // keeps the leading 0 in Excel
   assert.equal("Father name" in map, false);
   assert.equal(profileFilename({ studentCode: "../ECCD-2026-9" }), "student_ECCD-2026-9.csv");
+});
+
+test("attendance CSV: Late (or L) imports as present", () => {
+  const rows = parseAttendanceCsv("Student Name,Date,Status\r\nAna,10/05/2026,Late\r\nBen,10/05/2026,L\r\n");
+  assert.deepEqual(rows.map((r) => r.status), ["present", "present"]);
 });

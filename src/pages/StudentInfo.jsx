@@ -13,6 +13,7 @@ import { FileUp, UserRoundPlus } from "lucide-react";
 import { useState } from "react";
 import ImportStudentsModal from "@features/students/components/ImportStudentsModal";
 import { formatStudentCode } from "@features/students/utils/studentCode.js";
+import TransfersPanel from "@features/transfers/components/TransfersPanel";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -92,6 +93,8 @@ export default function StudentInfo() {
         </header>
 
         {notice && <ErrorMsg message={notice} onClose={() => setNotice("")} />}
+
+        <TransfersPanel />
 
         <section className="flex flex-col rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">

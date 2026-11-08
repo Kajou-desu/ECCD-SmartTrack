@@ -9,7 +9,7 @@ import { formatTime } from "../utils/attendancePickup.js";
 import { useToast } from "@hooks/useToast.js";
 import { downloadCsv } from "@utils/exportCsv.js";
 import { getErrorMessage } from "@api/errorMessage.js";
-import { rangeForPeriod, rangeFilename, rangeRows, lateCell, RANGE_HEADERS } from "../utils/attendanceRange.js";
+import { rangeForPeriod, rangeFilename, rangeRows, statusCell, RANGE_HEADERS } from "../utils/attendanceRange.js";
 import { formatUsDate } from "@utils/usDate.js";
 import { buildAttendanceTable, filterTableRows } from "../utils/attendanceTable.js";
 
@@ -194,14 +194,13 @@ export function useAttendance(initialDate) {
 
       downloadCsv(
         `attendance_${selectedDate}${isFiltered ? "_filtered" : ""}.csv`,
-        ["Date", "Student Name", "Session", "Status", "Late", "Arrived", "Picked up"],
+        ["Date", "Student Name", "Session", "Status", "Arrived", "Picked up"],
         filteredRecords.map((record) => [
           formatUsDate(selectedDate),
           record.name,
           SESSION_LABELS[record.session] ?? "",
-          // A student with no record yet is "Not recorded", not a blank cell.
-          record.status ? record.status.charAt(0).toUpperCase() + record.status.slice(1) : "Not recorded",
-          lateCell(record),
+          // "Late" for a late arrival; a student with no record yet is "Not recorded".
+          statusCell(record),
           // Local clock time, the same as the attendance cards — the raw value
           // is a UTC ISO string that reads as 00:05 for an 8:05 AM arrival.
           record.status === "present" ? formatTime(record.arrivedAt) : "",

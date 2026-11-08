@@ -7,10 +7,13 @@ export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPick
   const studentName = formatStudentName(record) || "Unknown Student";
   const status = record.status || "absent";
 
-  const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+  // A late arrival shows just "Late" (they are present, after the start time).
+  const isLate = status === "present" && Boolean(record.late);
+  const statusLabel = isLate ? "Late" : status.charAt(0).toUpperCase() + status.slice(1);
 
   const statusStyles = {
     present: "bg-green-100 text-green-700",
+    late: "bg-purple-100 text-purple-700",
     absent: "bg-red-100 text-red-700",
     excused: "bg-amber-100 text-amber-700",
   };
@@ -52,7 +55,7 @@ export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPick
               ? `Arrived at ${new Date(record.arrivedAt).toLocaleTimeString([], {
                   hour: "numeric",
                   minute: "2-digit",
-                })}${record.late ? " (late)" : ""}`
+                })}`
               : "Not arrived"}
           </p>
           {record.status === "present" && record.pickedUpAt && (
@@ -61,10 +64,7 @@ export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPick
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-1">
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[status] || statusStyles.absent}`}>{statusLabel}</span>
-          {status === "present" && record.late && (
-            <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">Late</span>
-          )}
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[isLate ? "late" : status] || statusStyles.absent}`}>{statusLabel}</span>
           {record.verified && record.status === "present" && (
             <span className="text-xs text-gray-500" title="Recorded automatically from the camera and the tag reader">
               Verified automatically

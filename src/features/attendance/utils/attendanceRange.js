@@ -37,11 +37,12 @@ export function rangeFilename(period, { from, to }) {
   return period === "day" ? `attendance_${from}.csv` : `attendance_${period}_${from}_to_${to}.csv`;
 }
 
-export const RANGE_HEADERS = ["Date", "Student Code", "Student Name", "Session", "Status", "Late", "Arrived", "Picked up"];
+export const RANGE_HEADERS = ["Date", "Student Code", "Student Name", "Session", "Status", "Arrived", "Picked up"];
 
-// The "Late" cell. Late is a subset of present (they arrived, just after their
-// session's start time), so only a present student has an answer: Yes or No.
-export const lateCell = (record) => (record.status === "present" ? (record.late ? "Yes" : "No") : "");
+// The "Status" cell. A late arrival is a present student who came after their
+// session's start time, and is exported as "Late" instead of "Present".
+export const statusCell = (record) =>
+  record.status === "present" && record.late ? "Late" : titleCase(record.status);
 // The import template's columns. They are named as in the exports, so an export can be re-imported.
 export const IMPORT_HEADERS = ["Student Name", "Date", "Status"];
 
@@ -55,8 +56,7 @@ export function rangeRows(records, formatTime) {
     r.studentCode,
     r.name,
     SESSION_LABELS[r.session] ?? "",
-    titleCase(r.status),
-    lateCell(r),
+    statusCell(r),
     r.status === "present" ? formatTime(r.arrivedAt) : "",
     r.status === "present" ? formatTime(r.pickedUpAt) : "",
   ]);
