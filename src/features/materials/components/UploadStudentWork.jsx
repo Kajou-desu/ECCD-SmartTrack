@@ -17,6 +17,8 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
   const [fileError, setFileError] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  // True once the server says this student already has work for the material.
+  const [confirmReplace, setConfirmReplace] = useState(false);
 
   const { data } = useStudentsQuery();
   const students = useMemo(() => data?.students ?? [], [data]);
@@ -39,11 +41,13 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
   const handleStudentChange = (event) => {
     setStudentQuery(event.target.value);
     setSelectedStudent(null);
+    setConfirmReplace(false);
     setShowSuggestions(true);
   };
 
   const handleSelectStudent = (student) => {
     setSelectedStudent(student);
+    setConfirmReplace(false);
     setStudentQuery(`${formatStudentName(student)} (${student.id})`);
     setShowSuggestions(false);
   };
@@ -71,12 +75,11 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
     }
 
     setFileError("");
+    setConfirmReplace(false);
     setSelectedFile(file);
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const upload = async ({ replace }) => {
     if (!selectedStudent || !selectedFile || isUploading) return;
 
     setIsUploading(true);
@@ -87,17 +90,28 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
         materialId: material.id,
         studentId: selectedStudent.id,
         file: selectedFile,
+        replace,
       });
       onSuccess(
-        `"${selectedFile.name}" was uploaded for ${formatStudentName(selectedStudent)}.`,
+        `"${selectedFile.name}" was ${replace ? "uploaded, replacing the earlier work," : "uploaded"} for ${formatStudentName(selectedStudent)}.`,
       );
     } catch (err) {
+      if (err?.status === 409 && err.details?.code === "SUBMISSION_EXISTS") {
+        // Nothing was changed on the server: ask before replacing.
+        setConfirmReplace(true);
+        return;
+      }
       const message = getErrorMessage(err, "Failed to upload the file. Please try again.");
       setSubmitError(message);
       showToast("error", message);
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    upload({ replace: false });
   };
 
   return (
@@ -246,6 +260,39 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
           </div>
         ) : null}
 
+        {confirmReplace && selectedStudent ? (
+          <div
+            role="alertdialog"
+            aria-labelledby="replace-work-title"
+            className="mt-4 rounded-lg border border-orange-200 bg-orange-50 p-4"
+          >
+            <p id="replace-work-title" className="text-sm font-semibold text-slate-900">
+              {formatStudentName(selectedStudent)} already uploaded work for this material.
+            </p>
+            <p className="mt-1 text-sm text-slate-700">
+              Do you want to replace it with &ldquo;{selectedFile?.name}&rdquo;? The earlier file will be removed.
+            </p>
+            <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setConfirmReplace(false)}
+                disabled={isUploading}
+                className="cursor-pointer rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Keep existing
+              </button>
+              <button
+                type="button"
+                onClick={() => upload({ replace: true })}
+                disabled={isUploading}
+                className="cursor-pointer rounded-lg bg-[#C2570C] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Replace
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         {submitError && (
           <p role="alert" className="mt-4 text-xs text-red-600">
             {submitError}
@@ -264,7 +311,7 @@ export default function UploadStudentWork({ material, onClose, onSuccess }) {
 
           <button
             type="submit"
-            disabled={!selectedStudent || !selectedFile || isUploading}
+            disabled={!selectedStudent || !selectedFile || isUploading || confirmReplace}
             className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#C2570C] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isUploading ? (

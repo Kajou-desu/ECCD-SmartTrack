@@ -25,8 +25,6 @@ export default function Materials() {
     filteredMaterials,
     searchQuery,
     setSearchQuery,
-    sessionFilter,
-    setSessionFilter,
     modalType,
     selectedMaterial,
     openCreateModal,
@@ -63,8 +61,6 @@ export default function Materials() {
             materials={materials}
             filteredMaterials={filteredMaterials}
             searchQuery={searchQuery}
-            sessionFilter={sessionFilter}
-            onSessionFilterChange={setSessionFilter}
             onClearSearch={() => setSearchQuery("")}
             onAddMaterial={openCreateModal}
             onView={viewMaterial}

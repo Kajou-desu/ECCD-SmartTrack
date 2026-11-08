@@ -6,6 +6,7 @@ import LoadingState from "@components/shared/LoadingState";
 import ErrorMsg from "@components/ui/ErrorMsg";
 import { useMaterialSubmissionsQuery } from "@features/materials/hooks/useMaterialSubmissionsQuery";
 import SubmissionPreview from "@features/materials/components/SubmissionPreview";
+import SessionFilter from "@features/materials/components/SessionFilter";
 import SubmissionsList from "@features/materials/components/SubmissionsList";
 import MaterialNotFound from "@features/materials/components/MaterialNotFound";
 
@@ -16,6 +17,7 @@ export default function MaterialSubmissions() {
   const { data, isLoading, error } = useMaterialSubmissionsQuery(materialId);
   const [selectedId, setSelectedId] = useState(null);
   const [dismissedError, setDismissedError] = useState(false);
+  const [sessionFilter, setSessionFilter] = useState("all");
 
   if (error?.status === 404) {
     return (
@@ -25,7 +27,11 @@ export default function MaterialSubmissions() {
     );
   }
 
-  const submissions = data?.submissions ?? [];
+  const allSubmissions = data?.submissions ?? [];
+  const submissions =
+    sessionFilter === "all"
+      ? allSubmissions
+      : allSubmissions.filter((s) => s.studentSession === sessionFilter);
   // Until the user picks someone, show the first (most recent) submission.
   const active = submissions.find((s) => s.id === selectedId) ?? submissions[0] ?? null;
 
@@ -52,7 +58,11 @@ export default function MaterialSubmissions() {
 
       {isLoading && <LoadingState message="Loading student works..." />}
 
-      {data && submissions.length === 0 && (
+      {data && allSubmissions.length > 0 && (
+        <SessionFilter value={sessionFilter} onChange={setSessionFilter} />
+      )}
+
+      {data && allSubmissions.length === 0 && (
         <section className="flex min-h-96 w-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-orange-50" aria-hidden="true">
             <FolderOpen size={32} className="text-orange-600" />
@@ -60,6 +70,15 @@ export default function MaterialSubmissions() {
           <h2 className="mt-4 text-base font-bold text-slate-900">No student works yet</h2>
           <p className="mt-2 max-w-sm text-sm text-slate-600">
             Completed work uploaded for this material will show up here.
+          </p>
+        </section>
+      )}
+
+      {data && allSubmissions.length > 0 && submissions.length === 0 && (
+        <section role="status" className="flex min-h-64 w-full flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+          <h2 className="text-base font-bold text-slate-900">No student work for the {sessionFilter} session</h2>
+          <p className="mt-2 max-w-sm text-sm text-slate-600">
+            Work appears here once a {sessionFilter} student has submitted it.
           </p>
         </section>
       )}

@@ -534,11 +534,8 @@ export const apiClient = {
    * Fetch all learning materials (teacher + parent views share this list).
    * @returns {Promise<Array>} Array of material records
    */
-  async getMaterials({ session } = {}) {
-    // session ("morning" | "afternoon", Teacher/Admin only) keeps the materials
-    // that students of that session have submitted work for.
-    const query = session ? `?${new URLSearchParams({ session })}` : "";
-    return fetchWithRetry(`${API_BASE_URL}/api/materials${query}`, {
+  async getMaterials() {
+    return fetchWithRetry(`${API_BASE_URL}/api/materials`, {
       method: "GET",
     });
   },
@@ -590,7 +587,7 @@ export const apiClient = {
    * Every student's uploaded work for one material (teacher/admin only).
    * @param {number|string} materialId
    * @returns {Promise<{ material: { id, title, category }, submissions: Array<{
-   *   id, studentId, studentName, fileName, fileUrl, submittedAt }> }>}
+   *   id, studentId, studentName, studentSession, fileName, fileUrl, submittedAt }> }>}
    */
   async getMaterialSubmissions(materialId, options = {}) {
     return fetchWithRetry(
@@ -637,13 +634,16 @@ export const apiClient = {
 
   /**
    * Upload a child's completed work for a material.
-   * @param {Object} params - { materialId, studentId, file }
+   * The server answers 409 { code: "SUBMISSION_EXISTS" } when the student already
+   * has work for this material; resend with replace: true to swap it.
+   * @param {Object} params - { materialId, studentId, file, replace }
    * @returns {Promise<Object>} Created submission record
    */
-  async submitStudentWork({ materialId, studentId, file }) {
+  async submitStudentWork({ materialId, studentId, file, replace = false }) {
     const formData = new FormData();
     formData.append("materialId", materialId);
     formData.append("studentId", studentId);
+    if (replace) formData.append("replace", "true");
     formData.append("file", await compressImage(file));
 
     return fetchWithRetry(`${API_BASE_URL}/api/submissions`, {
