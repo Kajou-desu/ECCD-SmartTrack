@@ -1,4 +1,4 @@
-import { UsersRound, UserCheck, UserX, CalendarDays, AlarmClock, Clock } from "lucide-react";
+import { UsersRound, UserCheck, UserX, CalendarDays } from "lucide-react";
 import { DailyThemeCard } from "./DailyThemeCard";
 import { AttendanceList } from "./AttendanceList";
 import { EventCard } from "./EventCard";
@@ -21,25 +21,11 @@ export const STAT_CARDS = [
     valueKey: "presentToday",
   },
   {
-    key: "lateToday",
-    Icon: AlarmClock,
-    label: "Late Today",
-    color: "bg-purple-100 text-purple-600",
-    valueKey: "lateToday",
-  },
-  {
     key: "absentToday",
     Icon: UserX,
     label: "Absent Today",
     color: "bg-red-100 text-red-600",
     valueKey: "absentToday",
-  },
-  {
-    key: "excusedToday",
-    Icon: Clock,
-    label: "Excused Today",
-    color: "bg-amber-100 text-amber-600",
-    valueKey: "excusedToday",
   },
   {
     key: "schoolDays",
