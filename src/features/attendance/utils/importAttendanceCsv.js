@@ -2,19 +2,15 @@
 // import (BOM, delimiter detection, case-insensitive headers) and the same
 // row numbering as the server: the header is row 1.
 import { splitRows, detectDelimiter, columnKey, MAX_IMPORT_BYTES } from "../../students/utils/importCsv.js";
+import { parseUsDate } from "../../../utils/usDate.js";
 
 export const MAX_ATTENDANCE_IMPORT_ROWS = 500; // the server's per-request limit
 export { MAX_IMPORT_BYTES };
 
-const REQUIRED = ["studentCode", "date", "status"];
+// "Student Name", "student_name" and "studentName" are all the same column.
+const REQUIRED = ["studentName", "date", "status"];
 const STATUS_ALIASES = { present: "present", p: "present", absent: "absent", a: "absent", excused: "excused", e: "excused" };
-
-// 2026-9-5, 2026/09/05 and 2026.09.05 are unambiguous. 05/09/2026 is not, so
-// it is left for the server to reject rather than guessed at.
-function normalizeDate(value) {
-  const match = /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/.exec(String(value).trim());
-  return match ? `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}` : value;
-}
+const MAX_DATE_PROBLEMS_SHOWN = 5;
 
 export function parseAttendanceCsv(rawText) {
   if (rawText.includes("\uFFFD")) {
@@ -41,13 +37,27 @@ export function parseAttendanceCsv(rawText) {
   const missing = REQUIRED.filter((column) => !seen.has(column));
   if (missing.length) throw new Error(`Missing CSV columns: ${missing.join(", ")}`);
 
-  return rows.slice(1).map((values) => {
+  const dateProblems = [];
+  const records = rows.slice(1).map((values, index) => {
     const record = {};
     headers.forEach((header, column) => {
       if (REQUIRED.includes(header)) record[header] = values[column] ?? "";
     });
-    record.date = normalizeDate(record.date);
+    // The CSV's MM/DD/YYYY becomes the server's YYYY-MM-DD. Checked here, not
+    // left to the server, so a wrong format is named as such (the server's own
+    // message talks about YYYY-MM-DD) and one wrong file isn't read as another
+    // date format.
+    const date = parseUsDate(record.date);
+    if (date) record.date = date;
+    else dateProblems.push(`Row ${index + 2}: "${record.date}"`);
     record.status = STATUS_ALIASES[String(record.status).trim().toLowerCase()] ?? record.status;
     return record;
   });
+
+  if (dateProblems.length) {
+    const shown = dateProblems.slice(0, MAX_DATE_PROBLEMS_SHOWN).join("; ");
+    const more = dateProblems.length > MAX_DATE_PROBLEMS_SHOWN ? ` and ${dateProblems.length - MAX_DATE_PROBLEMS_SHOWN} more` : "";
+    throw new Error(`Dates must be real dates written as MM/DD/YYYY, like 09/01/2026. ${shown}${more}.`);
+  }
+  return records;
 }

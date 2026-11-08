@@ -15,9 +15,19 @@ export function useMaterials({ initialModalType = MATERIAL_MODAL.NONE } = {}) {
   const queryClient = useQueryClient();
 
   const { data: queryData, isLoading, isError, refetch } = useMaterialsQuery();
+
+  // "all" | "morning" | "afternoon": materials that students of that session
+  // have submitted work for. Asked of the server (which knows who submitted);
+  // the cards still come from the full list above, so edits show at once.
+  const [sessionFilter, setSessionFilter] = useState("all");
+  const sessionQuery = useMaterialsQuery({
+    session: sessionFilter === "all" ? undefined : sessionFilter,
+    enabled: sessionFilter !== "all",
+  });
+
   const [materials, setMaterials] = useState([]);
   const [initialized, setInitialized] = useState(false);
-  const loading = isLoading;
+  const loading = isLoading || (sessionFilter !== "all" && sessionQuery.isLoading);
   const [error, setError] = useState("");
 
   if (queryData && !initialized) {
@@ -30,6 +40,9 @@ export function useMaterials({ initialModalType = MATERIAL_MODAL.NONE } = {}) {
     setError("Unable to load materials. Please try again.");
   }
 
+  const sessionError =
+    sessionFilter !== "all" && sessionQuery.isError ? "Unable to filter by session. Please try again." : "";
+
   const [searchQuery, setSearchQuery] = useState("");
 
   const [modalType, setModalType] = useState(initialModalType);
@@ -37,17 +50,28 @@ export function useMaterials({ initialModalType = MATERIAL_MODAL.NONE } = {}) {
 
   const [toast, setToast] = useState(null);
 
+  const sessionMaterialIds = useMemo(
+    () => (sessionFilter === "all" || !sessionQuery.data ? null : new Set(sessionQuery.data.materials.map((m) => m.id))),
+    [sessionFilter, sessionQuery.data],
+  );
+
   const filteredMaterials = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
+    // A failed session lookup shows nothing rather than pretending every
+    // material belongs to the chosen session (see sessionError below).
+    const bySession =
+      sessionFilter === "all"
+        ? materials
+        : materials.filter((material) => sessionMaterialIds?.has(material.id));
 
-    if (!query) return materials;
+    if (!query) return bySession;
 
-    return materials.filter((material) =>
+    return bySession.filter((material) =>
       [material.title, material.category, material.description].some(
         (value) => value?.toLowerCase().includes(query),
       ),
     );
-  }, [materials, searchQuery]);
+  }, [materials, searchQuery, sessionFilter, sessionMaterialIds]);
 
   const dismissError = useCallback(() => setError(""), []);
 
@@ -170,12 +194,14 @@ export function useMaterials({ initialModalType = MATERIAL_MODAL.NONE } = {}) {
   return {
     materials,
     loading,
-    error,
+    error: error || sessionError,
     dismissError,
     retry: refetch,
     filteredMaterials,
     searchQuery,
     setSearchQuery,
+    sessionFilter,
+    setSessionFilter,
     modalType,
     selectedMaterial,
     openCreateModal,

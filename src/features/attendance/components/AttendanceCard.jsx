@@ -3,7 +3,7 @@ import Avatar from "@components/shared/Avatar.jsx";
 import MarkPickedUpButton from "./MarkPickedUpButton";
 import { formatTime } from "../utils/attendancePickup.js";
 
-export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPickUp = false, isSaving }) {
+export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPickUp = false, isSaving, selectable = false, selected = false, onToggleSelect }) {
   const studentName = formatStudentName(record) || "Unknown Student";
   const status = record.status || "absent";
 
@@ -30,6 +30,15 @@ export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPick
   return (
     <article className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${isSaving ? "opacity-60" : ""}`}>
       <div className="flex items-center gap-4">
+        {selectable && (
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={() => onToggleSelect(record.id)}
+            aria-label={`Select ${studentName}`}
+            className="h-5 w-5 shrink-0 cursor-pointer accent-[#C2570C]"
+          />
+        )}
         <Avatar
           src={record.photo}
           name={formatStudentName(record)}
@@ -43,7 +52,7 @@ export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPick
               ? `Arrived at ${new Date(record.arrivedAt).toLocaleTimeString([], {
                   hour: "numeric",
                   minute: "2-digit",
-                })}`
+                })}${record.late ? " (late)" : ""}`
               : "Not arrived"}
           </p>
           {record.status === "present" && record.pickedUpAt && (
@@ -53,6 +62,9 @@ export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPick
 
         <div className="flex shrink-0 flex-col items-end gap-1">
           <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[status] || statusStyles.absent}`}>{statusLabel}</span>
+          {status === "present" && record.late && (
+            <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">Late</span>
+          )}
           {record.verified && record.status === "present" && (
             <span className="text-xs text-gray-500" title="Recorded automatically from the camera and the tag reader">
               Verified automatically

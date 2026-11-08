@@ -80,8 +80,9 @@ export default function ImportAttendanceModal({ onCancel, onImported }) {
         <h2 id="import-attendance-title" className="text-base font-bold text-slate-900">Import Attendance</h2>
         <p className="mt-1 text-sm text-slate-500">Upload a CSV of attendance records for your students.</p>
         <ul className="mt-2 list-disc space-y-0.5 pl-4 text-xs text-slate-500">
-          <li>Columns: studentCode, date, status. Other columns (like the name) are ignored, so an attendance export can be re-imported.</li>
-          <li>date: YYYY-MM-DD, today or earlier. status: present, absent or excused.</li>
+          <li>Columns: Student Name, Date, Status. Other columns (like the student code) are ignored, so an attendance export can be re-imported.</li>
+          <li>Student Name: as on the Student Info list. If two of your students share a name, their rows can't be matched; mark those by hand.</li>
+          <li>Date: MM/DD/YYYY, today or earlier. Status: present, absent or excused.</li>
           <li>Records that already match are left unchanged. A differing status replaces the old one.</li>
           <li>Up to 500 records per file. Save from Excel as CSV UTF-8.</li>
         </ul>

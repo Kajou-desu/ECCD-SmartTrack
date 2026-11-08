@@ -5,7 +5,7 @@ import { Play, Square } from "lucide-react";
 export default function PickupWatchControl({ pickupWindow, endsAtLabel, isToggling, onStart, onStop }) {
   const running = pickupWindow.active;
   const message = running
-    ? `Automatic pickup is on${endsAtLabel ? ` until ${endsAtLabel}` : ""}. Keep this page open with the camera on, so students who are no longer seen can be checked on. You will be asked before anyone is marked picked up.`
+    ? `Automatic pickup is on${endsAtLabel ? ` until ${endsAtLabel}` : ""}. Keep this page open with the camera on. A student who is no longer seen shows as Not Detected in the table below, where you can mark them picked up; after several minutes unseen they are marked picked up automatically.`
     : pickupWindow.mode === "off"
       ? "Automatic pickup is stopped. No one will be checked on or marked picked up until you start it again."
       : "Automatic pickup is off. It starts by itself in the pickup window, or you can start it now.";

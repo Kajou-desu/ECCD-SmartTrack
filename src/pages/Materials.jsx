@@ -25,6 +25,8 @@ export default function Materials() {
     filteredMaterials,
     searchQuery,
     setSearchQuery,
+    sessionFilter,
+    setSessionFilter,
     modalType,
     selectedMaterial,
     openCreateModal,
@@ -50,6 +52,8 @@ export default function Materials() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onAddMaterial={openCreateModal}
+          sessionFilter={sessionFilter}
+          onSessionFilterChange={setSessionFilter}
         />
 
         {error && <ErrorMsg message={error} onClose={dismissError} />}
@@ -61,6 +65,7 @@ export default function Materials() {
             materials={materials}
             filteredMaterials={filteredMaterials}
             searchQuery={searchQuery}
+            sessionFilter={sessionFilter}
             onClearSearch={() => setSearchQuery("")}
             onAddMaterial={openCreateModal}
             onView={viewMaterial}

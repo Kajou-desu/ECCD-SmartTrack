@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import NotificationModal from "@components/shared/NotificationModal";
 import ReminderBanner from "../shared/ReminderBanner";
 import ChildSelectorDropdown from "./ChildSelectorDropdown";
@@ -7,6 +7,7 @@ import Logo from "@assets/ECCDST_Logo.png";
 import { useNotifications } from "@hooks/useNotifications";
 import { useParentChild } from "@hooks/useParentChild.js";
 import { useUpcomingReminders } from "@hooks/useUpcomingReminders.js";
+import { useToastOffset } from "@hooks/useToastOffset.js";
 import { Bell, Menu } from "lucide-react";
 
 export default function ParentHeader({
@@ -14,6 +15,8 @@ export default function ParentHeader({
   onOpenSidebar,
   mobileMenuButtonRef,
 }) {
+  const headerRef = useRef(null);
+  useToastOffset(headerRef);
   const { unreadCount } = useNotifications();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const { availableChildren } = useParentChild();
@@ -24,7 +27,7 @@ export default function ParentHeader({
     }) ?? "Welcome to your parent portal. Stay updated on your child's progress.";
 
   return (
-    <header className="border-b border-slate-200 bg-[#f8f9ff]">
+    <header ref={headerRef} className="border-b border-slate-200 bg-[#f8f9ff]">
       {/* Reminder Banner */}
       <ReminderBanner reminder={reminder} />
 

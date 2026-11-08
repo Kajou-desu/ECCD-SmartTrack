@@ -8,6 +8,7 @@ vi.mock("@features/settings/components/SecuritySettings.jsx", () => ({ default: 
 vi.mock("@features/settings/components/NotificationSettings.jsx", () => ({ default: () => <div>notifications-panel</div> }));
 vi.mock("@features/settings/components/AccountSettings.jsx", () => ({ default: () => <div>account-panel</div> }));
 vi.mock("@features/settings/components/AppearanceSettings.jsx", () => ({ default: () => <div>general-panel</div> }));
+vi.mock("@features/settings/components/SchoolTimeSettings.jsx", () => ({ default: () => <div>school-times-panel</div> }));
 vi.mock("@features/settings/components/MyChildrenSettings.jsx", () => ({ default: () => <div>children-panel</div> }));
 vi.mock("@features/activityLogs/components/ActivityLogsPanel.jsx", () => ({ default: () => <div>logs-panel</div> }));
 
@@ -25,8 +26,8 @@ afterEach(cleanup);
 
 describe("getSettingsTabs", () => {
   it("gives each role its own set", () => {
-    expect(ids("Admin")).toEqual(["profile", "security", "general", "account", "logs"]);
-    expect(ids("Teacher")).toEqual(["profile", "security", "general"]);
+    expect(ids("Admin")).toEqual(["profile", "security", "general", "schoolTimes", "account", "logs"]);
+    expect(ids("Teacher")).toEqual(["profile", "security", "general", "schoolTimes"]);
     expect(ids("Parent")).toEqual(["profile", "security", "notifications", "general", "children"]);
     expect(ids("Guardian")).toEqual(ids("Parent"));
   });
@@ -36,6 +37,12 @@ describe("getSettingsTabs", () => {
       expect(ids(role)).not.toContain("logs");
       expect(ids(role)).not.toContain("account");
     }
+  });
+
+  it("school times are for staff only", () => {
+    expect(ids("Admin")).toContain("schoolTimes");
+    expect(ids("Teacher")).toContain("schoolTimes");
+    for (const role of ["Parent", "Guardian", "Janitor", undefined]) expect(ids(role)).not.toContain("schoolTimes");
   });
 
   it("staff have no notification channel settings", () => {
@@ -55,6 +62,11 @@ describe("SettingsPanel", () => {
     expect(screen.getByText("logs-panel")).toBeTruthy();
   });
 
+  it("renders nothing for school times when the role doesn't have it", () => {
+    const { container } = render(<SettingsPanel tabs={getSettingsTabs("Guardian")} activeTab="schoolTimes" onNotify={() => {}} />);
+    expect(container.textContent).toBe("");
+  });
+
   it.each(["logs", "account"])("renders nothing for %s when the role doesn't have it", (tab) => {
     const { container } = render(<SettingsPanel tabs={getSettingsTabs("Teacher")} activeTab={tab} onNotify={() => {}} />);
     expect(container.textContent).toBe("");
@@ -64,14 +76,16 @@ describe("SettingsPanel", () => {
 describe("Settings pages", () => {
   it("shows an Admin the Logs tab and opens the activity logs in it", () => {
     renderAs("Admin", <Settings />);
-    expect(tabNames()).toEqual(["Profile", "Security", "General", "Account", "Logs"]);
+    expect(tabNames()).toEqual(["Profile", "Security", "General", "School Times", "Account", "Logs"]);
     fireEvent.click(screen.getByRole("tab", { name: "Logs" }));
     expect(screen.getByText("logs-panel")).toBeTruthy();
   });
 
-  it("gives a Teacher only Profile, Security and General", () => {
+  it("gives a Teacher Profile, Security, General and School Times", () => {
     renderAs("Teacher", <Settings />);
-    expect(tabNames()).toEqual(["Profile", "Security", "General"]);
+    expect(tabNames()).toEqual(["Profile", "Security", "General", "School Times"]);
+    fireEvent.click(screen.getByRole("tab", { name: "School Times" }));
+    expect(screen.getByText("school-times-panel")).toBeTruthy();
   });
 
   it("gives a Guardian notifications and their children, but no account deletion or logs", () => {

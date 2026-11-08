@@ -10,7 +10,7 @@ const { default: ImportAttendanceModal } = await import(
   "@features/attendance/components/ImportAttendanceModal.jsx"
 );
 
-const CSV = "studentCode,date,status\nECCD-2026-1,2026-10-05,Present\nZZ,2026-10-05,absent\n";
+const CSV = "Student Name,Date,Status\nAna Cruz,10/05/2026,Present\nZZ,10/05/2026,absent\n";
 
 function choose(text = CSV) {
   const input = document.querySelector('input[type="file"]');
@@ -29,17 +29,17 @@ describe("ImportAttendanceModal", () => {
   it("checks the file first (dry run), shows what would change, and saves nothing yet", async () => {
     api.importAttendance.mockResolvedValue({
       dryRun: true, created: 1, updated: 0, unchanged: 0,
-      failed: [{ row: 3, message: 'Student code "ZZ" was not found' }],
+      failed: [{ row: 3, message: 'Student "ZZ" was not found' }],
     });
     render(<ImportAttendanceModal onCancel={vi.fn()} onImported={vi.fn()} />);
     choose();
 
     expect(await screen.findByText(/1 new, 0 changed, 0 already up to date, 1 with problems/)).toBeTruthy();
-    expect(screen.getByText(/Row 3: Student code "ZZ" was not found/)).toBeTruthy();
+    expect(screen.getByText(/Row 3: Student "ZZ" was not found/)).toBeTruthy();
     expect(api.importAttendance).toHaveBeenCalledTimes(1);
     expect(api.importAttendance.mock.calls[0][1]).toBe(true);
-    // Rows were normalized client-side ("Present" -> present).
-    expect(api.importAttendance.mock.calls[0][0][0]).toEqual({ studentCode: "ECCD-2026-1", date: "2026-10-05", status: "present" });
+    // Rows were normalized client-side ("Present" -> present, MM/DD/YYYY -> the server's YYYY-MM-DD).
+    expect(api.importAttendance.mock.calls[0][0][0]).toEqual({ studentName: "Ana Cruz", date: "2026-10-05", status: "present" });
   });
 
   it("imports after the preview, keeps the dialog open when rows failed, and clears the file", async () => {
@@ -84,9 +84,23 @@ describe("ImportAttendanceModal", () => {
 
   it("shows a local file problem without calling the server", async () => {
     render(<ImportAttendanceModal onCancel={vi.fn()} onImported={vi.fn()} />);
-    choose("studentCode,date\nX,2026-10-05\n");
+    choose("Student Name,Date\nX,10/05/2026\n");
     expect(await screen.findByText(/Missing CSV columns: status/)).toBeTruthy();
     expect(api.importAttendance).not.toHaveBeenCalled();
+  });
+
+  it("names a wrong date format locally, without calling the server", async () => {
+    render(<ImportAttendanceModal onCancel={vi.fn()} onImported={vi.fn()} />);
+    choose("Student Name,Date,Status\nAna Cruz,2026-10-05,present\n");
+    expect(await screen.findByText(/written as MM\/DD\/YYYY.*Row 2/)).toBeTruthy();
+    expect(api.importAttendance).not.toHaveBeenCalled();
+  });
+
+  it("tells the user the columns and the date format", () => {
+    render(<ImportAttendanceModal onCancel={vi.fn()} onImported={vi.fn()} />);
+    expect(screen.getByText(/Columns: Student Name, Date, Status/)).toBeTruthy();
+    expect(screen.getByText(/Date: MM\/DD\/YYYY/)).toBeTruthy();
+    expect(screen.getByText(/share a name/)).toBeTruthy();
   });
 
   it("shows the server's message when the check fails", async () => {

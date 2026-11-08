@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
 import useAttendance from "@features/attendance/hooks/useAttendance";
+import useAttendanceDeletion from "@features/attendance/hooks/useAttendanceDeletion";
+import DeleteAttendanceDialog from "@features/attendance/components/DeleteAttendanceDialog";
+import { formatUsDate } from "@utils/usDate.js";
 import AttendanceControls from "@features/attendance/components/AttendanceControls";
 import AttendanceStats from "@features/attendance/components/AttendanceStats";
 import AttendanceList from "@features/attendance/components/AttendanceList";
@@ -9,7 +12,7 @@ import AttendanceEmptyState from "@features/attendance/components/AttendanceEmpt
 import ErrorMsg from "@components/ui/ErrorMsg";
 import { PrimaryButton } from "@components/ui/Button";
 import ImportAttendanceModal from "@features/attendance/components/ImportAttendanceModal";
-import { Calendar, Download, Upload } from "lucide-react";
+import { Calendar, Download, Trash2, Upload } from "lucide-react";
 
 export default function Attendance() {
   const {
@@ -42,6 +45,8 @@ export default function Attendance() {
     rangeError,
   } = useAttendance();
   const [importOpen, setImportOpen] = useState(false);
+  const visibleIds = useMemo(() => filteredRecords.map((record) => record.id), [filteredRecords]);
+  const deletion = useAttendanceDeletion({ date: selectedDate, visibleIds, onDeleted: refreshAttendance });
 
   const formattedDate = useMemo(() => {
     if (!selectedDate) return "Select a date";
@@ -57,17 +62,10 @@ export default function Attendance() {
     }
 
     if (period === "week" && periodTable) {
-      const format = (dateKey) =>
-        new Date(`${dateKey}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-      return `Week of ${format(periodTable.range.from)} – ${format(periodTable.range.to)}`;
+      return `Week of ${formatUsDate(periodTable.range.from)} – ${formatUsDate(periodTable.range.to)}`;
     }
 
-    return new Intl.DateTimeFormat("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }).format(date);
+    return `${new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(date)}, ${formatUsDate(selectedDate)}`;
   }, [selectedDate, period, periodTable]);
 
   const pageHeader = (
@@ -172,7 +170,36 @@ export default function Attendance() {
             {period === "week" ? "Weekly Attendance" : period === "month" ? "Monthly Attendance" : "Attendance Records"}
           </h2>
 
-          <div className="min-w-0 w-full xl:w-auto">
+          <div className="flex min-w-0 w-full flex-col gap-3 xl:w-auto xl:items-end">
+            {period === "day" && (
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={deletion.toggleMode}
+                  aria-pressed={deletion.selectionMode}
+                  className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${deletion.selectionMode ? "border-[#C2570C] bg-orange-50 text-[#C2570C]" : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"}`}
+                >
+                  {deletion.selectionMode ? "Cancel selection" : "Select records"}
+                </button>
+                {deletion.selectionMode && (
+                  <>
+                    <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
+                      <input type="checkbox" checked={deletion.allSelected} onChange={deletion.toggleAll} className="h-4 w-4 accent-[#C2570C]" />
+                      Select all ({filteredRecords.length})
+                    </label>
+                    <button
+                      type="button"
+                      onClick={deletion.requestDelete}
+                      disabled={deletion.selectedIds.size === 0 || deletion.busy}
+                      className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Trash2 aria-hidden="true" className="h-4 w-4" />
+                      {deletion.busy ? "Checking..." : `Delete selected (${deletion.selectedIds.size})`}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
             <AttendanceControls
               filterStatus={filterStatus}
               setFilterStatus={setFilterStatus}
@@ -194,6 +221,9 @@ export default function Attendance() {
             todayKey={todayKey}
             savingIds={savingIds}
             searchQuery={searchQuery}
+            selectionMode={deletion.selectionMode}
+            selectedIds={deletion.selectedIds}
+            onToggleSelect={deletion.toggle}
           />
         ) : rangeLoading ? (
           <p className="py-10 text-center text-sm text-gray-500" role="status">
@@ -209,6 +239,17 @@ export default function Attendance() {
           <AttendancePeriodTable table={periodTable} period={period} caption={formattedDate} />
         )}
       </section>
+
+      {deletion.pending && (
+        <DeleteAttendanceDialog
+          date={selectedDate}
+          students={deletion.pending.ids.length}
+          count={deletion.pending.count}
+          busy={deletion.busy}
+          onConfirm={deletion.confirmDelete}
+          onCancel={deletion.cancelDelete}
+        />
+      )}
     </main>
   );
 }

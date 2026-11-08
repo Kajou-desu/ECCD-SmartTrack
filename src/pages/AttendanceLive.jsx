@@ -4,11 +4,14 @@ import { ClipboardList } from "lucide-react";
 import { useAttendanceSession } from "@features/smartAttendance/hooks/useAttendanceSession";
 import { usePickupWatch } from "@features/smartAttendance/hooks/usePickupWatch";
 import { useAttendanceMonitor } from "@features/smartAttendance/hooks/useAttendanceMonitor";
+import { useMarkPickedUp } from "@features/smartAttendance/hooks/useMarkPickedUp";
 import { useFaceRecognition } from "@features/smartAttendance/hooks/useFaceRecognition";
 import AttendanceCamera from "@features/smartAttendance/components/AttendanceCamera";
 import PickupWatchControl from "@features/smartAttendance/components/PickupWatchControl";
 import AttendanceStatusBar from "@features/smartAttendance/components/AttendanceStatusBar";
 import AttendanceStudentList from "@features/smartAttendance/components/AttendanceStudentList";
+import PresentStudentsTable from "@features/smartAttendance/components/PresentStudentsTable";
+import { normalizePresentStudents } from "@features/smartAttendance/utils/presentStudents.js";
 import { describeStopReason } from "@features/smartAttendance/utils/attendanceMonitor.js";
 import { shouldAutoStartCamera } from "@features/smartAttendance/utils/pickupChecks.js";
 import ErrorMsg from "@components/ui/ErrorMsg";
@@ -23,6 +26,7 @@ export default function AttendanceLive() {
   const { isActive, isLoading: isSessionLoading, pickupWindow } = useAttendanceSession();
   const pickupWatch = usePickupWatch();
   const { monitor, isError } = useAttendanceMonitor(isActive);
+  const { busyIds, markPickedUp } = useMarkPickedUp();
   // Spoken to screen-reader users when the camera verifies someone.
   const [announcement, setAnnouncement] = useState("");
   const camera = useFaceRecognition({
@@ -137,6 +141,13 @@ export default function AttendanceLive() {
         <AttendanceCamera camera={camera} />
         <AttendanceStudentList students={monitor?.students} counts={monitor?.counts} />
       </div>
+
+      <PresentStudentsTable
+        students={normalizePresentStudents(monitor?.presentStudents)}
+        detectionActive={monitor?.detectionActive ?? true}
+        busyIds={busyIds}
+        onMarkPickedUp={markPickedUp}
+      />
     </div>
   );
 }

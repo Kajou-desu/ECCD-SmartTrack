@@ -141,7 +141,7 @@ function AttendanceListItem({ attendance, canPickUp, isPickingUp, onPickUp }) {
   return (
     <div
       role="listitem"
-      aria-label={`Present: ${formatStudentName(attendance)}, ${
+      aria-label={`${attendance.late ? "Present, late" : "Present"}: ${formatStudentName(attendance)}, ${
         attendance.arrivedAt
           ? new Date(attendance.arrivedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
           : "time not recorded"
@@ -162,6 +162,9 @@ function AttendanceListItem({ attendance, canPickUp, isPickingUp, onPickUp }) {
         </p>
 
         <span className="sr-only">Present</span>
+        {attendance.late && (
+          <span className="shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">Late</span>
+        )}
       </div>
 
       {/* Attendance Time */}

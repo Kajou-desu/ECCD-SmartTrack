@@ -1,7 +1,8 @@
 // Date ranges and CSV rows for the attendance exports. Free of React and
 // aliased imports so it can be unit-tested directly. All dates are
 // "YYYY-MM-DD" strings handled with UTC arithmetic, so the browser's timezone
-// can never shift a day.
+// can never shift a day. The dates written INTO a file are MM/DD/YYYY.
+import { formatUsDate } from "../../../utils/usDate.js";
 
 export const EXPORT_PERIODS = ["day", "week", "month"];
 
@@ -36,9 +37,13 @@ export function rangeFilename(period, { from, to }) {
   return period === "day" ? `attendance_${from}.csv` : `attendance_${period}_${from}_to_${to}.csv`;
 }
 
-export const RANGE_HEADERS = ["Date", "Student Code", "Name", "Session", "Status", "Arrived", "Picked up"];
-// Same column set as the import template, so an export can be re-imported.
-export const IMPORT_HEADERS = ["studentCode", "date", "status"];
+export const RANGE_HEADERS = ["Date", "Student Code", "Student Name", "Session", "Status", "Late", "Arrived", "Picked up"];
+
+// The "Late" cell. Late is a subset of present (they arrived, just after their
+// session's start time), so only a present student has an answer: Yes or No.
+export const lateCell = (record) => (record.status === "present" ? (record.late ? "Yes" : "No") : "");
+// The import template's columns. They are named as in the exports, so an export can be re-imported.
+export const IMPORT_HEADERS = ["Student Name", "Date", "Status"];
 
 const SESSION_LABELS = { morning: "Morning", afternoon: "Afternoon" };
 const titleCase = (value) => (value ? value.charAt(0).toUpperCase() + value.slice(1) : "Not recorded");
@@ -46,11 +51,12 @@ const titleCase = (value) => (value ? value.charAt(0).toUpperCase() + value.slic
 // `formatTime` is passed in so this stays testable without a locale.
 export function rangeRows(records, formatTime) {
   return records.map((r) => [
-    r.date,
+    formatUsDate(r.date),
     r.studentCode,
     r.name,
     SESSION_LABELS[r.session] ?? "",
     titleCase(r.status),
+    lateCell(r),
     r.status === "present" ? formatTime(r.arrivedAt) : "",
     r.status === "present" ? formatTime(r.pickedUpAt) : "",
   ]);

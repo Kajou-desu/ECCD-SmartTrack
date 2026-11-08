@@ -339,6 +339,20 @@ export const apiClient = {
   },
 
   /**
+   * Deletes attendance records for one day (or from..to, YYYY-MM-DD) for the
+   * given studentIds, or for every student the caller may see (allStudents:
+   * true) — exactly one of the two. dryRun only counts: resolves to
+   * { dryRun: true, wouldDelete } instead of { dryRun: false, deleted }.
+   */
+  async deleteAttendance({ from, to, studentIds, allStudents, dryRun = false }) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/delete`, {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ from, to, studentIds, allStudents, dryRun }),
+    });
+  },
+
+  /**
    * Live attendance session (Start/Stop Attendance in the header). The server
    * decides the session's date and owner; nothing is sent in the body.
    * All three resolve to { session: {...} | null }.
@@ -376,20 +390,6 @@ export const apiClient = {
   async stopPickupWatch() {
     return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/pickup-watch/stop`, {
       method: "POST",
-    });
-  },
-
-  /**
-   * Answer an "is this student still in the center?" prompt (they last 15 s).
-   * stillHere=true restarts the unseen clock; false marks the student picked up
-   * and notifies their parents. The server knows which student the prompt was
-   * for, so only the prompt id and the answer are sent.
-   */
-  async answerPickupCheck(checkId, stillHere) {
-    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/pickup-checks/${checkId}/answer`, {
-      method: "POST",
-      headers: jsonHeaders(),
-      body: JSON.stringify({ stillHere }),
     });
   },
 
@@ -534,8 +534,11 @@ export const apiClient = {
    * Fetch all learning materials (teacher + parent views share this list).
    * @returns {Promise<Array>} Array of material records
    */
-  async getMaterials() {
-    return fetchWithRetry(`${API_BASE_URL}/api/materials`, {
+  async getMaterials({ session } = {}) {
+    // session ("morning" | "afternoon", Teacher/Admin only) keeps the materials
+    // that students of that session have submitted work for.
+    const query = session ? `?${new URLSearchParams({ session })}` : "";
+    return fetchWithRetry(`${API_BASE_URL}/api/materials${query}`, {
       method: "GET",
     });
   },
@@ -776,6 +779,25 @@ export const apiClient = {
   /** @returns {Promise<Array<{id: number, name: string}>>} An Admin gets every center, a Teacher only their own. */
   async getCenters() {
     return fetchWithRetry(`${API_BASE_URL}/api/centers`, { method: "GET" });
+  },
+
+  /**
+   * A center's morning and afternoon school hours as 24-hour "HH:MM" strings,
+   * plus centerId and isDefault (true until the center saves its own). A Teacher
+   * always gets their own center; an Admin must pass a centerId.
+   */
+  async getSchoolTimes(centerId) {
+    const query = centerId === undefined ? "" : `?${new URLSearchParams({ centerId: String(centerId) })}`;
+    return fetchWithRetry(`${API_BASE_URL}/api/school-times${query}`, { method: "GET" });
+  },
+
+  /** @param {{morningStart: string, morningEnd: string, afternoonStart: string, afternoonEnd: string, centerId?: number}} payload centerId: Admin only. */
+  async updateSchoolTimes(payload) {
+    return fetchWithRetry(`${API_BASE_URL}/api/school-times`, {
+      method: "PUT",
+      headers: jsonHeaders(),
+      body: JSON.stringify(payload),
+    });
   },
 
   /** Admin only. @param {{name: string}} payload */

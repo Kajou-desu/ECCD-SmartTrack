@@ -189,7 +189,7 @@ export function Toast({ type = "success", message, onClose }) {
       onMouseLeave={resumeTimer}
       onFocus={pauseTimer}
       onBlur={resumeTimer}
-      className={`fixed bottom-4 right-4 z-70 flex w-[calc(100%-2rem)] max-w-sm items-start gap-3 rounded-xl border p-4 shadow-xl ${variant.border} ${variant.bg}`}
+      className={`fixed right-4 top-[calc(var(--toast-top,0px)+0.75rem)] z-70 flex w-[calc(100%-2rem)] max-w-sm items-start gap-3 rounded-xl border p-4 shadow-xl ${variant.border} ${variant.bg}`}
     >
       <div
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${variant.iconBg}`}

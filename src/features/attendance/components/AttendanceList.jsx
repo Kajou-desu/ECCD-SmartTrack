@@ -2,7 +2,7 @@ import AttendanceCard from "./AttendanceCard";
 import AttendanceEmptyState from "./AttendanceEmptyState";
 import { canMarkPickedUp } from "../utils/attendancePickup.js";
 
-export default function AttendanceList({ filteredRecords, handleStatusChange, handlePickUp, selectedDate, todayKey, savingIds, searchQuery }) {
+export default function AttendanceList({ filteredRecords, handleStatusChange, handlePickUp, selectedDate, todayKey, savingIds, searchQuery, selectionMode = false, selectedIds, onToggleSelect }) {
   if (!filteredRecords || filteredRecords.length === 0) {
     return <AttendanceEmptyState searchQuery={searchQuery} />;
   }
@@ -17,6 +17,9 @@ export default function AttendanceList({ filteredRecords, handleStatusChange, ha
           onPickUp={handlePickUp}
           canPickUp={canMarkPickedUp(record, selectedDate, todayKey)}
           isSaving={savingIds.has(record.id)}
+          selectable={selectionMode}
+          selected={Boolean(selectedIds?.has(record.id))}
+          onToggleSelect={onToggleSelect}
         />
       ))}
     </div>

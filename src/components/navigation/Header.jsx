@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ReminderBanner from "../shared/ReminderBanner";
 import NotificationModal from "../shared/NotificationModal";
@@ -9,6 +9,7 @@ import ThemeToggleButton from "@components/ui/ThemeToggleButton";
 import { useAttendanceSession } from "@features/smartAttendance/hooks/useAttendanceSession";
 import { useStudentsQuery } from "@features/students/hooks/useStudentsQuery.js";
 import { useUpcomingReminders } from "@hooks/useUpcomingReminders.js";
+import { useToastOffset } from "@hooks/useToastOffset.js";
 import { CalendarDays, Bell, Play, Pause, Menu, ScanFace } from "lucide-react";
 
 export default function Header({
@@ -18,6 +19,8 @@ export default function Header({
   mobileMenuButtonRef,
 }) {
   const navigate = useNavigate();
+  const headerRef = useRef(null);
+  useToastOffset(headerRef);
   const { unreadCount } = useNotifications();
   const { data: studentsData } = useStudentsQuery();
   const reminder =
@@ -58,7 +61,7 @@ export default function Header({
   };
 
   return (
-    <header className="border-b border-slate-200 bg-[#f8f9ff]">
+    <header ref={headerRef} className="border-b border-slate-200 bg-[#f8f9ff]">
       {/* Reminder Banner - Dismissible and responsive */}
       <ReminderBanner reminder={reminder} />
 

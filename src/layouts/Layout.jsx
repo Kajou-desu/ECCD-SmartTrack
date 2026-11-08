@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "@components/navigation/Header";
 import Sidebar from "@components/navigation/Sidebar";
-import PickupCheckPrompt from "@features/smartAttendance/components/PickupCheckPrompt";
+import PickupTrackingBanner from "@features/smartAttendance/components/PickupTrackingBanner";
 import InstallPrompt from "@components/shared/InstallPrompt.jsx";
 
 export default function Layout() {
@@ -54,7 +54,7 @@ export default function Layout() {
         </main>
       </div>
 
-      <PickupCheckPrompt />
+      <PickupTrackingBanner />
       <InstallPrompt />
     </div>
   );

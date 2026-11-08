@@ -42,7 +42,7 @@ describe("week and month attendance export", () => {
     const [filename, headers, rows] = csv.downloadCsv.mock.calls[0];
     expect(filename).toBe("attendance_week_2026-10-05_to_2026-10-11.csv");
     expect(headers[0]).toBe("Date");
-    expect(rows[0].slice(0, 5)).toEqual(["2026-10-06", "ECCD-2026-1", "Ana", "Morning", "Absent"]);
+    expect(rows[0].slice(0, 5)).toEqual(["10/06/2026", "ECCD-2026-1", "Ana", "Morning", "Absent"]);
     expect(toast).toHaveBeenCalledWith("success", "Attendance data was exported.");
   });
 

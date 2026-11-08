@@ -17,7 +17,6 @@ test("normalizes the { session } envelope to an object or null", () => {
   const session = { id: 4, date: "2026-09-20", status: "active" };
   assert.deepEqual(normalizeSessionResponse({ session }), {
     ...session,
-    pickupChecks: [],
     pickupWindow: { active: false, endsAt: null, mode: "auto" },
   });
   assert.equal(normalizeSessionResponse({ session: null }), null);

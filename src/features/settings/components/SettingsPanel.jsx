@@ -3,6 +3,7 @@ import SecuritySettings from "./SecuritySettings.jsx";
 import NotificationSettings from "./NotificationSettings.jsx";
 import AccountSettings from "./AccountSettings.jsx";
 import AppearanceSettings from "./AppearanceSettings.jsx";
+import SchoolTimeSettings from "./SchoolTimeSettings.jsx";
 import ActivityLogsPanel from "@features/activityLogs/components/ActivityLogsPanel.jsx";
 import MyChildrenSettings from "./MyChildrenSettings.jsx";
 import { SettingsTabPanel } from "./SettingsTabs.jsx";
@@ -14,6 +15,7 @@ const PANELS = {
   security: { className: NARROW, render: (notify) => <SecuritySettings onNotify={notify} /> },
   notifications: { className: "w-full sm:mx-auto", render: () => <NotificationSettings /> },
   general: { className: NARROW, render: () => <AppearanceSettings /> },
+  schoolTimes: { className: NARROW, render: (notify) => <SchoolTimeSettings onNotify={notify} /> },
   account: { className: NARROW, render: (notify) => <AccountSettings onNotify={notify} /> },
   children: { className: NARROW, render: () => <MyChildrenSettings /> },
   logs: { className: "w-full", render: () => <ActivityLogsPanel /> },
