@@ -95,6 +95,7 @@ export function useAttendanceDeletion({ date, visibleIds, onDeleted }) {
     busy,
     toggle,
     toggleAll,
+    clearSelection: () => setSelectedIds(new Set()),
     toggleMode,
     requestDelete,
     confirmDelete,

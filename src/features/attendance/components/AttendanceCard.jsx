@@ -5,11 +5,13 @@ import { formatTime } from "../utils/attendancePickup.js";
 
 export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPickUp = false, isSaving, selectable = false, selected = false, onToggleSelect }) {
   const studentName = formatStudentName(record) || "Unknown Student";
-  const status = record.status || "absent";
+  // No record yet (e.g. before school starts) is not "absent": nothing is shown
+  // until a teacher marks the student or the camera/tag reader records them.
+  const status = record.status || null;
 
   // A late arrival shows just "Late" (they are present, after the start time).
   const isLate = status === "present" && Boolean(record.late);
-  const statusLabel = isLate ? "Late" : status.charAt(0).toUpperCase() + status.slice(1);
+  const statusLabel = status ? (isLate ? "Late" : status.charAt(0).toUpperCase() + status.slice(1)) : "";
 
   const statusStyles = {
     present: "bg-green-100 text-green-700",
@@ -56,7 +58,9 @@ export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPick
                   hour: "numeric",
                   minute: "2-digit",
                 })}`
-              : "Not arrived"}
+              : status
+                ? "Not arrived"
+                : "No record yet"}
           </p>
           {record.status === "present" && record.pickedUpAt && (
             <p className="text-sm text-gray-500">Picked up at {formatTime(record.pickedUpAt)}</p>
@@ -64,7 +68,9 @@ export default function AttendanceCard({ record, onMarkStatus, onPickUp, canPick
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-1">
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[isLate ? "late" : status] || statusStyles.absent}`}>{statusLabel}</span>
+          {status && (
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[isLate ? "late" : status] || statusStyles.absent}`}>{statusLabel}</span>
+          )}
           {record.verified && record.status === "present" && (
             <span className="text-xs text-gray-500" title="Recorded automatically from the camera and the tag reader">
               Verified automatically

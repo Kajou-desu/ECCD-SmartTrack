@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import useAttendance from "@features/attendance/hooks/useAttendance";
 import useAttendanceDeletion from "@features/attendance/hooks/useAttendanceDeletion";
 import DeleteAttendanceDialog from "@features/attendance/components/DeleteAttendanceDialog";
+import useBulkAttendance from "@features/attendance/hooks/useBulkAttendance";
+import BulkAttendanceDialog from "@features/attendance/components/BulkAttendanceDialog";
 import { formatUsDate } from "@utils/usDate.js";
 import AttendanceControls from "@features/attendance/components/AttendanceControls";
 import AttendanceStats from "@features/attendance/components/AttendanceStats";
@@ -47,6 +49,17 @@ export default function Attendance() {
   const [importOpen, setImportOpen] = useState(false);
   const visibleIds = useMemo(() => filteredRecords.map((record) => record.id), [filteredRecords]);
   const deletion = useAttendanceDeletion({ date: selectedDate, visibleIds, onDeleted: refreshAttendance });
+  const bulk = useBulkAttendance({
+    date: selectedDate,
+    todayKey,
+    records: attendanceRecords,
+    selectedIds: deletion.selectedIds,
+    onDone: async () => {
+      deletion.clearSelection();
+      await refreshAttendance();
+    },
+  });
+  const bulkDisabled = deletion.selectedIds.size === 0 || bulk.busy || deletion.busy;
 
   const formattedDate = useMemo(() => {
     if (!selectedDate) return "Select a date";
@@ -187,6 +200,33 @@ export default function Attendance() {
                       <input type="checkbox" checked={deletion.allSelected} onChange={deletion.toggleAll} className="h-4 w-4 accent-[#C2570C]" />
                       Select all ({filteredRecords.length})
                     </label>
+                    {[
+                      { action: "present", label: "Present", style: "bg-green-600 hover:bg-green-700" },
+                      { action: "absent", label: "Absent", style: "bg-red-600 hover:bg-red-700" },
+                      { action: "excused", label: "Excused", style: "bg-amber-600 hover:bg-amber-700" },
+                    ].map(({ action, label, style }) => (
+                      <button
+                        key={action}
+                        type="button"
+                        onClick={() => bulk.request(action)}
+                        disabled={bulkDisabled}
+                        aria-label={`Mark selected ${label.toLowerCase()}`}
+                        className={`rounded-xl px-3 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50 ${style}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                    {selectedDate === todayKey && (
+                      <button
+                        type="button"
+                        onClick={() => bulk.request("pickup")}
+                        disabled={bulkDisabled}
+                        aria-label="Mark selected picked up"
+                        className="rounded-xl bg-[#C2570C] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#a94709] disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        Picked up{bulk.pickupCount > 0 ? ` (${bulk.pickupCount})` : ""}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={deletion.requestDelete}
@@ -239,6 +279,8 @@ export default function Attendance() {
           <AttendancePeriodTable table={periodTable} period={period} caption={formattedDate} />
         )}
       </section>
+
+      <BulkAttendanceDialog pending={bulk.pending} todayKey={todayKey} busy={bulk.busy} onConfirm={bulk.confirm} onCancel={bulk.cancel} />
 
       {deletion.pending && (
         <DeleteAttendanceDialog
