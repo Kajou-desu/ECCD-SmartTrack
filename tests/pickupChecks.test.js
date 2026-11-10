@@ -9,14 +9,21 @@ import {
   normalizeSessionResponse,
 } from "../src/features/smartAttendance/utils/attendanceSession.js";
 
-test("auto-starts the camera only when tracking is on, the session runs and it is still off", () => {
-  const base = { isActive: true, pickupActive: true, cameraStatus: "off", alreadyTried: false };
+test("auto-starts only the EXIT camera, only when tracking is on, the session runs and it is still off", () => {
+  const base = { isActive: true, pickupActive: true, cameraStatus: "off", alreadyTried: false, cameraRole: "exit" };
   assert.equal(shouldAutoStartCamera(base), true);
   assert.equal(shouldAutoStartCamera({ ...base, isActive: false }), false);
   assert.equal(shouldAutoStartCamera({ ...base, pickupActive: false }), false);
   assert.equal(shouldAutoStartCamera({ ...base, cameraStatus: "live" }), false);
   assert.equal(shouldAutoStartCamera({ ...base, cameraStatus: "starting" }), false);
   assert.equal(shouldAutoStartCamera({ ...base, alreadyTried: true }), false); // teacher turned it off
+});
+
+test("never auto-starts an entry camera (arrivals are not part of pickup), or one with no role", () => {
+  const base = { isActive: true, pickupActive: true, cameraStatus: "off", alreadyTried: false };
+  assert.equal(shouldAutoStartCamera({ ...base, cameraRole: "entry" }), false);
+  assert.equal(shouldAutoStartCamera({ ...base }), false);
+  assert.equal(shouldAutoStartCamera({ ...base, cameraRole: "roof" }), false);
 });
 
 test("reminds the teacher to open the live page from every other page", () => {

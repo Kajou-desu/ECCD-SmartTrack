@@ -303,6 +303,19 @@ export const apiClient = {
   },
 
   /**
+   * "Still here" for a student who shows as Not Detected: restarts the server's
+   * unseen clock for TODAY so they aren't shown as Not Detected (or picked up
+   * automatically) until it runs out again. Parents are not notified.
+   * @param {number|string} studentId - Student ID
+   * @returns {Promise<Object>} { studentId, stillHereAt }
+   */
+  async markStillHere(studentId) {
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/${studentId}/still-here`, {
+      method: "PATCH",
+    });
+  },
+
+  /**
    * Record attendance for multiple students (bulk operation)
    * @param {Array<Object>} attendanceData - Array of attendance records
    * @returns {Promise<Object>} Bulk operation result
@@ -437,12 +450,15 @@ export const apiClient = {
   /**
    * Sends one camera frame (a JPEG Blob) for recognition. Only pixels go up —
    * the server decides who is in the frame. Not retried (POST): the next frame
-   * supersedes a lost one.
+   * supersedes a lost one. `options.camera` is "entry" (arrivals, the default) or
+   * "exit" (pickup); the server rejects anything else, so it is allow-listed here
+   * too and never put in the URL as typed.
    */
   async sendAttendanceFrame(blob, options = {}) {
     const formData = new FormData();
     formData.append("frame", blob, "frame.jpg");
-    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/frame`, {
+    const camera = options.camera === "exit" ? "exit" : "entry";
+    return fetchWithRetry(`${API_BASE_URL}/api/attendance/session/frame?camera=${camera}`, {
       method: "POST",
       body: formData,
       signal: options.signal,

@@ -21,7 +21,7 @@ export default function PickupTrackingBanner() {
       >
         <Camera aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
         <span>
-          Pickup tracking is on, but it needs the camera.{" "}
+          Pickup tracking is on, but it needs the exit camera.{" "}
           <Link to="/attendance/live" className="font-semibold underline">
             Open Live attendance
           </Link>{" "}

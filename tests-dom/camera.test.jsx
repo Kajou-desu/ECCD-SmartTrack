@@ -176,3 +176,42 @@ describe("useFaceRecognition — camera lifecycle", () => {
     expect(cam.status).toBe("live");
   });
 });
+
+describe("useFaceRecognition — camera role", () => {
+  it("sends frames as the entry camera by default", async () => {
+    render(<Harness />);
+    await act(async () => { await cam.start(); });
+    expect(api.sendAttendanceFrame.mock.calls[0][1]).toMatchObject({ camera: "entry" });
+  });
+
+  it("sends frames as the exit camera when the page is set to it", async () => {
+    render(<Harness role="exit" />);
+    await act(async () => { await cam.start(); });
+    expect(api.sendAttendanceFrame.mock.calls[0][1]).toMatchObject({ camera: "exit" });
+  });
+
+  it("tells the page who was picked up, and stays quiet when nobody was", async () => {
+    const onPickedUp = vi.fn();
+    const onVerified = vi.fn();
+    api.sendAttendanceFrame
+      .mockResolvedValueOnce(ok())
+      .mockResolvedValueOnce(ok({ pickedUp: [{ studentId: 5, name: "Ana" }] }));
+    render(<Harness role="exit" onPickedUp={onPickedUp} onVerified={onVerified} />);
+    await act(async () => { await cam.start(); });
+    expect(onPickedUp).not.toHaveBeenCalled();
+    await advance(800);
+    expect(onPickedUp).toHaveBeenCalledWith([{ studentId: 5, name: "Ana" }]);
+    expect(onVerified).not.toHaveBeenCalled();
+  });
+
+  it("a role change takes effect on the next frame, without restarting the camera", async () => {
+    const { rerender } = render(<Harness role="entry" />);
+    await act(async () => { await cam.start(); });
+    rerender(<Harness role="exit" />);
+    await advance(800);
+    const roles = api.sendAttendanceFrame.mock.calls.map(([, o]) => o.camera);
+    expect(roles[0]).toBe("entry");
+    expect(roles.at(-1)).toBe("exit");
+    expect(navigator.mediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
+  });
+});

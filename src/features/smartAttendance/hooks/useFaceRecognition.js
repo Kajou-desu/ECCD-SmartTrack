@@ -33,9 +33,14 @@ function captureFrame(video, canvas) {
 // slow connection can never pile up requests. Only pixels leave the device —
 // the server decides who is in each frame.
 //
+// `role` is which of the center's two cameras this device is: "entry" (arrivals,
+// the default) or "exit" (pickup). It is sent with every frame. `onVerified`
+// hears students marked present (entry); `onPickedUp` hears students marked
+// picked up (exit).
+//
 // Every exit path (turning it off, the session ending, losing permission,
 // unmounting) goes through stop()/release(), so the camera light always goes out.
-export function useFaceRecognition({ onVerified } = {}) {
+export function useFaceRecognition({ role = "entry", onVerified, onPickedUp } = {}) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -45,6 +50,9 @@ export function useFaceRecognition({ onVerified } = {}) {
   // still current, so a stale loop can never outlive a stop or a restart.
   const runRef = useRef(0);
   const onVerifiedRef = useRef(onVerified);
+  const onPickedUpRef = useRef(onPickedUp);
+  // Read on every frame, so a role change takes effect on the very next one.
+  const roleRef = useRef(role);
 
   const [status, setStatus] = useState("off"); // "off" | "starting" | "live"
   const [message, setMessage] = useState("");
@@ -53,7 +61,9 @@ export function useFaceRecognition({ onVerified } = {}) {
 
   useEffect(() => {
     onVerifiedRef.current = onVerified;
-  }, [onVerified]);
+    onPickedUpRef.current = onPickedUp;
+    roleRef.current = role;
+  }, [onVerified, onPickedUp, role]);
 
   const release = useCallback(() => {
     abortRef.current?.abort();
@@ -87,12 +97,16 @@ export function useFaceRecognition({ onVerified } = {}) {
         try {
           canvasRef.current ||= document.createElement("canvas");
           const blob = await captureFrame(videoRef.current, canvasRef.current);
-          const result = await apiClient.sendAttendanceFrame(blob, { signal: controller.signal });
+          const result = await apiClient.sendAttendanceFrame(blob, {
+            signal: controller.signal,
+            camera: roleRef.current,
+          });
           if (run !== runRef.current) return;
           failures = 0;
           setDegraded(false);
           setFrame({ width: result.width, height: result.height, faces: result.faces ?? [] });
           if (result.verified?.length) onVerifiedRef.current?.(result.verified);
+          if (result.pickedUp?.length) onPickedUpRef.current?.(result.pickedUp);
         } catch (error) {
           if (run !== runRef.current) return; // aborted because we stopped: not a failure
           failures += 1;

@@ -5,6 +5,7 @@ import { useAttendanceSession } from "@features/smartAttendance/hooks/useAttenda
 import { usePickupWatch } from "@features/smartAttendance/hooks/usePickupWatch";
 import { useAttendanceMonitor } from "@features/smartAttendance/hooks/useAttendanceMonitor";
 import { useMarkPickedUp } from "@features/smartAttendance/hooks/useMarkPickedUp";
+import { useStillHere } from "@features/smartAttendance/hooks/useStillHere";
 import { useFaceRecognition } from "@features/smartAttendance/hooks/useFaceRecognition";
 import AttendanceCamera from "@features/smartAttendance/components/AttendanceCamera";
 import PickupWatchControl from "@features/smartAttendance/components/PickupWatchControl";
@@ -12,9 +13,29 @@ import AttendanceStatusBar from "@features/smartAttendance/components/Attendance
 import AttendanceStudentList from "@features/smartAttendance/components/AttendanceStudentList";
 import PresentStudentsTable from "@features/smartAttendance/components/PresentStudentsTable";
 import { normalizePresentStudents } from "@features/smartAttendance/utils/presentStudents.js";
-import { describeStopReason } from "@features/smartAttendance/utils/attendanceMonitor.js";
+import { describeStopReason, normalizeCameraRole } from "@features/smartAttendance/utils/attendanceMonitor.js";
 import { shouldAutoStartCamera } from "@features/smartAttendance/utils/pickupChecks.js";
 import ErrorMsg from "@components/ui/ErrorMsg";
+
+// Which of the center's two cameras this tab is. Remembered per tab (not per
+// browser) so two tabs on one laptop can be the entry and the exit camera, and
+// kept only as a convenience: storage can be blocked or empty, and then the page
+// simply starts as the entry camera.
+const ROLE_KEY = "smarttrack.cameraRole";
+function readStoredRole() {
+  try {
+    return normalizeCameraRole(window.sessionStorage.getItem(ROLE_KEY));
+  } catch {
+    return normalizeCameraRole(null);
+  }
+}
+function storeRole(role) {
+  try {
+    window.sessionStorage.setItem(ROLE_KEY, role);
+  } catch {
+    /* optional */
+  }
+}
 
 function formatSessionDate(value) {
   const date = new Date(`${value}T00:00:00`);
@@ -26,11 +47,21 @@ export default function AttendanceLive() {
   const { isActive, isLoading: isSessionLoading, pickupWindow } = useAttendanceSession();
   const pickupWatch = usePickupWatch();
   const { monitor, isError } = useAttendanceMonitor(isActive);
-  const { busyIds, markPickedUp } = useMarkPickedUp();
+  const { busyIds: pickUpBusyIds, markPickedUp } = useMarkPickedUp();
+  const { busyIds: stillHereBusyIds, markStillHere } = useStillHere();
+  const busyIds = new Set([...pickUpBusyIds, ...stillHereBusyIds]); // one action at a time per row
   // Spoken to screen-reader users when the camera verifies someone.
   const [announcement, setAnnouncement] = useState("");
+  const [cameraRole, setCameraRole] = useState(readStoredRole);
+  const changeRole = (next) => {
+    const role = normalizeCameraRole(next);
+    setCameraRole(role);
+    storeRole(role);
+  };
   const camera = useFaceRecognition({
+    role: cameraRole,
     onVerified: (verified) => setAnnouncement(`${verified.map((v) => v.name).join(", ")} marked present`),
+    onPickedUp: (pickedUp) => setAnnouncement(`${pickedUp.map((p) => p.name).join(", ")} marked picked up`),
   });
 
   // The camera must never outlive the session. When attendance stops (here or
@@ -44,10 +75,11 @@ export default function AttendanceLive() {
     }
   }, [isSessionLoading, isActive, cameraStatus, stopCamera]);
 
-  // Automatic pickup only works while this page streams the camera, so when the
-  // pickup window is open turn it on — once per visit, so a teacher who turns it
-  // off isn't fought. (A browser that hasn't been given camera permission yet
-  // asks for it, or shows the usual "couldn't start" message.)
+  // Automatic pickup is driven by the EXIT camera, which only streams while its
+  // page does, so on a tab set to the exit camera, turn it on when the pickup
+  // window opens — once per visit, so a teacher who turns it off isn't fought.
+  // (A browser that hasn't been given camera permission yet asks for it, or shows
+  // the usual "couldn't start" message.) A tab set to the entry camera is left alone.
   const { start: startCamera } = camera;
   const triedAutoStart = useRef(false);
   useEffect(() => {
@@ -56,12 +88,13 @@ export default function AttendanceLive() {
       pickupActive: pickupWindow.active,
       cameraStatus,
       alreadyTried: triedAutoStart.current,
+      cameraRole,
     });
     if (shouldStart) {
       triedAutoStart.current = true;
       startCamera();
     }
-  }, [isActive, pickupWindow.active, cameraStatus, startCamera]);
+  }, [isActive, pickupWindow.active, cameraStatus, cameraRole, startCamera]);
 
   const pickupEndsAt = useMemo(() => {
     const date = pickupWindow.endsAt ? new Date(pickupWindow.endsAt) : null;
@@ -103,8 +136,9 @@ export default function AttendanceLive() {
         <section className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
           <h2 className="text-base font-semibold text-gray-800">Attendance isn't running</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-gray-600">
-            Press Start Attendance in the top bar. Then turn on a camera that can see the students, and they are marked
-            present when both their face and their tag are seen.
+            Press Start Attendance in the top bar. Then turn on the entry camera at the door students come in by, and they
+            are marked present when both their face and their tag are seen. At pickup time, the exit camera marks students
+            picked up as they leave.
           </p>
           {camera.message && (
             <div className="mx-auto mt-4 max-w-md">
@@ -135,10 +169,12 @@ export default function AttendanceLive() {
         cameraStatus={camera.status}
         recognitionAvailable={monitor?.recognitionAvailable ?? false}
         gatewayOnline={monitor?.gatewayOnline ?? false}
+        cameras={monitor?.cameras}
+        pickupActive={pickupWindow.active}
       />
 
       <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <AttendanceCamera camera={camera} />
+        <AttendanceCamera camera={camera} role={cameraRole} onRoleChange={changeRole} />
         <AttendanceStudentList students={monitor?.students} counts={monitor?.counts} />
       </div>
 
@@ -147,6 +183,7 @@ export default function AttendanceLive() {
         detectionActive={monitor?.detectionActive ?? true}
         busyIds={busyIds}
         onMarkPickedUp={markPickedUp}
+        onStillHere={markStillHere}
       />
     </div>
   );

@@ -11,11 +11,12 @@ const CHIP = {
 };
 
 // Everyone marked present today and where they are now, refreshed with the live
-// monitor. "Mark Picked Up" is offered only for Not Detected rows: a student the
-// cameras and tags still see is inside, and one already picked up is done.
+// monitor. "Still here" and "Mark Picked Up" are offered only for Not Detected
+// rows: a student the cameras and tags still see is inside, and one already
+// picked up is done. "Still here" restarts the unseen clock.
 // `detectionActive` false means the camera or tag reader is down, so nobody can
 // be called Not Detected right now.
-export default function PresentStudentsTable({ students = [], detectionActive = true, busyIds, onMarkPickedUp }) {
+export default function PresentStudentsTable({ students = [], detectionActive = true, busyIds, onMarkPickedUp, onStillHere }) {
   const counts = presenceCounts(students);
 
   return (
@@ -63,12 +64,23 @@ export default function PresentStudentsTable({ students = [], detectionActive = 
                     </td>
                     <td className="py-3 text-right">
                       {student.status === "not_detected" && (
-                        <MarkPickedUpButton
-                          studentName={name}
-                          onPickUp={() => onMarkPickedUp(student)}
-                          disabled={busyIds?.has(student.studentId)}
-                          className="rounded-lg px-3 py-1.5 text-xs"
-                        />
+                        <div className="flex flex-wrap justify-end gap-2">
+                          <button
+                            type="button"
+                            aria-label={`${name} is still here`}
+                            onClick={() => onStillHere(student)}
+                            disabled={busyIds?.has(student.studentId)}
+                            className="cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Still here
+                          </button>
+                          <MarkPickedUpButton
+                            studentName={name}
+                            onPickUp={() => onMarkPickedUp(student)}
+                            disabled={busyIds?.has(student.studentId)}
+                            className="rounded-lg px-3 py-1.5 text-xs"
+                          />
+                        </div>
                       )}
                     </td>
                   </tr>

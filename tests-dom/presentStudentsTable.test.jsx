@@ -2,16 +2,18 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, within, cleanup, fireEvent, renderHook, act, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const api = vi.hoisted(() => ({ markPickedUp: vi.fn() }));
+const api = vi.hoisted(() => ({ markPickedUp: vi.fn(), markStillHere: vi.fn() }));
 const toast = vi.hoisted(() => vi.fn());
 vi.mock("@api/client.js", () => ({ apiClient: api }));
 vi.mock("@hooks/useToast.js", () => ({ useToast: () => toast }));
 
 const { default: PresentStudentsTable } = await import("@features/smartAttendance/components/PresentStudentsTable.jsx");
 const { useMarkPickedUp } = await import("@features/smartAttendance/hooks/useMarkPickedUp.js");
+const { useStillHere } = await import("@features/smartAttendance/hooks/useStillHere.js");
 
 beforeEach(() => {
   api.markPickedUp.mockReset();
+  api.markStillHere.mockReset();
   toast.mockReset();
 });
 afterEach(cleanup);
@@ -34,6 +36,22 @@ describe("PresentStudentsTable", () => {
     const buttons = screen.getAllByRole("button", { name: /picked up/i });
     expect(buttons).toHaveLength(1);
     expect(buttons[0].getAttribute("aria-label")).toBe("Mark Ben Reyes picked up");
+  });
+
+  it("offers Still here only on Not Detected rows, and presses it for that student at once", () => {
+    const onStillHere = vi.fn();
+    render(<PresentStudentsTable students={STUDENTS} onMarkPickedUp={() => {}} onStillHere={onStillHere} />);
+    const buttons = screen.getAllByRole("button", { name: /still here/i });
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0].getAttribute("aria-label")).toBe("Ben Reyes is still here");
+    fireEvent.click(buttons[0]);
+    expect(onStillHere).toHaveBeenCalledWith(STUDENTS[0]);
+  });
+
+  it("disables both actions on a row while its request is in flight", () => {
+    render(<PresentStudentsTable students={STUDENTS} busyIds={new Set([2])} onMarkPickedUp={() => {}} onStillHere={() => {}} />);
+    expect(screen.getByRole("button", { name: "Ben Reyes is still here" }).disabled).toBe(true);
+    expect(screen.getByRole("button", { name: "Mark Ben Reyes picked up" }).disabled).toBe(true);
   });
 
   it("asks for confirmation, then marks that student", () => {
@@ -82,6 +100,36 @@ describe("useMarkPickedUp", () => {
     const { result } = renderHook(() => useMarkPickedUp(), { wrapper });
     act(() => result.current.markPickedUp({ studentId: 2, name: "Ben Reyes" }));
     await waitFor(() => expect(toast).toHaveBeenCalledWith("error", "Already picked up."));
+    expect(result.current.busyIds.size).toBe(0);
+  });
+});
+
+describe("useStillHere", () => {
+  const wrapper = ({ children }) => (
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}>{children}</QueryClientProvider>
+  );
+
+  it("restarts the clock, tells the teacher, and ignores a second press while it is in flight", async () => {
+    let resolve;
+    api.markStillHere.mockReturnValue(new Promise((r) => { resolve = r; }));
+    const { result } = renderHook(() => useStillHere(), { wrapper });
+    act(() => result.current.markStillHere({ studentId: 2, name: "Ben Reyes" }));
+    await waitFor(() => expect(result.current.busyIds.has(2)).toBe(true));
+    act(() => result.current.markStillHere({ studentId: 2, name: "Ben Reyes" }));
+    expect(api.markStillHere).toHaveBeenCalledTimes(1);
+    expect(api.markStillHere).toHaveBeenCalledWith(2);
+    await act(async () => resolve({}));
+    await waitFor(() => expect(result.current.busyIds.size).toBe(0));
+    expect(toast).toHaveBeenCalledWith("success", "Ben Reyes is marked as still here.");
+  });
+
+  it("shows the server's message when it fails", async () => {
+    api.markStillHere.mockRejectedValue(
+      Object.assign(new Error("Something went wrong."), { name: "ApiError", status: 400, details: { message: "Student is not present and inside today" } }),
+    );
+    const { result } = renderHook(() => useStillHere(), { wrapper });
+    act(() => result.current.markStillHere({ studentId: 2, name: "Ben Reyes" }));
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("error", "Student is not present and inside today"));
     expect(result.current.busyIds.size).toBe(0);
   });
 });

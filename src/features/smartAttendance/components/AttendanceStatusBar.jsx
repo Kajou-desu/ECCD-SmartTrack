@@ -1,4 +1,4 @@
-import { Camera, CircleCheck, TriangleAlert, ScanFace, RadioTower } from "lucide-react";
+import { Camera, CircleCheck, DoorClosed, DoorOpen, TriangleAlert, ScanFace, RadioTower } from "lucide-react";
 
 // One line per thing that must be working for automatic attendance to work.
 // State is always written out in words as well as colour.
@@ -18,14 +18,37 @@ function StatusItem({ icon: Icon, label, ok, text }) {
   );
 }
 
-export default function AttendanceStatusBar({ cameraStatus, recognitionAvailable, gatewayOnline }) {
+// `cameras` is { entry, exit }: whether each of the center's two cameras has sent
+// a frame lately, from ANY device. The exit camera only matters while a pickup
+// window is open, so outside one it is not reported as a problem.
+export default function AttendanceStatusBar({
+  cameraStatus,
+  recognitionAvailable,
+  gatewayOnline,
+  cameras = {},
+  pickupActive = false,
+}) {
+  const entryOn = Boolean(cameras.entry);
+  const exitOn = Boolean(cameras.exit);
   return (
-    <ul aria-label="System status" className="grid gap-2 sm:grid-cols-3">
+    <ul aria-label="System status" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
       <StatusItem
         icon={Camera}
         label="This device's camera"
         ok={cameraStatus === "live"}
         text={cameraStatus === "live" ? "On" : cameraStatus === "starting" ? "Starting" : "Off"}
+      />
+      <StatusItem
+        icon={DoorOpen}
+        label="Entry camera"
+        ok={entryOn}
+        text={entryOn ? "Streaming" : "Not streaming"}
+      />
+      <StatusItem
+        icon={DoorClosed}
+        label="Exit camera"
+        ok={exitOn || !pickupActive}
+        text={exitOn ? "Streaming" : pickupActive ? "Not streaming" : "Not needed yet"}
       />
       <StatusItem
         icon={ScanFace}

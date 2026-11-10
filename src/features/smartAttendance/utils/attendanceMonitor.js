@@ -8,6 +8,19 @@ export const MONITOR_POLL_MS = 2000;
 export const MAX_BACKOFF_MS = 10000;
 export const DEGRADED_AFTER_FAILURES = 3;
 
+// A center has two cameras. The ENTRY camera watches students coming into the
+// classroom (automatic attendance); the EXIT camera watches them going out
+// (automatic pickup). Each device's page is set to one of the two; the server
+// accepts exactly these values and treats a missing one as "entry".
+export const CAMERA_ROLES = ["entry", "exit"];
+export const DEFAULT_CAMERA_ROLE = "entry";
+export const CAMERA_ROLE_LABELS = { entry: "Entry camera", exit: "Exit camera" };
+
+// Anything that isn't a known role (a stale or tampered stored value) is "entry".
+export function normalizeCameraRole(value) {
+  return CAMERA_ROLES.includes(value) ? value : DEFAULT_CAMERA_ROLE;
+}
+
 // Delay before the next frame: hold a steady cadence, but never queue up
 // (the loop only sends the next frame after the previous response arrives).
 export function nextFrameDelay(elapsedMs, intervalMs = FRAME_INTERVAL_MS) {
@@ -52,9 +65,12 @@ export function boxToStyle(box, frameWidth, frameHeight) {
   };
 }
 
-// verified: already marked present. waiting: recognised, but the tag hasn't been
-// seen yet. unknown: a face we can't (or won't) put a name to.
+// pickedUp: the exit camera just marked this student picked up. verified: already
+// marked present. waiting: recognised, but the tag hasn't been seen yet (entry
+// camera) or it is outside a pickup window (exit camera). unknown: a face we
+// can't (or won't) put a name to.
 export function faceTone(face) {
+  if (face?.pickedUp) return "pickedUp";
   if (face?.verified) return "verified";
   return face?.student ? "waiting" : "unknown";
 }

@@ -8,6 +8,10 @@ import {
   classifyFrameError,
   boxToStyle,
   faceTone,
+  CAMERA_ROLES,
+  CAMERA_ROLE_LABELS,
+  DEFAULT_CAMERA_ROLE,
+  normalizeCameraRole,
   statusLabel,
   describeCameraError,
   describeStopReason,
@@ -70,6 +74,23 @@ test("faceTone distinguishes verified, waiting and unknown faces", () => {
   assert.equal(faceTone({ student: { id: 1, name: "Ana" }, verified: false }), "waiting");
   assert.equal(faceTone({ student: null, verified: false }), "unknown");
   assert.equal(faceTone(undefined), "unknown");
+});
+
+test("faceTone shows a student the exit camera just picked up, ahead of everything else", () => {
+  assert.equal(faceTone({ student: { id: 1, name: "Ana" }, pickedUp: true, verified: false }), "pickedUp");
+  assert.equal(faceTone({ student: { id: 1, name: "Ana" }, pickedUp: false, verified: false }), "waiting");
+  assert.equal(faceTone({ student: { id: 1, name: "Ana" }, pickedUp: true, verified: true }), "pickedUp");
+});
+
+test("there are exactly two camera roles, entry by default, and anything else falls back to entry", () => {
+  assert.deepEqual(CAMERA_ROLES, ["entry", "exit"]);
+  assert.equal(DEFAULT_CAMERA_ROLE, "entry");
+  assert.equal(normalizeCameraRole("exit"), "exit");
+  assert.equal(normalizeCameraRole("entry"), "entry");
+  for (const bad of [undefined, null, "", "Exit", "roof", 1, ["exit"], { a: 1 }]) {
+    assert.equal(normalizeCameraRole(bad), "entry");
+  }
+  assert.deepEqual(Object.keys(CAMERA_ROLE_LABELS), CAMERA_ROLES);
 });
 
 test("statusLabel has plain-language text for every status the server sends", () => {

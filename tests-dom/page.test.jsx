@@ -49,7 +49,7 @@ beforeEach(() => {
   HTMLCanvasElement.prototype.getContext = () => ({ drawImage: vi.fn() });
   HTMLCanvasElement.prototype.toBlob = (cb) => cb(new Blob(["x"], { type: "image/jpeg" }));
 });
-afterEach(() => { cleanup(); vi.useRealTimers(); });
+afterEach(() => { cleanup(); vi.useRealTimers(); try { window.sessionStorage.clear(); } catch { /* optional */ } });
 
 describe("AttendanceLive page", () => {
   it("when attendance isn't running: says so, and offers no camera and no monitor polling", async () => {
@@ -124,5 +124,71 @@ describe("AttendanceLive page", () => {
     const keys = spy.mock.calls.map((c) => JSON.stringify(c[0].queryKey));
     expect(keys).toContain('["attendance"]');
     expect(keys).toContain('["dashboardStats"]');
+  });
+});
+
+describe("AttendanceLive page — entry and exit camera", () => {
+  const radio = (name) => screen.getByRole("radio", { name });
+
+  it("is the entry camera by default, and says what that means", async () => {
+    mount(); await advance(50);
+    expect(radio("Entry camera").checked).toBe(true);
+    expect(radio("Exit camera").checked).toBe(false);
+    expect(screen.getByText(/Point it at the door students come in by/)).toBeTruthy();
+  });
+
+  it("sends frames as the entry camera until the teacher picks the exit camera", async () => {
+    mount(); await advance(50);
+    fireEvent.click(screen.getByText("Use this device's camera")); await advance(50);
+    expect(api.sendAttendanceFrame.mock.calls[0][1]).toMatchObject({ camera: "entry" });
+  });
+
+  it("the exit camera is chosen before turning on, and its frames say so", async () => {
+    mount(); await advance(50);
+    fireEvent.click(radio("Exit camera")); await advance(10);
+    expect(screen.getByText(/Point it at the door students leave by/)).toBeTruthy();
+    fireEvent.click(screen.getByText("Use this device's camera")); await advance(50);
+    expect(api.sendAttendanceFrame.mock.calls[0][1]).toMatchObject({ camera: "exit" });
+  });
+
+  it("can't be changed while the camera is on, and can again once it is off", async () => {
+    mount(); await advance(50);
+    fireEvent.click(screen.getByText("Use this device's camera")); await advance(50);
+    expect(radio("Exit camera").disabled).toBe(true);
+    expect(screen.getByText("Turn the camera off to change this.")).toBeTruthy();
+    fireEvent.click(screen.getByText("Turn off camera")); await advance(50);
+    expect(radio("Exit camera").disabled).toBe(false);
+  });
+
+  it("remembers the choice for this tab only", async () => {
+    mount(); await advance(50);
+    fireEvent.click(radio("Exit camera")); await advance(10);
+    expect(window.sessionStorage.getItem("smarttrack.cameraRole")).toBe("exit");
+    cleanup();
+    mount(); await advance(50);
+    expect(radio("Exit camera").checked).toBe(true);
+  });
+
+  it("ignores a stored value that isn't a camera role", async () => {
+    window.sessionStorage.setItem("smarttrack.cameraRole", "<script>");
+    mount(); await advance(50);
+    expect(radio("Entry camera").checked).toBe(true);
+  });
+
+  it("announces students the exit camera marked picked up", async () => {
+    api.sendAttendanceFrame.mockResolvedValue({
+      width: 640, height: 360, faces: [], verified: [], pickedUp: [{ studentId: 2, name: "Ben Cruz" }],
+    });
+    mount(); await advance(50);
+    fireEvent.click(radio("Exit camera")); await advance(10);
+    fireEvent.click(screen.getByText("Use this device's camera")); await advance(50);
+    expect(screen.getByText("Ben Cruz marked picked up").getAttribute("aria-live")).toBe("polite");
+  });
+
+  it("shows each camera's state for the whole center, and the exit camera is not a problem outside a pickup window", async () => {
+    api.getAttendanceMonitor.mockResolvedValue({ ...MONITOR, cameras: { entry: true, exit: false } });
+    mount(); await advance(50);
+    expect(screen.getByText("Streaming")).toBeTruthy();       // entry camera
+    expect(screen.getByText("Not needed yet")).toBeTruthy();  // exit camera, no pickup window open
   });
 });
