@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiClient } from "@api/client.js";
+import { readPreferred, videoConstraints, writePreferred } from "../utils/cameraDevices.js";
 import {
   DEGRADED_AFTER_FAILURES,
   FRAME_JPEG_QUALITY,
@@ -9,6 +10,14 @@ import {
   frameSize,
   nextFrameDelay,
 } from "../utils/attendanceMonitor.js";
+
+const storage = () => {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+};
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -38,6 +47,12 @@ function captureFrame(video, canvas) {
 // hears students marked present (entry); `onPickedUp` hears students marked
 // picked up (exit).
 //
+// Which physical camera is used: start() with nothing uses the one chosen for
+// this role (remembered per role, see utils/cameraDevices.js); start("user" |
+// "environment") asks for the front/back camera; start({ deviceId }) for an exact
+// one. `deviceId` is the camera actually in use; selectDevice(id) chooses one
+// (and switches to it at once if the camera is on).
+//
 // Every exit path (turning it off, the session ending, losing permission,
 // unmounting) goes through stop()/release(), so the camera light always goes out.
 export function useFaceRecognition({ role = "entry", onVerified, onPickedUp } = {}) {
@@ -58,12 +73,27 @@ export function useFaceRecognition({ role = "entry", onVerified, onPickedUp } = 
   const [message, setMessage] = useState("");
   const [frame, setFrame] = useState(null); // { width, height, faces }
   const [degraded, setDegraded] = useState(false);
+  const [deviceId, setDeviceId] = useState(null); // the camera in use, once live
+  const [preferredDeviceId, setPreferredDeviceId] = useState(() => readPreferred(storage(), role));
+  const preferredRef = useRef(preferredDeviceId);
 
   useEffect(() => {
     onVerifiedRef.current = onVerified;
     onPickedUpRef.current = onPickedUp;
     roleRef.current = role;
   }, [onVerified, onPickedUp, role]);
+
+  useEffect(() => {
+    preferredRef.current = preferredDeviceId;
+  }, [preferredDeviceId]);
+
+  // Each role remembers its own camera, so changing role picks up that role's.
+  const firstRole = useRef(role);
+  useEffect(() => {
+    if (firstRole.current === role) return;
+    firstRole.current = role;
+    setPreferredDeviceId(readPreferred(storage(), role));
+  }, [role]);
 
   const release = useCallback(() => {
     abortRef.current?.abort();
@@ -82,6 +112,7 @@ export function useFaceRecognition({ role = "entry", onVerified, onPickedUp } = 
       setStatus("off");
       setFrame(null);
       setDegraded(false);
+      setDeviceId(null);
       setMessage(notice);
     },
     [release],
@@ -126,7 +157,7 @@ export function useFaceRecognition({ role = "entry", onVerified, onPickedUp } = 
   );
 
   const start = useCallback(
-    async (facingMode = "user") => {
+    async (choice) => {
       if (!navigator.mediaDevices?.getUserMedia) {
         setMessage(describeCameraError({ name: "UnsupportedError" }));
         return;
@@ -135,12 +166,22 @@ export function useFaceRecognition({ role = "entry", onVerified, onPickedUp } = 
       const run = runRef.current;
       setStatus("starting");
 
+      // A string is a facing mode; an object names an exact camera; nothing means
+      // this role's remembered camera (if any).
+      const wanted = typeof choice === "string" ? { facingMode: choice } : choice ?? { deviceId: preferredRef.current };
       let stream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: false,
-        });
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints(wanted), audio: false });
+        } catch (error) {
+          // A remembered camera that was unplugged: forget it and use the default.
+          if (!wanted.deviceId || !["OverconstrainedError", "NotFoundError"].includes(error?.name)) throw error;
+          if (run === runRef.current) {
+            writePreferred(storage(), roleRef.current, null);
+            setPreferredDeviceId(null);
+          }
+          stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints({}), audio: false });
+        }
       } catch (error) {
         if (run === runRef.current) {
           setStatus("off");
@@ -170,10 +211,23 @@ export function useFaceRecognition({ role = "entry", onVerified, onPickedUp } = 
       } catch {
         /* Wake lock is optional (unsupported, or denied on low battery). */
       }
+      setDeviceId(stream.getVideoTracks?.()[0]?.getSettings?.().deviceId ?? null);
       setStatus("live");
       runLoop(run);
     },
     [stop, runLoop],
+  );
+
+  // Choose this role's camera; if the camera is on, switch to it straight away.
+  const selectDevice = useCallback(
+    (id) => {
+      const next = id || null;
+      writePreferred(storage(), roleRef.current, next);
+      preferredRef.current = next;
+      setPreferredDeviceId(next);
+      if (streamRef.current) start({ deviceId: next });
+    },
+    [start],
   );
 
   const dismissMessage = useCallback(() => setMessage(""), []);
@@ -201,7 +255,7 @@ export function useFaceRecognition({ role = "entry", onVerified, onPickedUp } = 
     [release],
   );
 
-  return { videoRef, status, message, frame, degraded, start, stop, dismissMessage };
+  return { videoRef, status, message, frame, degraded, deviceId, preferredDeviceId, start, stop, selectDevice, dismissMessage };
 }
 
 export default useFaceRecognition;
